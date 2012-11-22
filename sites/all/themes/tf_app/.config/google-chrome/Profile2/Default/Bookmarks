@@ -1,0 +1,30 @@
+{
+   "checksum": "f4b97fa94c71cc72888f9830a9d4571f",
+   "roots": {
+      "bookmark_bar": {
+         "children": [  ],
+         "date_added": "12980743832874205",
+         "date_modified": "0",
+         "id": "1",
+         "name": "Bladwijzerbalk",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "12980743832874222",
+         "date_modified": "0",
+         "id": "2",
+         "name": "Andere bladwijzers",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "12980743832874223",
+         "date_modified": "0",
+         "id": "3",
+         "name": "Mobiele bladwijzers",
+         "type": "folder"
+      }
+   },
+   "version": 1
+}

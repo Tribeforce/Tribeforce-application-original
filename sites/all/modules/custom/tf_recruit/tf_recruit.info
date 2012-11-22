@@ -1,0 +1,7 @@
+name = Tribeforce Recruit
+description = Recruit module for Tribeforce
+core = 7.x
+package = Tribeforce
+
+dependencies[] = tf_common
+scripts[] = js/behaviors.js

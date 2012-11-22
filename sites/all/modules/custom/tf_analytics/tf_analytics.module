@@ -1,0 +1,24 @@
+<?php
+
+function tf_analytics_block_info() {
+  $blocks['dashboard'] = array(
+    'info' => t('Dashboard providing the main metrics'),
+  );
+
+  return $blocks;
+}
+
+function tf_analytics_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'dashboard':
+      $block['subject'] = t('Analytics');
+      $block['content'] = array(
+        '#markup' => 'my metrics',
+      );
+      break;
+  }
+
+  return $block;
+}

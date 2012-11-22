@@ -1,0 +1,2282 @@
+/**
+ * @file
+ * Page Styling
+ *
+ * Style the markup found in page.tpl.php. Also includes some styling of
+ * miscellaneous Drupal elements that appear in the $content variable, such as
+ * ul.links, .pager, .more-link, etc.
+ */
+
+@import "base";
+
+
+/*
+ * Body
+ */
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: $grey_bg;
+  color: $black;
+}
+
+input,
+textarea {
+  color: $black;
+  border: 1px solid $grey_bg_darker;
+  resize: none;
+}
+
+.grippie,
+.filter-wrapper {
+  display: none;
+}
+
+p {
+  margin: 0;
+}
+
+.tf-region {
+  form .actions {
+    position: absolute;
+    right: $gutter-pct;
+    bottom: 5px;
+  }
+  input[value=Edit],
+  input[value=Add],
+  input[value=Cancel] {
+    border: 0;
+    padding: 0;
+    background: $sprites;
+    width: $icon_width;
+    height: $icon_width;
+    text-indent: -9999px;
+    float: right;
+  }
+
+  input[value=Cancel] {
+    background-position: -62px -203px;
+  }
+
+  input[value=Edit],
+  input[value=Add] {
+    background-position: -154px -535px;
+  }
+}
+
+/*
+ * The skip-link link will be completely hidden until a user tabs to the link.
+ * See the element-focusable rule in system.base.css.
+ */
+
+#skip-link {
+  margin: 0;
+
+  a,
+  a:visited {
+    display: block;
+    width: 100%;
+    padding: 2px 0 3px 0;
+    text-align: center;
+    background-color: #666;
+    color: #fff;
+  }
+}
+
+/*
+ * Header
+ */
+
+#header {
+}
+
+#logo { /* Wrapping link for logo */
+  float: left; /* LTR */
+  margin: 0;
+  padding: 0;
+
+  img {
+    vertical-align: bottom;
+  }
+}
+
+#name-and-slogan { /* Wrapper for website name and slogan */
+  float: left;
+}
+
+#site-name { /* The name of the website */
+  margin: 0;
+  font-size: 2em;
+  line-height: 1.5em;
+
+  a:link,
+  a:visited {
+    color: #000;
+    text-decoration: none;
+  }
+
+  a:hover,
+  a:focus {
+    text-decoration: underline;
+  }
+}
+
+#site-slogan { /* The slogan (or tagline) of a website */
+  margin: 0;
+  font-size: 1em;
+}
+
+.region-header { /* Wrapper for any blocks placed in the header region */
+  clear: both; /* Clear the logo */
+}
+
+/*
+ * Main (container for everything else)
+ */
+
+#main {
+}
+
+/*
+ * Content
+ */
+
+#content {
+}
+
+.region-highlighted {
+}
+
+.breadcrumb {/* The path to the current page in the form of a list of links */
+  ol {
+    margin: 0;
+    padding: 0;
+  }
+  li {
+    display: inline;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+h1.title, /* The title of the page */
+h2.node-title, /*Title of a piece of content when given in a list of content*/
+h2.block-title, /* Block title */
+h2.title, /* Comment section heading */
+h2.comment-form, /* Comment form heading */
+h3.title { /* Comment title */
+  margin: 0;
+}
+
+tr.even { /* Some tables have rows marked even or odd. */
+  /* background-color: #eee; */ /* Drupal core uses a #eee background */
+}
+
+h2, h3 {
+  color: $blue;
+}
+
+
+
+
+/*
+ * Dashboard
+ */
+#block-menu-menu-dashboard {
+  ul.menu {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    li {
+      overflow: hidden;
+      float: left;
+      list-style-type: none;
+      list-style-image: none;
+      text-align: center;
+      width: (100%/4);
+      a {
+        display: block;
+        margin: auto;
+        color: $orange_dark;
+        text-decoration: none;
+        font-size: 1.5em;
+      }
+    }
+  }
+}
+
+
+.page-dashboard {
+  #block-menu-menu-dashboard {
+    ul.menu {
+      li {
+        width: (100%/3);
+      }
+      a {
+        background: $sprites;
+        width: 190px;
+        padding-top: 140px;
+        height: 30px;
+      }
+      li:nth-child(1) {
+        display: none;
+      }
+      li:nth-child(2) a {
+        background-position: -780px -518px;
+      }
+      li:hover:nth-child(2) a {
+        background-position: -973px -518px;
+      }
+      li:nth-child(3) a {
+        background-position: -780px -159px;
+      }
+      li:hover:nth-child(3) a {
+        background-position: -971px -159px;
+      }
+      li:nth-child(4) a {
+        background-position: -780px -335px;
+      }
+      li:hover:nth-child(4) a {
+        background-position: -973px -335px;
+      }
+    }
+  }
+}
+
+
+
+/*
+ * General
+ */
+$sidebar_width: 25%;
+$fat_border: url(../images/4px_border.png);
+$min_height: 300px;
+$page_width: 100% - $sidebar_width -$gutter-pct;
+$border_width: 1px;
+
+$cv_position: -1200px -170px;
+$motivation_position: -1200px -204px;
+
+.tf-region {
+  &.left-sidebar,
+  &.main {
+    float: left;
+  }
+}
+
+.no-selected {
+  min-height: $min_height;
+  text-align: center;
+}
+
+.tf-region.left-sidebar, .left-sidebar a {
+  background: $fat_border repeat-y;
+  background-position: 100% 0;
+}
+
+.tf-region.left-sidebar {
+  width: $sidebar_width;
+  min-height: $min_height;
+  background-color: $grey_bg_darker;
+  margin-right: $gutter-pct;
+
+  .header {
+    text-transform: uppercase;
+    padding: $gutter-width 1%;
+    font-weight: bold;
+    background: url(../images/title_back.png) repeat-x;
+    color: $grey_light;
+  }
+
+  .item {
+    clear: both;
+    border-bottom: 1px solid $grey_light;
+    position: relative;
+  }
+
+  a {
+    height: 4*$gutter-width;
+    padding: $gutter-width;
+    display: block;
+    font-weight: bold;
+  }
+  a:hover,
+  a.active {
+    background-color: #FFF;
+  }
+
+  a.active {
+    background-image: none;
+    background: $grey_bg;
+  }
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .actions {
+    overflow: hidden;
+    font-size: 12px;
+    padding: 0 $gutter-width;
+    display: none;
+    background-color: $grey_bg;
+    &.active {
+      display: block;
+    }
+    a {
+      float: left;
+      width: auto;
+      height: auto;
+      padding: 0;
+      margin-right: 1%;
+      border: 0px;
+      background: initial;
+      &:hover {
+        background: transparent;
+      }
+    }
+  }
+
+
+}
+
+.tf-region.main {
+  clear: right;
+  width: $page_width;
+}
+
+.tf-region.message {
+  background: $sprites;
+  background-color: $orange_dark;
+  color: #fff;
+  padding-left: $icon_width;
+  background-position: -1192px 7px;
+  line-height: $icon_width;
+}
+
+.tf-region.content {
+  padding: $gutter-width 0 10% 0;
+  position: relative;
+}
+
+.tf-module {
+  &.recruit,
+  &.manage { // Needed to add for all modules usingthe slide pane
+    position: relative;
+    overflow: hidden;
+  }
+}
+
+// Slide Pane
+.tf-region {
+  $close_width: 50px;
+  &.slide-pane {
+    position: absolute;
+    top: 0;
+    right: -100%;
+    width: 80%;
+    background-color: $grey_bg;
+    background-color: $grey_bg_t;
+    border: 1px solid #fff;
+    -moz-transition: right 2s;
+    -webkit-transition: right 2s;
+    -o-transition: right 2s;
+    transition: right 2s;
+  }
+  &.open {
+    right: 0%;
+  }
+  .sp-title {
+
+  }
+  .sp-content {
+    position: relative;
+    margin-right: $close_width;
+    padding: $gutter-width;
+  }
+  .sp-close {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: $close_width;
+    background: url(../images/slide_pane_right.png) no-repeat 50% 50%;
+    background: url(../images/slide_pane_right.png) no-repeat 50% 10%,
+                url(../images/slide_pane_right.png) no-repeat 50% 50%,
+                url(../images/slide_pane_right.png) no-repeat 50% 90%;
+    background-color: $grey_light;
+    cursor: pointer;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+ * Edit Role
+ */
+/*
+.edit-role .accordion .ui-icon{
+  position: relative;
+  float: right;
+  margin-right: 10px;
+  margin-top: 0px;
+}
+*/
+
+
+/*
+  Interview
+*/
+.interview {
+  position: relative;
+  .header {
+    overflow: hidden;
+    padding: $gutter-pct;
+    @include shadow;
+    margin-bottom: 4*$gutter-width;
+    .field {
+      float: left;
+      width: 33%;
+    }
+    .field-name-title,
+    .date {
+      font-size: 1.3em;
+    }
+    .field-name-title {
+      width: 66%;
+    }
+    .node-person.field-name-title {
+      font-size: 1em;
+      width: 33%;
+    }
+    .date {
+      width: 33%;
+    }
+    .field-type-file a {
+      background: $sprites;
+      padding-left: $icon_width;
+    }
+    .field-name-field-cv a {
+      background-position: $cv_position;
+    }
+    .field-name-field-cv a:hover {
+      background-position: -1200px -231px;
+    }
+    .field-name-field-motivation a {
+      background-position: $motivation_position;
+    }
+    .field-name-field-motivation a:hover {
+      background-position: -1200px -257px;
+    }
+  }
+  .print {
+    @include icon;
+    background-position: -65px -631px;
+    position: absolute;
+    top: $gutter-width;
+    right: $gutter-pct;
+  }
+  .body {
+    $col_width: 40%;
+
+    height: 450px;
+    overflow-y: scroll;
+    padding: 0 $gutter-width $gutter-width $gutter-width;
+    margin: 0 (-$gutter-width) $gutter-width (-$gutter-width);
+    .header {
+      clear: both;
+      padding: 0px;
+      box-shadow: none;
+      margin: 0;
+      .field {
+        padding: $gutter-width $gutter-pct;
+        float: none;
+        width: auto;
+      }
+    }
+    .field {
+      padding-left: ($gutter-pct/$col_width)*100%;
+    }
+
+    .pos-hint,
+    .neg-hint {
+      min-height: (5 * ($icon_width + $gutter-width)) / 2;
+    }
+
+    .question-wrapper {
+//      overflow: hidden;
+      margin-bottom: $gutter-width;
+      background: $grey_bg_darker;
+      color: $grey_light;
+      @include shadow;
+      position: relative;
+
+      .more,
+      .less {
+        @include icon;
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        color: $grey_light;
+        bottom: 0px;
+        right: 0px;
+        position: absolute;
+        &:hover {
+          font-weight: bold;
+        }
+      }
+
+      .less {
+        background-position: -90px -525px;
+        width: 30px;
+        margin-top: -30px;
+      }
+
+      .more {
+        background-position: -35px -525px;
+        width: 60px;
+        display: none;
+        text-indent: 0px;
+      }
+
+      &.collapsed {
+        .answer-body,
+        .less {
+          display: none;
+        }
+        .more {
+          display: block;
+        }
+      }
+
+      .done {
+        display: none;
+        position: absolute;
+        right: $gutter-pct;
+        top: $gutter-width;
+        font-weight: bold;
+        .text,
+        .score {
+          float: left;
+          margin: 0 0 0 $gutter-width;
+          cursor: initial;
+          color: #fff;
+        }
+      }
+
+      &.done .done {
+        display: block;
+      }
+
+
+      .field-name-title {
+        cursor: pointer;
+        background: $grey_light;
+        color: $grey_bg_darker;
+        font-size: 1em;
+      }
+
+      &.activated {
+        background: transparent;
+        color: $black;
+        .field-name-title {
+          background-color: $orange_dark;
+          color: #fff;
+        }
+      }
+
+    }
+
+    .answer-body {
+      position: relative;
+      overflow: hidden;
+      .col-1,
+      .col-3 {
+        float: left;
+        width: $col_width;
+      }
+      .col-1 {
+        padding-right: 50% - $col_width;
+      }
+      .col-2 {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        margin-left: -$icon_width/2;
+      }
+      .col-3 {
+        padding-left: 50% - $col_width;
+      }
+
+    }
+    .field-name-field-score {
+      display: none;
+    }
+    .score {
+      @include icon;
+      margin-bottom: $gutter-width/2;
+      background-position: -154px -491px;
+      text-align: center;
+      color: $grey_light;
+      text-indent: 0px;
+      &.selected {
+        background-position: -189px -491px;
+        color: #FFF;
+        font-weight: bold;
+      }
+      &:hover {
+        font-weight: bold;
+      }
+    }
+
+    form {
+      padding-right: ($gutter-pct/$col_width)*100%;
+    }
+    .form-item {
+      margin: 0;
+    }
+
+    textarea {
+      height: 110px;
+      padding: $gutter-width;
+      border: $border_width solid $grey_light;
+    }
+    .form-submit {
+      width: $col_width - $gutter-pct;
+      border: 0;
+      @include rounded-fields;
+      color: #FFF;
+      text-transform: uppercase;
+      background-color: $orange_dark;
+      padding: $gutter-pct/2;
+      position: initial;
+      text-indent: 0;
+      position: absolute;
+      bottom: $icon_width;
+      right: $gutter-pct;
+    }
+    .form-submit:hover {
+      font-weight: bold;
+    }
+  }
+}
+
+.header,
+.body {
+  clear: both;
+}
+
+
+/*
+ * Campaign details
+ */
+.campaign-details {
+
+  &.prefilled .field-name-field-role-ref {
+    display: none;
+  }
+}
+
+
+/*
+ * Prepare Interview
+ */
+$switch_width: 2*$icon_width;
+$switch_height: $icon_width;
+$flame_width: $icon_width;
+
+.prepare-interview {
+  h3 {
+    margin: 0;
+  }
+
+  .level {
+    right: 90px;
+    top: 10px;
+  }
+
+  .tabs {
+    clear: both;
+    div {
+      float: left;
+      cursor: pointer;
+      background: $grey_bg_darker;
+      text-transform: uppercase;
+      width: 28%;
+      text-align: center;
+      padding: $gutter-width $gutter-pct;
+      margin: $gutter-width $gutter-pct $gutter-width 0;
+      &:nth-child(3) {
+        margin-right: 0;
+      }
+    }
+    .active {
+      background: $orange_dark;
+      color: #fff;
+    }
+  }
+
+  .role {
+    .edit a {
+      @include icon;
+      background-position: -154px -567px;
+      position: absolute;
+      top: $gutter-width;
+      right: $gutter-pct;
+      display: none;
+    }
+    &:hover .edit a {
+      display: block;
+    }
+  }
+
+  .skills,
+  .behavioral,
+  .business,
+  .talent form {
+    display: none;
+  }
+
+  .tabs .skills,
+  .tabs .behavioral,
+  .tabs .business,
+  .skills.active,
+  .behavioral.active,
+  .business.active {
+    display: block;
+  }
+
+  .header div {
+//    float: right;
+  }
+
+  .header .field-name-title {
+//    font-size: 20px;
+    font-weight: bold;
+    height: $switch_height;
+  }
+
+  .body {
+    display: none;
+   -webkit-transition-duration: 0.3s;
+    -moz-transition-duration: 0.3s;
+    -o-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+  }
+
+  .on .body {
+    display: block;
+  }
+
+  .on.talent .ta {
+    form {
+      display: none;
+    }
+    &.on form {
+      display: block;
+    }
+  }
+
+  .header .field-name-title div {
+    float: left;
+  }
+
+  textarea {
+    height: 60px;
+    padding: 1%;
+    border: $border_width solid $grey_light;
+  }
+
+  .skill,
+  .talent {
+    margin-bottom: $gutter-width;
+    overflow: hidden;
+    border: $border_width solid $grey_light;
+    padding: $gutter-width $gutter-pct;
+    clear: both;
+  }
+
+  .tas {
+    margin-left: $gutter-pct;
+    form {
+      margin-bottom: $gutter-width;
+    }
+  }
+
+  .ta {
+    position: relative;
+    clear: both;
+    margin-bottom: $gutter-width;
+    .switch {
+      top: 0;
+      right: 0;
+    }
+  }
+
+  .on form {
+    display: block;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .switch {
+    width: $switch_width;
+    height: $switch_height;
+    background: $sprites;
+    background-position: -161px -397px;
+    cursor: pointer;
+    position: absolute;
+    top: $gutter-width;
+    right: $gutter-pct;
+  }
+
+  &.locked .switch {
+    cursor: initial;
+  }
+
+  .on .switch {
+    background-position: -332px -397px;
+  }
+
+  .on .tas {
+    .switch {
+      background-position: -161px -397px;
+    }
+    .on .switch {
+      background-position: -332px -397px;
+    }
+  }
+
+  .form-item-question {
+    clear: both;
+    textarea {
+    }
+    margin-bottom: $gutter-width;
+  }
+
+  .form-item {
+    margin: 0;
+  }
+
+  .form-item-pos-answer,
+  .form-item-neg-answer {
+    float: left;
+    padding-top: $gutter-width;
+    width: 46%;
+    label {
+      padding-left: $icon_width;
+      background: $sprites;
+    }
+  }
+
+  .form-item-pos-answer label {
+    background-position: -1200px -55px;
+  }
+
+  .form-item-neg-answer label {
+    background-position: -1200px -126px;
+  }
+
+  input.form-submit {
+    bottom: 0;
+    right: 0;
+    position: absolute;
+  }
+
+  .form-item-neg-answer {
+    margin: 0 $gutter-width;
+  }
+}
+
+
+// Flames
+.level {
+  position: absolute;
+  right: $gutter-pct;
+  top: $gutter-width;
+  div {
+    width: $flame_width;
+    height: $switch_height;
+    background: $sprites;
+    background-position: -90px -437px;
+    float: left;
+    &.on {
+      background-position: -62px -437px;
+    }
+  }
+}
+
+
+/*
+ * Candidates
+ */
+$label_width: 100px;
+$candidate_icon_width: 128px;
+$c_margin: 8px;
+
+.candidates-page {
+  .header {
+    overflow: hidden;
+    position: relative;
+    padding-top: $gutter-width;
+  }
+
+  .selection-pane {
+    clear: both;
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid $orange_dark;
+    text-align: center;
+    .hire .button,
+    input.form-submit {
+      @include rounded-fields;
+      border: 1px solid $grey_light;
+      text-indent: 0;
+      background-color: $grey_bg;
+      width: 200px;
+      height: auto;
+      padding: $c_margin/2;
+      position: initial;
+      margin-left: auto;
+      display: block;
+    }
+
+    .selection-1,
+    .selection-2,
+    .selection-3,
+    #edit-hire,
+    #edit-compare {
+      display: none;
+    }
+
+    &.selected-1 {
+      .selection-0 {
+        display: none;
+      }
+      #edit-hire,
+      .selection-1 {
+        display: block;
+      }
+    }
+
+    &.selected-2 {
+      .selection-0 {
+        display: none;
+      }
+      #edit-compare,
+      .selection-2 {
+        display: block;
+      }
+    }
+
+    &.selected-3 {
+      .selection-0 {
+        display: none;
+      }
+      #edit-compare,
+      .selection-3 {
+        display: block;
+      }
+    }
+  }
+
+  .candidates {
+    margin-top: 20px;
+//    overflow: hidden;
+    min-height: 300px;
+  }
+
+  .candidate {
+    $left: 60px;
+
+    float: left;
+    margin: 1%;
+    width: 49%;
+
+    &:nth-child(2n+1) {
+      margin-left: 0;
+    }
+
+    &:nth-child(2n) {
+      margin-right: 0;
+    }
+
+    &:hover {
+      .edit-link {
+        display: block;
+      }
+    }
+
+    .record {
+      @include shadow;
+      @include rounded-left;
+      background-color: #fff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .field-name-title,
+    .field-name-field-first-name {
+      font-size: 20px;
+    }
+
+    .field-name-field-first-name {
+      margin-right: .5em;
+    }
+
+    .field-name-field-first-name {
+      float: left;
+    }
+
+    .left {
+      width: $left;;
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .score {
+      @include score;
+      .field-label {
+        display: none;
+      }
+    }
+
+    .selected,
+    .not-selected {
+      height: $icon_width - 8px;
+      overflow: hidden;
+      font-size: 12px;
+      line-height: 1em;
+      padding-top: 8px;
+    }
+
+    .not-selected {
+      font-weight: bold;
+    }
+
+    .data {
+//      width: 210px;
+      position: relative;
+      padding: $c_margin;
+      margin-left: $left;
+      margin-right: $icon_width;
+      height: 3 * $icon_width - 2 * $c_margin;
+    }
+
+    .buttons {
+      width: $icon_width;
+      position: absolute;
+      top: 0;
+      right: 0;
+      border-left: 1px solid $grey_light;
+      div {
+        width: $icon_width;
+        height: $icon_width;
+      }
+      .interview a {
+        // TODO: in sprite
+        background-image: url('../images/interview.png');
+        width: $icon_width;
+        height: $icon_width;
+        display: block;
+      }
+      .add-interview a {
+        background-image: url('../images/add_interview.png');
+      }
+      .cv a {
+        background: $sprites;
+        background-position: -1192px -163px;
+      }
+      .cv a:hover {
+        background-position: -1192px -224px;
+      }
+
+      .motivation a {
+        background: $sprites;
+        background-position: -1192px -196px;
+      }
+      .motivation a:hover {
+        background-position: -1192px -249px;
+      }
+      .file {
+        img {
+          display: none;
+        }
+        a {
+          text-indent: -9999px;
+          display: block;
+        }
+      }
+
+    }
+
+    .field-name-field-email {
+      clear: both;
+    }
+
+    .graph {
+      margin-left: $icon_width;
+      width: 285px;
+      height: 3 * $icon_width;
+      background-color: #fff;
+      @include shadow;
+      @include rounded-right;
+    }
+  }
+
+  .candidate.selected .left div {
+    background-color: $orange_dark;
+    color: #fff;
+  }
+
+  .candidate .not-selected {
+      display: none;
+  }
+
+  .candidate.selected .not-selected {
+    display: block;
+  }
+
+  .candidate.selected .selected {
+    display: none;
+  }
+
+  // TODO: Unify icons and make global
+  .edit-link {
+    @include icon;
+    display: none;
+    background-position: -154px -567px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    a {
+      text-indent: -9999px;
+      display: block;
+    }
+  }
+}
+
+
+/*
+ * Compare
+ */
+$col_width: 100px;
+
+.slide-pane .compare {
+  height: 500px;
+  overflow-y: auto;
+}
+
+.compare {
+  .score-board,
+  .detail-pane {
+    float: left;
+  }
+
+  .score-board {
+    $border: 1px solid $grey_bg_darker;
+    @include shadow-grey;
+    width: 30%;
+    overflow: hidden;
+    background-color: #fff;
+
+    .skill {
+      // skills get some unneeded inheritance. TODO: make cleaner
+      border: none;
+      padding: 0;
+    }
+
+
+    .ajax-progress-throbber { // TODO: Style better
+      display: none;
+    }
+
+    .col {
+      float: left;
+      width: 33%;
+      text-align: center;
+      border-top: $border;
+      padding: $gutter-width 0;
+    }
+    .col-even {
+      border: {
+        left: $border;
+        right: $border;
+      }
+    }
+    .header .col {
+      border-top: none;
+    }
+    .row,
+    .header,
+    .footer {
+      clear: both;
+      overflow: hidden;
+    }
+
+    .row.active {
+      background-color: $orange_light;
+      a {
+        color: #fff;
+      }
+      .col {
+        border-color: $orange_light;
+      }
+    }
+
+    a {
+      color: $orange_light;
+    }
+    a:hover .col {
+      background-color: $orange_light_t;
+    }
+  }
+
+  .detail-pane {
+    $border: 1px solid $grey_light;
+
+    margin-left: 1%;
+    width: 69%;
+    .ai {
+      border: $border;
+      margin-bottom: $gutter-width;
+      overflow: hidden;
+     .title,
+     .body,
+     .pos-answer,
+     .neg-answer {
+       .field {
+         padding: 2%;
+       }
+     }
+     .title {
+       background-color: $orange_dark;
+       color: #fff;
+       text-transform: uppercase;
+     }
+     .pos-answer,
+     .neg-answer {
+       width: 50%;
+       overflow: hidden;
+     }
+     .pos-answer {
+       float: left;
+     }
+     .field-label {
+       text-transform: uppercase;
+       color: $orange_dark;
+     }
+    }
+    .row {
+      background-color: #fff;
+      margin-bottom: $gutter-width;
+      padding: $gutter-width;
+      overflow: hidden;
+      border: $border;
+      clear: both;
+      @include shadow;
+      position: relative;
+      min-height: 3*$icon_width;
+    }
+
+    .first-name,
+    .last-name {
+      float: left;
+    }
+    .date {
+      position: absolute;
+      width: 3 * $icon_width;
+      text-align: right;
+      right: $gutter-width;
+      top: $gutter-width;
+    }
+    .score {
+      @include score;
+      position: absolute;
+      width: 2*$icon_width;
+      text-align: center;
+      bottom: 0;
+      left: 0;
+    }
+    .name {
+      border-bottom: 1px solid $orange_dark;
+    }
+    .name,
+    .date {
+      text-transform: uppercase;
+      color: $grey_light;
+      font-size: 18px;
+      height: 24px;
+    }
+    .last-name {
+      padding-left: $gutter-width;
+    }
+   .remark {
+     margin-left: 2*$icon_width;
+     padding: $gutter-width 0;
+   }
+  }
+
+  .unchecked {
+    background-color: $grey_bg !important ;
+    border-color: $grey_bg_darker !important;
+    color: $grey_bg_darker  !important;
+    div {
+      color: $grey_bg_darker  !important;
+      border-color: $grey_bg_darker !important;
+    }
+  }
+
+  // Handle the display of checkbox OR Hire button
+  .footer .hire-link,
+  .hire .form-type-checkbox {
+    display: none;
+  }
+
+  .hire .hire-link {
+    display: block;
+    a {
+      @include rounded-fields;
+      padding-top: $gutter-width;
+      color: $black;
+      font-weight: bold;
+      background: $sprites;
+      background-position: -538px -154px;
+      height: 30px;
+      margin: auto;
+      width: 80%;
+      display: block;
+      &:hover {
+        background-color: $grey_light;
+        background-position: -618px -154px;
+      }
+    }
+  }
+
+}
+
+
+
+/*
+ * Manage overview
+ */
+.manage {
+  $border: 1px solid $grey_light;
+  $avatar_xy: 150px;
+
+  .role { //TODO: This is some dirty overwrite
+    padding: 0;
+    background-color: inherit;
+  }
+
+  .person-type {
+    overflow: hidden;
+    clear: both;
+  }
+  .person {
+    width: 27%;
+    position: relative;
+    float: left;
+    margin: $gutter-pct;
+    padding: $gutter-pct;
+    @include shadow;
+
+    .field-name-field-avatar,
+    form {
+      width: $avatar_xy;
+      height: $avatar_xy;
+      margin: 0 auto $gutter-width auto;
+    }
+
+    .field-name-field-first-name,
+    .field-name-title {
+      float: left;
+      margin-right: .5em;
+      text-transform: uppercase;
+      font-size: 20px;
+      color: $grey_light;
+    }
+
+    .roles {
+      clear: both;
+      float: none;
+    }
+
+    .manage {
+      @include rounded-fields;
+      @include shadow;
+      background: $grey_bg_darker;
+     text-align: center;
+     &:hover {
+       background: $orange_light;
+       a {
+         color: #fff;
+       }
+     }
+     a {
+       display: block;
+     }
+    }
+
+    input[type=submit] {
+      display: block;
+      bottom: $icon_width;
+      right: 0;
+      position: absolute;
+    }
+    form {
+      width: 100%;
+      display: none;
+      position: relative;
+      div {
+        margin: 0;
+      }
+    }
+    img {
+      width: 100%;
+    }
+  }
+
+  // Handle show/hide of picture
+  .person.remark {
+    .field-name-field-avatar{
+      display: none;
+    }
+    form {
+      display: block;
+    }
+  }
+
+}
+
+
+
+/*
+ * Roles
+ */
+$border: 1px solid $grey_light;
+
+.role {
+  background-color: #fff;
+  padding: $gutter-width $gutter-pct;
+  position: relative;
+
+  .field-name-title,
+  .form-item-title input,
+  .categories,
+  .category,
+  .field-name-field-category select {
+    text-transform: uppercase;
+    color: $orange_light;
+    font-weight: bold;
+  }
+  .category {
+    margin-right: $gutter-width;
+    min-height: $icon_width;
+  }
+
+  .field-name-title,
+  .form-item-title input {
+    font-size: 20px;
+    margin-right: $gutter-pct;
+    min-height: $icon_width;
+  }
+
+  .field-name-body {
+    clear: both;
+  }
+}
+
+form.role {
+  overflow: hidden;
+}
+
+
+
+div {
+  &.skill,
+  &.task,
+  &.talent {
+    clear: both;
+    background-color: #fff;
+    border: $border;
+    border-bottom: 0px;
+    padding: $gutter-width $gutter-pct;
+    position: relative;
+  }
+}
+
+.skill,
+.talent {
+  .field-name-title,
+  .form-item-title input {
+    min-height: $icon_width;
+    text-transform: uppercase;
+    margin-right: 4*$icon_width;
+  }
+}
+
+.task,
+.skill,
+.talent,
+.new {
+  .field-name-body {
+    clear: left;
+  }
+
+  // Some form stuff
+  .field-name-field-expert-level {
+    display: none;
+  }
+}
+
+.talent.display-edit,
+form.skill {
+  .level div {
+    cursor: pointer;
+  }
+}
+
+.tas {
+  margin: $gutter-width 0 0 $gutter-pct;
+  .field-name-title {
+    width: auto;
+  }
+}
+
+
+
+.show-hide-header {
+  margin-top: $gutter-width;
+  border-bottom: 1px solid $orange_dark;
+  overflow: hidden;
+  margin-bottom: $gutter-width;
+  cursor: pointer;
+  clear: both;
+
+  .title {
+    font-size: 20px;
+    color: $blue;
+    font-weight: bold;
+    float: left;
+  }
+  .show,
+  .hide {
+    float: right;
+    color: $orange_dark;
+  }
+}
+
+.show,
+.collapsed .body,
+.collapsed .hide {
+  display: none;
+}
+
+.collapsed .show {
+  display: block;
+}
+
+
+// The input field styling
+.new,
+.role,
+.task,
+.skill {
+  .form-item input {
+     width: 100%;
+  }
+}
+
+.role {
+  input.form-submit {
+    bottom: -17px;
+  }
+}
+
+.scratch .role {
+  input.form-submit {
+    bottom: 0;
+  }
+}
+
+.task {
+  .form-item-title {
+    padding-right: 2*$icon_width;
+  }
+}
+
+.skills .new,
+.skill {
+  .form-item-title {
+    padding-right: 4*$icon_width;
+  }
+  .field-name-body .form-item {
+    padding-right: 2*$icon_width;
+  }
+}
+
+
+.roles .content {
+  .add-link,
+  form.new {
+    border: $border;
+    background: $grey_bg_darker;
+    padding: $gutter-width $gutter-pct;
+    position: relative;
+    a {
+      background: $sprites;
+      background-position: -1195px -300px;
+      padding-left: $icon_width;
+      height: $icon_width;
+      line-height: $icon_width;
+      color: $black;
+      display: block;
+    }
+  }
+
+  // delete and edit button
+  .delete,
+  .edit,
+  .save {
+    @include icon;
+    display: none;
+    position: absolute;
+    top: $gutter-width;
+  }
+  .edit {
+    background-position: -154px -567px;
+    right: $icon_width + $gutter-width;
+  }
+  .delete {
+    background-position: -154px -605px;
+    right: $gutter-width;
+  }
+  .save {
+    background-position: -154px -534px;
+  }
+
+  .skill,
+  .talent {
+    .edit,
+    .save {
+      right: 5*$icon_width + $gutter-width;
+    }
+    .delete {
+      right: 4*$icon_width + $gutter-width;
+
+    }
+  }
+
+  .skill,
+  .task,
+  .role,
+  .talent {
+    // Handle mouseover effect
+    &:hover {
+      .edit,
+      .delete {
+        display: block;
+      }
+    }
+
+    .edit-link,
+    .delete-link,
+    .save-link,
+    .flame-links {
+      display: none;
+    }
+  }
+
+  .updated .save {
+    display: block;
+  }
+
+
+
+
+
+  // Some autocomplete magic
+  #autocomplete {
+    div:hover {
+      .edit,
+      .delete {
+         display: none;
+      }
+    }
+    li {
+      color: $black;
+      white-space: normal;
+      &.selected div {
+        background-color: $grey_bg_darker;
+      }
+    }
+    .highlight {
+      background-color: $orange_dark;
+    }
+
+    .new-empty {
+      font-weight: bold;
+      text-align: center;
+      background-color: $grey_bg_darker;
+      cursor: pointer;
+      &:hover {
+        background-color: $orange_dark;
+      }
+      span {
+        font-weight: normal;
+      }
+    }
+    div {
+      overflow: hidden;
+    }
+
+  }
+
+  form.selected {
+    .autocomplete {
+      display: none;
+    }
+    div.new {
+      display: block;
+    }
+  }
+
+  .skills,
+  .behavioral,
+  .business {
+    div.new {
+      display: none;
+    }
+  }
+
+//  .new .level {
+//    top: 0px;
+//    right: 0px;
+//  }
+
+
+
+  // Some form items
+  .form-item {
+    margin: 0;
+    label {
+      display: none;
+    }
+  }
+  textarea {
+    height: 5em;
+  }
+
+
+  .existing {
+    display: none;
+    label {
+      display: inline-block;
+    }
+    #autocomplete {
+       .role {
+         padding: 0;
+       }
+      .field-name-title {
+        font-weight: normal;
+        font-size: inherit;
+        color: $black;
+        min-height: 0;
+        float: none;
+      }
+    }
+  }
+  .scratch {
+    display: none;
+  }
+
+}
+
+.new {
+  .form-type-textfield {
+    padding-right: 2*$icon_width;
+    input {
+      width: 100%;
+    }
+  }
+  .form-item-autocomplete {
+    padding-right: $icon_width;
+  }
+  input.form-autocomplete {
+    width: 100%;
+  }
+}
+
+/**************
+Persons
+**************/
+.persons-widget {
+  font-size: 70%;
+  position: absolute;
+  background: $grey_bg;
+  z-index: 5;
+  width: 85%;
+  left: 10%;
+  border: 1px solid $grey_light;
+  border-top: 0px;
+  .close {
+    position: absolute;
+    width: 16px;
+    right: 1%;
+    top: 0;
+    z-index: 10;
+    cursor: pointer;
+    text-indent: -9999px;
+    background: $sprites;
+    background-position: -70px -253px;
+    &:hover {
+      background-position: -70px -206px;
+    }
+  }
+  .show-hide-header {
+    display: none;
+  }
+  .person {
+    clear: both;
+    border-top: 1px solid $grey_light;
+    a {
+      height: auto;
+      padding: 0 10px;
+      margin-left: $icon_width;
+      line-height: 1.4;
+      display: table-cell;
+      height: $icon_width;
+      vertical-align: middle;
+      &:hover {
+        background-color: inherit;
+      }
+    }
+  }
+  .body:nth-child(2) .person:nth-child(1) {
+    border-top: 0px;
+  }
+  .field-name-field-avatar {
+    float: left;
+  }
+}
+
+
+/**************
+Person Details
+**************/
+.person-details {
+  $col1_width: 40%;
+  $col2_width: 100% - $col1_width - $gutter-pct;
+
+  .col-1,
+  .col-2 {
+    display: inline-block;
+    vertical-align: top;
+  }
+  .col-1 {
+    width: $col1_width;
+    margin-right: $gutter-pct;
+  }
+  .col-2 {
+    width: $col2_width;
+  }
+  .field {
+    &.field-name-field-avatar{
+      margin-bottom: $gutter-pct;
+    }
+    &.field-name-field-first-name {
+      float: left;
+      margin-right: $gutter-width;
+    }
+    &.field-name-field-first-name,
+    &.node-person.field-name-title {
+      text-transform: uppercase;
+      font-size: 1.4em;
+      color: $grey_light;
+    }
+    img {
+      width: 100%;
+    }
+  }
+  .roles {
+    a {
+      text-transform: uppercase;
+      color: $orange_dark;
+    }
+  }
+
+  // TODO: Unify icons and make global
+  .edit-link {
+    @include icon;
+    display: none;
+    background-position: -154px -567px;
+    position: absolute;
+    top: $gutter-width;
+    left: 0;
+    text-indent: -9999px;
+  }
+  &:hover .edit-link {
+    display: block;
+  }
+
+  .evaluation {
+    position: relative;
+    .date {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 80px;
+    }
+    .link {
+      margin-left: 80px;
+    }
+  }
+
+  .add a {
+    display: block;
+    line-height: $icon_width;
+    padding-left: $icon_width;
+    background: $sprites;
+    background-position: -1195px -300px;
+  }
+
+}
+
+.display-person-details {
+  &.last {
+     border-bottom: $border;
+  }
+}
+
+.remark {
+  $date_width: 80px;
+  .date {
+    float: left;
+    width: $date_width;
+  }
+  .node-remark {
+    margin-left: $date_width;
+  }
+}
+
+
+
+
+/***********
+Person Edit
+***********/
+.person-edit {
+  position: relative;
+  overflow: hidden;
+  .col-1,
+  .col-2,
+  .col-3 {
+    float: left;
+    overflow: hidden;
+  }
+  .col-1,
+  .col-3 {
+    width: 39%;
+    margin-right: 1%;
+    clear: left;
+  }
+  .col-2 {
+    float: right;
+    width: 60%;
+  }
+
+  .avatar,
+  .cv,
+  .motivation {
+    position: relative;
+    .remove,
+    .add {
+      cursor: pointer;
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      display: none;
+    }
+
+    &:hover {
+      &.defined .remove,
+      &.removed .add {
+        display: block
+      }
+    }
+
+    .file-defined,
+    .file-removed {
+      display: none;
+      height: $icon_width;
+      background: $sprites;
+      padding-left: $icon_width;
+      line-height: $icon_width;
+      font-size: .8em;
+    }
+
+    &.defined .file-defined,
+    &.removed .file-removed {
+      display: block;
+    }
+
+    .file-defined {
+      color: $blue;
+      cursor: pointer;
+      &:hover {
+        color: $orange_dark;
+      }
+    }
+  }
+
+  .avatar {
+    img {
+      width: 100%;
+    }
+    .remove,
+    .add {
+      background-color: white;
+      background-color: rgba(255,255,255,.8);
+      color: $black;
+      height: 10%;
+      width: 100%;
+      padding: 10% 0;
+      text-align: center;
+    }
+  }
+
+  .cv,
+  .motivation {
+    .add,
+    .remove {
+      width: $icon_width;
+      height: $icon_width;
+      text-indent: -9999px;
+      background: $sprites;
+    }
+    .add {
+      background-position: -1195px -300px;
+    }
+    .remove {
+      background-position: -154px -605px;
+    }
+  }
+  .cv {
+    .file-defined {
+      background-position: -1190px -224px;
+    }
+    .file-removed {
+      background-position: -1190px -162px;
+    }
+  }
+
+  .motivation {
+    .file-defined {
+      background-position: -1190px -249px;
+    }
+    .file-removed {
+      background-position: -1190px -196px;
+    }
+  }
+
+
+  .form-item,
+  .field-type-datetime {
+    margin: 0 0 $gutter-width 0;
+    clear: both;
+    overflow: hidden;
+  }
+
+  label {
+    width: 40%;
+    float: left;
+  }
+  input {
+    width: 100% - $gutter-pct - 40%;
+    border: 0;
+    float: left;
+    clear: right;
+    padding: $gutter-pct/2;
+    @include rounded-fields;
+  }
+
+  select {
+    width: 59%;
+  }
+
+  .field-type-datetime .description {
+    display: none;
+  }
+  .field-type-phone-number .form-type-textfield input {
+    margin-left: 40%;
+  }
+
+  .field-name-field-cv,
+  .field-name-field-motivation,
+  .form-wrapper.field-name-field-avatar {
+    clear: both;
+    display: none;
+  }
+
+  a.cancel {
+    position: absolute;
+    bottom: 0;
+    right: $icon_width;
+    background: $sprites;
+    width: $icon_width;
+    height: $icon_width;
+    text-indent: -9999px;
+    background-position: -62px -203px;
+  }
+}
+
+.candidates-page,
+.manage {
+  .person-edit {
+    .col-1 {
+      width: 28%;
+    }
+    .col-2 {
+      width: 40%;
+      float: left;
+    }
+    .col-3 {
+      width: 30%;
+      margin: 0 0 0 1%;
+      clear: right;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+tr.odd {
+  /* background-color: #eee; */ /* Drupal core uses a #eee background */
+}
+
+div.messages { /*Important messages (status, warning, and error) for the user.
+                 See also the declarations in messages.css. */
+  margin: 1.5em 0; /* Drupal core uses "6px 0" margin */
+
+  ul {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+
+div.status { /* Normal priority messages */
+}
+
+div.warning,
+tr.warning { /* Medium priority messages */
+  /* border: 1px solid #f0c020; */ /* Drupal core uses: 1px solid #f0c020 */
+}
+
+div.error,
+tr.error { /*High priority messages. See also the .error declaration below. */
+}
+
+.error { /* Errors that are separate from div.messages status messages. */
+  /* color: #e55; */ /* Drupal core uses a #e55 background */
+}
+
+.warning { /* Warnings that are separate from div.messages status messages. */
+  /* color: #e09010; */ /* Drupal core uses a #e09010 background */
+}
+
+.tabs { /* See also the tabs.css file. */
+}
+
+.region-help { /* Help text on a page */
+}
+
+.more-help-link { /* Link to more help */
+}
+
+.region-content { /* Wrapper for the actual page content */
+}
+
+ul.inline { /* List of links generated by theme_links() */
+  display: inline;
+  padding: 0;
+
+  li {
+    display: inline;
+    list-style-type: none;
+    padding: 0 1em 0 0; /* LTR */
+  }
+}
+span.field-label { /* The inline field label used by the Fences module */
+  padding: 0 1em 0 0; /* LTR */
+}
+
+.item-list .pager { /* A list of page numbers when
+                                   more than 1 page of content is available */
+  padding: 0;
+
+  li { /* Each page number in the pager list */
+    padding: 0 0.5em;
+  }
+}
+
+.feed-icon { /*Link to the RSS or Atom feed for the current list of content */
+}
+
+.more-link { /* Aggregator, blog, and forum more link */
+}
+
+/*
+ * First sidebar (on left in LTR languages, on right in RTL)
+ *
+ * Remember to NOT add padding or margin to your .region-sidebar-first
+ * (see the layout.css file.)
+ */
+
+.region-sidebar-first {
+}
+
+/*
+ * Second sidebar (on right in LTR languages, on left in RTL)
+ *
+ * Remember to NOT add padding or margin to your .region-sidebar-second
+ * (see the layout.css file.)
+ */
+
+.region-sidebar-second {
+}
+
+/*
+ * Footer
+ */
+
+#footer {
+}
+
+/*
+ * Page bottom
+ */
+
+.region-bottom { /* Wrapper for any blocks placed in the page bottom region */
+}

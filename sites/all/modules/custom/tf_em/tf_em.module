@@ -1,0 +1,416 @@
+<?php
+function tf_em_menu() {
+  $items['admin/content/migrate/import_roles'] = array(
+    'title' => 'Import Role files from Google Docs',
+    'page callback' => 'tf_import_roles',
+    'access arguments' => array('access content'),
+    'description' => 'Import nodes from Google Docs',
+    'weight' => 30,
+    'type' => MENU_LOCAL_ACTION,
+  );
+  return $items;
+}
+
+
+// TODO: Should be with soft deletes
+function tf_em_delete($node) {
+  switch($node->type) {
+    case 'talent':
+      if(!empty($node->field_talent_attr_ref['und'])) {
+        foreach($node->field_talent_attr_ref['und'] as $ta) {
+          tf_em_delete(node_load($ta['nid']));
+        }
+      }
+      node_delete($node->nid);
+      break;
+    case 'task':
+    case 'skill':
+    case 'talent_attribute':
+      node_delete($node->nid);
+      break;
+  }
+}
+
+
+/*
+Helper
+*/
+function deep_clone_do($node_from, $node_to = NULL) {
+  $traversed_nodes = array($node_from->nid);
+  $stop_fields = array();                // By default, we don't stop
+  $back_field_patterns = array("_back_");//By default, backpattern is "_back_"
+
+  // Do some specifics for a particular node type
+  switch($node_from->type) {
+    case 'role':
+      // We stop the recursion at the company field
+      $stop_fields = array("field_company_ref");
+    case 'skill':
+      // We stop the recursion at the talent field and the company field
+      $stop_fields = array("field_company_ref");
+  }
+
+  $cloned_node = tf_em_shallow_copy($node_from, $traversed_nodes,$stop_fields,
+                                   $back_field_patterns, $node_to);
+  if(!empty($cloned_node)) {
+    drupal_set_message(t('%title (%nid) has been cloned into %cloned_nid.',
+                                array('%title'      => $node_from->title,
+                                      '%nid'        => $node_from->nid,
+                                      '%cloned_nid' => $cloned_node->nid)));
+  } else {
+    drupal_set_message(t('Node %nid has been NOT cloned.',
+                        array('%nid' => $node_from->nid),
+                        'error'));
+  }
+
+  return $cloned_node;
+}
+
+
+/**
+ *  Makes a shallow copy of an individual node
+ *    $original_node: the node to be cloned
+ *    $traversed_nodes: an array holding the nodes
+ *                      that have been traversed already
+ */
+function tf_em_shallow_copy($node_from, &$traversed_nodes, &$stop_fields,
+                                     &$back_field_patterns, $node_to = NULL) {
+    $new_clone =is_null($node_to) ? TRUE : FALSE;
+
+    if (isset($node_from->nid) /*&& clone_is_permitted($node->type) */) {
+      // Make sure the title and nid remains
+      if(!$new_clone) {
+        $nid = $node_to->nid;
+        $vid = $node_to->vid;
+        $title = $node_to->title;
+      }
+
+      global $user;
+      $node_to = clone $node_from;
+      $node_to->nid = NULL;
+      $node_to->vid = NULL;
+      $node_to->tnid = NULL;
+      $node_to->name = $user->name;
+      $node_to->uid = $user->uid;
+      $node_to->created = NULL;
+
+      // Copy over the title
+      if(!$new_clone) {
+        $node_to->nid = $nid;
+        $node_to->vid = $vid;
+        $node_to->title = $title;
+      }
+
+      // Find company of current user
+      $node_to->field_company_ref = tf_em_get_company();
+
+      // Add an extra property as a flag.
+      $node_to->field_cloned_from['und'][0]['nid'] = $node_from->nid;
+
+      // Try to find all values corresponding to a 'nid' key
+      // and clone recursively
+      foreach($node_to as $field_key => &$field) {
+        // Check if the current field should be processed.
+        // It is skipped otherwise.
+        if( in_array($field_key, $stop_fields) === FALSE ) {
+          // Check if the current field is a backlink.
+          // Backlinks are not only skipped, but also removed, so the
+          // Corresponding Node Reference module can take care of them
+          if( string_in_pattern_array($field_key, $back_field_patterns)
+                                                                 === FALSE ) {
+            if(is_array($field)) {
+              foreach($field as &$lang) {
+                foreach($lang as &$ref_id) {
+                  if(!empty($ref_id['nid'])) {
+                    // Check if the node has not been traversed yet
+                    if(array_search($ref_id['nid'], $traversed_nodes)
+                                                                 === FALSE ) {
+                      $traversed_nodes[] = $ref_id['nid'];
+                      $cloned_node =
+                        tf_em_shallow_copy(node_load($ref_id['nid']),
+                                           $traversed_nodes, $stop_fields,
+                                                        $back_field_patterns);
+
+                      // Set a message
+                      $msg = t('%title (%nid) has been cloned into %cl_nid.',
+                                  array('%title'  => $field_key,
+                                        '%nid'    => $ref_id['nid'],
+                                        '%cl_nid' => $cloned_node->nid));
+                      // drupal_set_message($msg);
+
+                      // Update the link
+                      $ref_id['nid'] = $cloned_node->nid;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          // Delete (unset) the backlink
+          else unset($node_to->$field_key);
+        }
+      }
+      node_save($node_to);
+      return $node_to;
+    }
+}
+
+
+// TODO: Put all this in 1 function with parameters
+function remove_assessment_data_from_role($role) {
+  $full_role = get_full_role($role->nid);
+
+  // Remove data from skills
+  foreach($full_role['skills'] as $skill) {
+    unset($skill['node']->field_neg_hint['und']);
+    unset($skill['node']->field_pos_hint['und']);
+    unset($skill['node']->field_question['und']);
+    $skill['node']->field_assess['und'][0]['value'] = 0;
+    node_save($skill['node']);
+  }
+
+  // Remove data from talent attributes
+  foreach($full_role['talents'] as $talent_type) {
+    foreach($talent_type as $talent_array) {
+      remove_assessment_data_from_talent($talent_array);
+    }
+  }
+}
+
+// TODO: Put all this in 1 function with parameters
+function remove_assessment_data_from_talent($talent_array) {
+  foreach($talent_array['tas'] as $ta) {
+    unset($ta['node']->field_neg_hint['und']);
+    unset($ta['node']->field_pos_hint['und']);
+    unset($ta['node']->field_question['und']);
+    $ta['node']->field_assess['und'][0]['value'] = 0;
+    node_save($ta['node']);
+  }
+}
+
+
+/* This function returns TRUE if the string we pass matches with 1 of
+ *  the patterns in the pattern array we pass
+ *  If there is no match between the string and a pattern in the array,
+ *  it returns FALSE  */
+function string_in_pattern_array($string, $array) {
+  foreach ($array as $pattern) {
+
+    // check if the string passed holds pattern we are looping over
+    if (strpos($string, $pattern) !== FALSE) return TRUE;
+  }
+  return FALSE;
+}
+
+
+
+
+// Get the Talent Attributes for a Person
+//   $person_nid: The nid of the Person
+function get_talent_attributes($person_nid) {
+  $query = "SELECT DISTINCT ta.entity_id as nid
+            FROM
+              {field_data_field_talent_back_ref} ta,
+              {field_data_field_role_back_ref} t,
+              {field_data_field_persons_back_ref} r
+            WHERE ta.bundle = 'talent_attribute'
+            AND   t.entity_id = ta.field_talent_back_ref_nid
+            AND   t.bundle = 'talent'
+            AND   r.entity_id = t.field_role_back_ref_nid
+            AND   r.bundle = 'role'
+            AND   :person_nid = r.field_persons_back_ref_nid";
+  $nids = db_query($query, array(":person_nid" => $person_nid))->fetchCol();
+  return $nids;
+}
+
+// Get the Skills for a Person
+//   $person_nid: The nid of the Person
+function get_skill_nids($person_nid) {
+  $query = "SELECT DISTINCT s.entity_id as nid
+            FROM
+              {field_data_field_role_back_ref} s,
+              {field_data_field_persons_back_ref} r
+            WHERE s.bundle = 'skill'
+            AND   r.entity_id = s.field_role_back_ref_nid
+            AND   r.bundle = 'role'
+            AND   :person_nid = r.field_persons_back_ref_nid";
+  $nids = db_query($query, array(":person_nid" => $person_nid))->fetchCol();
+  return $nids;
+}
+
+
+
+// TODO: Make secure
+function tf_import_roles() {
+  // Set some variables
+  $path = "sites/default/files";
+  $url = "https://docs.google.com/spreadsheet/pub";
+  $key = "0AgEeevkXWKQ7dHE3QlhPSXphcHZadExySUFMbW1ZcWc";
+  $url = "$url?key=$key&output=csv&gid=";
+
+  // Define the mapping of gid with the filename to write
+  $mapping = array();
+  $mapping[0] = "talents.csv";
+  $mapping[1] = "talent attributes.csv";
+  $mapping[3] = "roles.csv";
+  $mapping[4] = "tasks.csv";
+  $mapping[5] = "skills.csv";
+
+  // Download the tabs (per gid) and save to the appropriate file
+  foreach ($mapping as $key => $filename) {
+    $file = "$path/$filename";
+    $content = file_get_contents($url . $key);
+    $content = str_replace("[1] Semicolon seperated", "", $content);
+    $content = str_replace("[1]", "", $content);
+//    $content = str_replace("  ", " ", $content);
+//    $content = str_replace("; ", ";", $content);
+//    $content = str_replace(" ;", ";", $content);
+//    $content = removeEmptyLines($content);
+//    $content = csv_nl2br($content);
+    if (file_put_contents($file, $content))
+      drupal_set_message(t(":f has been downloaded.",array(":f"=>$filename)));
+  }
+
+  // Go to the migrate page
+  drupal_goto("admin/content/migrate");
+}
+
+
+/********************
+ * Helper Functions *
+ * ******************/
+
+/*
+// This function replaces the newlines in any drupal_substring between quotes
+// with a replacement string
+function csv_nl2br($string) {
+  $offset = 0; // From where to stat searching for a first quote
+  $nl_replace = "<br />";
+
+  while (TRUE) {
+    // Try to find the next first quote and if there are no quotes anymore,
+    // break out
+    $first = find_next($string, $offset);
+    if ($first === FALSE) break;
+
+    // Try to find the next (matching) quote
+    $last = find_next($string, $first+1);
+
+    // Set string between quotes and replace the newlines by $nl_replace
+    $drupal_substring = drupal_substr($string, $first+1 , $last - $first - 1);
+    $drupal_substring = str_replace("\n",$nl_replace,$drupal_substring,$count);
+
+    // Reconstruct the string:
+    //   part before first quote (including the quote) +
+    //   drupal_substring (with newlines replaced)
+    //   part after first quote (including the quote) +
+    $string = drupal_substr($string, 0, $first + 1) . $drupal_substring .
+                                                drupal_substr($string, $last);
+
+    // Set the offset to the position after the last quote
+    $offset = $last + (drupal_strlen($nl_replace) - 1)*$count + 1;
+
+    // If the offset is after the last position of the string, break out
+    if ($offset >= (drupal_strlen($string) )) break;
+  }
+  return $string;
+}
+
+// Find the next quote from position $offset in $string
+// TODO: Make it \" (escaped quote) compliant
+function find_next($string, $offset) {
+  $next = strpos($string, '"', $offset);
+  return $next;
+}
+
+// Helper function to remove emply lines
+function removeEmptyLines($string) {
+  return preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $string);
+}
+*/
+// Returns the company reference of the company of the logged in user
+function tf_em_get_company() {
+  global $user;
+  $user_data = user_load($user->uid);
+  $company_ref = $user_data->field_company_ref;
+  return $company_ref;
+}
+
+// Returns the field_roles_back_ref field of the company of the logged in user
+function tf_get_my_roles() {
+  $company_ref = tf_em_get_company();
+  $company = node_load($company_ref['und'][0]['nid']);
+  return $company->field_roles_back_ref;
+}
+
+// Returns the xxx field of the company of the logged in user
+function tf_get_my_persons() {
+  $lang = LANGUAGE_NONE; //TODO
+  $result = array();
+
+  $company_nid = tf_em_get_company();
+  $company = node_load($company_nid[$lang][0]['nid']);
+
+  // Split up the persons by type
+  if(isset($company->field_persons_back_ref[$lang])) {
+    foreach ($company->field_persons_back_ref[$lang] as $person_nid) {
+      $person = node_load($person_nid['nid']);
+      $type = $person->field_person_type[$lang][0]['value'];
+      $result[$type]['nid-'.$person->nid]['node'] = $person;
+    }
+  }
+
+  return $result;
+}
+
+// Function that returns an array to be used as a checkbox element in a form
+// $node: The node for which the checkbox element in a form is to be generated
+// $field: The name of the node field for which checkboxes need to be generated
+function tf_checkboxes($node, $field) {
+  $lang = LANGUAGE_NONE; //TODO
+  $options = array();
+  $defaults = array();
+
+  switch($field) {
+    case 'field_role_ref':
+      $checkboxes = tf_get_my_roles();
+      break;
+    case 'field_persons_back_ref':
+      $persons = tf_get_my_persons();
+      $checkboxes = $persons[1]; // 1 is the type Candidate
+      break;
+  }
+
+  if (!empty($checkboxes)) {
+    foreach ($checkboxes as $checkbox_array_node) {
+      switch($field) {
+        case 'field_role_ref':
+          $options[$field . $checkbox_array_node['node']->nid] =
+            $checkbox_array_node['node']->title;
+          break;
+
+        case 'field_persons_back_ref':
+          $options[$field . $checkbox_array_node['node']->nid] =
+            $checkbox_array_node['node']->field_first_name[$lang][0]['value']
+            . ' ' . $checkbox_array_node['node']->title;
+          break;
+      }
+
+      // If the node exists already, loop over all items assigned to the node
+      // to set the defaults
+      if(!empty($node)) {
+        $checkbox_field = $node->$field;
+        if (!empty($node->nid) && !empty($checkbox_field))
+          foreach ($checkbox_field[$lang] as $node_tocheck)
+            if ($node_tocheck['nid'] == $checkbox_array_node['node']->nid)
+              $defaults[] = $field . $checkbox_array_node['node']->nid;
+      }
+    }
+
+    return array(
+      '#type' => 'checkboxes',
+      '#options' => $options,
+      '#default_value' => $defaults,
+    );
+  }
+}

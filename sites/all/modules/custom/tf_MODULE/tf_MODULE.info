@@ -1,0 +1,7 @@
+name = Tribeforce MODULE
+description = MODULE module for Tribeforce
+core = 7.x
+package = Tribeforce
+
+scripts[] = js/behaviors.js
+stylesheets[all][] = css/style.css

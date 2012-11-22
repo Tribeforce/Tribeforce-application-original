@@ -1,0 +1,537 @@
+<?php
+$lang = LANGUAGE_NONE; //TODO
+
+function tf_recruit_init() {
+  drupal_add_library('system', 'effects.highlight');
+  drupal_add_library('system', 'drupal.ajax');
+  drupal_add_library('system', 'ui.accordion');
+
+  // TODO: For some reason it gets not loaded automatically. Solve this.
+//  drupal_add_css(drupal_get_path('module', 'tf_ipe') . '/css/style.css',
+//                 array('group' => CSS_DEFAULT, 'every_page' => TRUE)
+//  );
+}
+
+function tf_recruit_theme() {
+  return array('search_roles_form' => array('render element' => 'form'));
+}
+
+function tf_recruit_menu() {
+  /*
+  Tabs
+  */
+  $items['recruit'] = array(
+    'title' => 'Recruit',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'recruit',
+    'access arguments' => array('access tf_recruit'),
+  );
+
+  $items['recruit/%'] = array(
+    'title' => 'Recruit',
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'campaign',
+    'page arguments' => array(1), // If the argument is 0, insert is assumed
+    'file' => 'campaign.inc',
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+  $items['recruit/%/campaign'] = array(
+    'title' => 'Campaign details',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'page callback' => 'campaign',
+    'page arguments' => array(1), // If the argument is 0, insert is assumed
+    'weight' => 5,
+    'file' => 'campaign.inc',
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+
+  $items['recruit/%/prepare_interview'] = array(
+    'title' => 'Prepare interview',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'prepare_interview',
+    'page arguments' => array(1),
+    'weight' => 20,
+    'file' => 'prepare_interview.inc',
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+  $items['recruit/%/candidates'] = array(
+    'title' => 'Candidates',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'candidates',
+    'page arguments' => array(1),
+    'weight' => 40,
+    'file' => 'candidates.inc',
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+  $items['recruit/%/candidates/add'] = array(
+    'title' => t('Add candidate'),
+    'type' => MENU_CALLBACK,
+    'page callback' => 'add_candidate',
+    'page arguments' => array(1),
+    'file' => 'candidates.inc',
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+  $items['recruit/%/candidates/hire/%'] = array(
+    'title' => 'Hire',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'hire',
+    'page arguments' => array(1, 4),
+    'access arguments' => array('access content'),
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1, 4),
+  );
+
+
+  $items['recruit/%/candidates/%/edit'] = array(
+    'title' => 'Edit person',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'candidates',
+    'page arguments' => array(1, 3),
+    'access arguments' => array('access content'),
+    'file' => 'candidates.inc',
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1, 4),
+  );
+
+
+
+
+  /*
+  AJAX Menu Callbacks
+  */
+  $items['recruit/%/ajax/candidates/interview/%'] = array( // % (arg1) is only
+    'title' => 'Interview',                              //used for permissions
+    'type' => MENU_CALLBACK,
+    'page callback' => 'interview',
+    'page arguments' => array(5),
+    'weight' => 40,
+    'file' => 'candidates.inc',
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1, 5),
+  );
+
+  $items['recruit/%/ajax/candidates/add_interview/%'] = array(
+    'type' => MENU_CALLBACK,
+    'page callback' => 'add_interview',
+    'page arguments' => array(1, 5),
+    'weight' => 30,
+    'file' => 'candidates.inc',
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1, 5),
+  );
+
+  $items['recruit/%/candidates/compare/ajax/detail_pane/%/%'] = array(
+    'title' => 'Detail pane',
+    'page callback' => 'detail_pane',
+    'page arguments' => array(1, 6, 7),
+    'access arguments' => array('access content'),
+    'description' => t('Detail pane for a specific skill or ta'),
+    'type' => MENU_CALLBACK,
+    'file' => 'compare.inc',
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1), // TODO: Also protect the other arguments
+  );
+
+/*
+  $items['recruit/ajax/ipe'] = array(
+    'title' => 'ipe',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'tf_recruit_ipe',
+    'access arguments' => array('access content'),
+  );
+*/
+
+
+  return $items;
+
+}
+
+
+/*
+Page callbacks
+*/
+function hire($campaign_nid, $person_nid) {
+  $person = node_load($person_nid);
+  $campaign = node_load($campaign_nid);
+
+  // TODO: Do something with the campaign: close or so
+
+  // TODO: Take person out of the campaign
+  foreach($person->field_campaigns_ref['und'] as $key => $campaign_node_array) {
+    if($campaign_node_array['nid'] == $campaign_nid) {
+      unset($person->field_campaigns_ref['und']);
+    }
+  }
+
+  // Assign the role of the campaign to the person
+  // TODO: make this the function add_role_to_person
+  $role_nid = get_role_nid_of_campaign($campaign_nid);
+  $exists = FALSE;
+
+  if(!empty($person->field_role_ref['und'])) {
+    foreach($person->field_role_ref['und'] as $role_node_array) {
+      if($role_node_array['nid'] === $role_nid) {
+        $exists = TRUE;
+      }
+    }
+  }
+
+  if(!$exists) {
+    $person->field_role_ref['und'][] = array('nid' => $role_nid);
+  }
+
+  // Make the person an Employee (type = 2)
+  // TODO: choice between types
+  $person->field_person_type['und'][0]['value'] = 2;
+  node_save($person);
+
+  drupal_goto('manage');
+}
+
+
+
+
+/**************
+AJAX callbacks
+**************/
+/*
+TODO: This doesn't work for some reason: clicks don't work after AJAX load
+function tf_recruit_ipe($nid) {
+  $node = node_load($nid);
+  $type = $node->type;
+  $display = 'candidate';
+  $html = drupal_render(tf_manage_person_edit_ra($node, $display));
+//  $commands[] = ajax_command_append('.nid-' . $nid, $html);
+  $commands[] = ajax_command_html('.header .add', $html);
+//  $commands[] = ajax_command_invoke(NULL, 'invoke_test');
+  $commands[] = ajax_command_invoke(NULL, 'invoke_init_edit_person');
+//  $commands[] = ajax_command_invoke('.person-edit .field-name-field-motivation .file-widget a', 'click');
+  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+}
+*/
+
+/*
+Form Alters
+*/
+
+// Auto link nodes
+function tf_recruit_form_alter(&$form, &$form_state, $form_id) {
+  // Register all the forms on which this should be applied
+  $autolink_form_ids = array(
+    'person_node_form', // Used in recruit/%/candidates
+  );
+
+  if (in_array($form_id, $autolink_form_ids)) {
+    $lang = LANGUAGE_NONE; // TODO: Make language independant
+    $path = current_path();
+    $parent = tf_get_parent_bundle($path);
+
+    if (!empty($parent)) {
+      switch ($parent->type) {
+        case 'campaign':
+          if (isset($form['field_campaigns_ref'])) {
+            $company = tf_em_get_company();
+            $company_nid = $company[$lang][0]['nid'];
+            $form['field_company_ref'][$lang]['#default_value']
+              = array($company_nid);
+            $form['field_person_type'][$lang]['#default_value'] = array('1');
+            $form['field_campaigns_ref'][$lang]['#value'][] = $parent->nid;
+            // TODO: This (#value) seems like a bug
+          }
+          $form['actions']['submit']['#submit'][] = 'tf_submit';
+      }
+    }
+  }
+}
+
+
+/*
+ Queries
+*/
+// TODO: This can probably be optimized
+function query_candidates($campaign_nid) {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'person')
+        ->fieldCondition('field_campaigns_ref', 'nid', $campaign_nid);
+
+  $result = $query->execute();
+
+  if (isset($result['node'])) {
+    return entity_load('node', array_keys($result['node']));
+  }
+  else return array();
+}
+
+
+// TODO: This can probably be optimized
+function get_campaigns($company_nid) {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'campaign')
+        ->fieldCondition('field_company_ref', 'nid', $company_nid);
+
+  $result = $query->execute();
+
+  if (isset($result['node'])) {
+    return entity_load('node', array_keys($result['node']));
+  } else {
+    return array();
+  }
+}
+
+
+// TODO: Make Campaign as parameter instead of role (=add join)
+function query_scores($role, $candidate_nids, $type = 'skill') {
+  $candidate_or = db_or();
+
+
+  foreach($candidate_nids as $candidate_nid) {
+    $candidate_or->condition('c.field_person_back_ref_nid', $candidate_nid);
+  }
+
+
+  $query = db_select('node', 'i'); // interpretation
+
+  switch($type) {
+    case 'skill':
+      $query->leftJoin('field_data_field_ass_item_ref', 'ai', // skill (assessment item)
+                         'i.nid = ai.entity_id');
+      $query->leftJoin('field_data_field_role_back_ref', 'r', // role
+                         'ai.field_ass_item_ref_nid = r.entity_id');
+      break;
+    case 'talent_attribute':
+      $query->leftJoin('field_data_field_ass_item_ref', 'ai', // ta (assessment item)
+                         'i.nid = ai.entity_id');
+      $query->leftJoin('field_data_field_talent_back_ref', 't', // talent
+                         'ai.field_ass_item_ref_nid = t.entity_id');
+      $query->leftJoin('field_data_field_role_back_ref', 'r', // role
+                         't.field_talent_back_ref_nid = r.entity_id');
+      break;
+  }
+
+  $query->leftJoin('field_data_field_parent_ref', 'iw', // interview
+                     'i.nid = iw.entity_id');
+  $query->leftJoin('field_data_field_person_back_ref', 'c', // candidate
+                     'iw.field_parent_ref_nid = c.entity_id');
+  $query->leftJoin('field_data_field_person_type', 'tp', // type
+                     'c.field_person_back_ref_nid = tp.entity_id');
+  $query->leftJoin('field_data_field_score', 'sc', // score
+                     'i.nid = sc.entity_id');
+  $query->leftJoin('node', 'l', // last name
+                     'l.nid = c.field_person_back_ref_nid');
+  $query->leftJoin('field_data_field_first_name', 'f', // first name
+                     'c.field_person_back_ref_nid = f.entity_id');
+
+  $query->condition('i.type','interpretation')
+        ->condition('r.field_role_back_ref_nid', $role->nid)
+        ->condition('tp.field_person_type_value', 1) // 1 is candidate. TODO: Obsolete?
+        ->condition($candidate_or)
+        ->fields('i', array('title','changed'));
+  $query->addField('iw', 'field_parent_ref_nid', 'iw_nid');
+  $query->addField('sc', 'field_score_value', 'score');
+  $query->addField('ai', 'field_ass_item_ref_nid', 'ai_nid');
+  $query->addField('c', 'field_person_back_ref_nid', 'cand_nid');
+//  $query->addField('f', 'field_first_name_value', 'first_name');
+//  $query->addField('l', 'title', 'last_name');
+
+  return $query->execute();
+}
+
+
+function get_scores($role, $candidates) {
+  return get_scores_by_nids($role, flatten_objects($candidates, 'nid'));
+}
+
+
+function get_scores_by_nids($role, $candidate_nids) {
+  // This takes only the last interview into account
+  // TODO: add ['iw-'. $row->iw_nid] to the array to have all interviews
+  $scores = array();
+  $types = array('skill', 'talent_attribute');
+  foreach($types as $type) {
+    $type_scores = query_scores($role, $candidate_nids, $type);
+    foreach($type_scores as $row) {
+      $scores[$type]["$type-" . $row->ai_nid]
+                                      ['candidate-' . $row->cand_nid] = array(
+        'score' => $row->score,
+        'remark' => $row->title,
+        'changed' => $row->changed,
+  //      'first-name' => $row->first_name,
+  //      'last-name' => $row-> last_name,
+      );
+    }
+  }
+
+  // This is how we define an non existing score element
+  $empty_score_el = array(
+    'score' => NULL,
+    'remark' => '',
+//    'changed' => 0,
+  );
+
+  // We need to complete the array for non existing scores
+  foreach($types as $type) {
+    if(!empty($scores[$type])) {
+      foreach($scores[$type] as $ai_nid_key => $ai_nid) {
+        foreach($candidate_nids as $candidate_nid) {
+          $c_key = "candidate-$candidate_nid";
+          if(empty($scores[$type][$ai_nid_key][$c_key])) {
+            $scores[$type][$ai_nid_key][$c_key] = $empty_score_el;
+          }
+        }
+      }
+    }
+  }
+
+  return $scores;
+}
+
+
+/*
+// Returns a resultset
+function query_skills($string) {
+  $query = db_select('node', 's');
+  $query->leftJoin('field_data_field_type', 't', 's.nid = t.entity_id');
+  $query->leftJoin('field_data_field_expert_level', 'e',
+                   's.nid = e.entity_id');
+  $query->leftJoin('field_data_body', 'b', 's.nid = b.entity_id');
+  $query->leftJoin('field_data_field_skill_type', 'st',
+                  's.nid = st.entity_id');
+  $query->condition('s.type','skill')
+        ->fields('s', array('title','nid'))
+        ->fields('e', array('field_expert_level_value'))
+        ->fields('b', array('body_value'))
+        ->fields('st', array('field_skill_type_value'))
+        ->range(0, 5);
+  add_condition_skill_autocomplete($query, $string);
+
+  return $query->execute();
+}
+
+
+function query_repos_talents() {
+  $query = db_select('node', 'r');
+  $query->leftJoin('field_data_field_talent_ref', 't', 'r.nid = t.entity_id');
+  $query->leftJoin('field_data_field_cloned_from', 'c','r.nid = c.entity_id');
+//$query->leftJoin('field_data_field_skill_type','st','r.nid = st.entity_id');
+  $query->condition('r.type','role')
+        ->condition(db_or()
+                      ->condition('c.field_cloned_from_nid',0)
+                      ->isNull('c.field_cloned_from_nid'))
+        ->fields('t', array('field_talent_ref_nid'));
+  return $query->execute();
+}
+
+// TODO: Optimize performance
+function get_role_details($nid, $type) {
+  $role = get_full_role($nid);
+  $role['extras']['type'] = $type;
+
+  return $role;
+}
+
+*/
+
+
+function get_candidates($campaign_nid) {
+  return query_candidates($campaign_nid);
+}
+
+
+// TODO: Optimize performance
+function get_role_nid_of_campaign($campaign_nid) {
+  $node = node_load($campaign_nid);
+  return $node->field_role_ref['und'][0]['nid'];
+}
+
+// TODO: Optimize performance
+function get_campaign($node) {
+  if(!empty($node->field_campaign_ref)) {
+    $nid = $node->field_campaign_ref['und'][0]['nid'];
+  }
+  return node_load($nid);
+}
+
+
+
+function get_person($nid) {
+  return node_load($nid);
+}
+
+function get_interview($nid) {
+  return node_load($nid);
+}
+
+
+
+
+/*
+ Render Arrays
+*/
+function campaigns_ra() {
+  $company = tf_em_get_company();
+  $campaigns = get_campaigns($company['und'][0]['nid']);
+  $items = array();
+
+  foreach($campaigns as $campaign) {
+    // TODO: The campaign should be loaded in 1 query with the role
+    $role = node_load($campaign->field_role_ref['und'][0]['nid']);
+    if(!empty($role->title)) {
+      $items['campaign-' . $campaign->nid] =
+                         sidemenu_item_ra('recruit', $campaign, $role->title);
+    }
+  }
+
+  $header = array(
+    '#markup' => t('Active campaigns:'),
+  );
+
+  $body = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('campaigns'),
+    ),
+    'data' => $items,
+  );
+
+  $path = 'recruit/0';
+
+  $new = array(
+    '#theme' => 'link',
+    '#text' => 'Add new Campaign',
+    '#path' => $path,
+    '#options' => array(
+      'attributes' => array('class' => array($path == current_path()
+                                                           ? 'active' : '' )),
+      'html' => FALSE,
+    ),
+  );
+
+
+  return container_ra(array(
+    'header' => $header,
+    'body' => $body,
+    'new' => $new,
+  ));
+}
+
+function recruit($regions = array()) {
+  $empty_regions = array(
+    'left-sidebar' => campaigns_ra(),
+    'message' => array('#markup' => t('Choose a campaign on the left')),
+    'content' => empty_ra('campaign'),
+  );
+
+  return tf_module('recruit', $empty_regions, $regions);
+}

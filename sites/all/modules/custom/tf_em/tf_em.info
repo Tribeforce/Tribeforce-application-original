@@ -1,0 +1,4 @@
+name = Tribeforce Entity Management
+description = Functionality for managing entities: clone, create, delete, ...
+core = 7.x
+package = Tribeforce

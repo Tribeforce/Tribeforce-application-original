@@ -1,0 +1,9 @@
+name = Tribeforce Migration
+description = Migrates basis content
+core = 7.x
+package = Tribeforce
+
+dependencies[] = migrate_ui
+
+files[] = tf_migrate.module
+files[] = tf_migrate.inc

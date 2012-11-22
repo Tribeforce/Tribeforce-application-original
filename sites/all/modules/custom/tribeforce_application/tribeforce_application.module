@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Tribeforce Application feature.
+ */
+
+include_once 'tribeforce_application.features.inc';

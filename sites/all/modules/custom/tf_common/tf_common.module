@@ -1,0 +1,932 @@
+<?php
+function tf_common_menu() {
+  $items['dashboard'] = array(
+    'title' => 'Tribeforce Dashboard',
+    'page callback' => 'dashboard',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function tf_common_permission() {
+  return array(
+    'access tf_roles' => array(
+      'title' => t('Access Tribeforce Roles module'),
+      'description' => t('Granted to roles that need to be able to access the
+                                                     Tribeforce roles module.'),
+    ),
+    'access tf_manage' => array(
+      'title' => t('Access Tribeforce Manage module'),
+      'description' => t('Granted to roles that need to be able to access the
+                                                    Tribeforce manage module.'),
+    ),
+    'access tf_recruit' => array(
+      'title' => t('Access Tribeforce Recruit module'),
+      'description' => t('Granted to roles that need to be able to access the
+                                                   Tribeforce recruit module.'),
+    ),
+  );
+}
+
+/******************
+ * Page Callbacks *
+ * ****************/
+function dashboard() {
+  return array();
+}
+
+
+
+// The $query needs to hold the alias r for a node (of type role)
+function add_condition_my(&$query, $alias) {
+  global $user;
+  $query->join('field_data_field_company_ref', 'cr',
+                                              $alias . '.nid = cr.entity_id');
+  $query->join('field_data_field_admin_back_ref', 'ar',
+               'cr.field_company_ref_nid = ar.entity_id');
+  $query->join('users', 'u', 'ar.field_admin_back_ref_uid = u.uid');
+  $query->condition('u.uid', $user->uid);
+  return $query;
+}
+
+
+
+/*
+Forms
+*/
+
+// All fields that need to be editable, should be added here
+function item_form($form, &$form_state, $node, $role_nid = 0) {
+  $is_new = empty($node->nid) ? true : false;
+
+  // Get the form elements of the node
+  field_attach_form('node', $node, $form, $form_state, 'und'); // TODO: lang
+
+  // We assume the title is always first
+  $my_form['title'] = array(
+    '#type' => 'textfield',
+    '#default_value' => $node->title,
+  );
+
+  // Depending on the content type, other fields need to be in the form
+  switch($node->type) {
+    case 'skill':
+      $my_form['body'] = $form['body'];
+      $my_form['field_expert_level'] = $form['field_expert_level'];
+      $my_form['level'] = flames_ra($node, 'field_expert_level');
+      break;
+    case 'role':
+      $my_form['body'] = $form['body'];
+      $my_form['field_category'] = $form['field_category'];
+      break;
+    case 'talent':
+//      $my_form['field_cap_level'] = $form['field_cap_level'];
+      break;
+  }
+
+  $my_form['actions'] = array(
+    // We assume the submit button is always last
+    '#weight' => 99,
+    '#type' => 'container',
+    '#attributes' => array('class' => array('actions')),
+    'submit' => array(
+      '#type' => 'submit',
+      '#attributes' => array('class' => array('submit')),
+      '#value' => $is_new ? t('Add') : t('Edit'),
+      '#ajax' => array(
+        'callback' => 'ipe_submit_callback',
+        'progress' => array('type' => 'none'),
+      ),
+    ),
+    'cancel' => array(
+      '#type' => 'submit',
+      '#attributes' => array('class' => array('cancel')),
+      '#value' => t('Cancel'),
+      '#ajax' => array(
+        'callback' => 'ipe_cancel_callback',
+        'progress' => array('type' => 'none'),
+      ),
+    ),
+  );
+
+  if($is_new && $node->type === 'role') {
+    $my_form['actions']['submit']['#submit'] = array('ipe_submit_callback');
+    unset($my_form['actions']['submit']['#ajax']);
+    $my_form['actions']['cancel']['#submit'] = array('cancel_new_role');
+    unset($my_form['actions']['cancel']['#ajax']);
+  }
+
+  // For nodes that have autocomplete add, the autocomplete field needs to be
+  // added and the form needs to be put in a wrapper
+  $autocomplete_type = array(
+    'skill',
+    'talent',
+  );
+  // TODO: split up between behavioral and business
+
+  if($is_new && in_array($node->type, $autocomplete_type)) {
+    if($node->type === 'talent') {
+      $temp_type = strtolower($node->field_type['und'][0]['value']);
+    }
+    else {
+      $temp_type = $node->type;
+    }
+    $ac_path ="roles/$role_nid/ajax/autocomplete/$temp_type";
+
+    $my_form = container_ra(array(
+      'autocomplete' => container_ra(array(
+        'autocomplete' => array(
+          '#type' => 'textfield',
+          '#autocomplete_path' => $ac_path,
+        ),
+        'actions' => $my_form['actions']['cancel'],
+      )),
+      'new' => $my_form,
+    ));
+
+//    unset($my_form[])
+
+  }
+
+  $my_form['#attributes'] = array(
+    'class' => array(
+      $node->type,
+      $is_new ? 'new' : '',
+    ),
+  );
+
+  return $my_form;
+}
+
+
+function get_tf_page($module) {
+  $uri = request_uri();
+  $parts = explode('/', $uri);
+
+  if(!empty($parts[1]) && $parts[1] == $module && !empty($parts[3]) ) {
+    return '/' . $parts[3];
+  }
+}
+
+
+
+
+/*
+ Page Callbacks
+*/
+function tf_module($module, $empty_regions, $regions = array()) {
+  // Module container
+  $main = array();
+
+  foreach($empty_regions as $region_name => $empty_ra) {
+    if(empty($regions[$region_name])) {
+      $regions[$region_name] = $empty_ra;
+    }
+
+    if($region_name !== 'left-sidebar') {
+      $main[$region_name] = region_ra($region_name, $regions[$region_name]);
+    }
+  }
+
+  return array(
+    'page' => array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('tf-module', $module),
+      ),
+      'left-sidebar' => region_ra('left-sidebar', $regions['left-sidebar']),
+      'main' => region_ra('main', $main),
+    ),
+  );
+}
+
+
+/*
+ Queries
+*/
+// TODO: Put in other file
+function get_full_role($nid) {
+//  $role = array();
+  $role['node'] = node_load($nid);
+  $role['tasks'] = get_tasks($role['node']);
+  $role['skills'] = get_skills($role['node']);
+  $role['talents'] = get_talents($role['node']);
+
+  return $role;
+}
+
+
+
+// TODO: make generic with tasks and talents
+// TODO: Optimize performance
+// @param:
+//   $role: Role node object
+// @return
+//   Array of Skill node objects keyed by [nid<nid>][node]
+//     example: [nid123][node]
+function get_skills($role) {
+  $lang = LANGUAGE_NONE; //TODO
+  $items = array();
+  if(!empty($role->field_skill_ref)) {
+    foreach($role->field_skill_ref[$lang] as $item) {
+      $items['nid' . $item['nid']]['node'] = node_load($item['nid']);
+    }
+  }
+  return $items;
+}
+
+// TODO: make generic with tasks and talents
+// TODO: Optimize performance
+// @param:
+//   $role: Role node object
+// @return
+//   Array of Task node objects keyed by [nid<nid>][node]
+//     example: [nid123][node]
+function get_tasks($role) {
+  $lang = LANGUAGE_NONE; //TODO
+  $items = array();
+
+  if(!empty($role->field_task_ref)) {
+    foreach($role->field_task_ref[$lang] as $item) {
+      $items['nid' . $item['nid']]['node'] = node_load($item['nid']);
+    }
+  }
+  return $items;
+}
+
+// TODO: make generic with tasks and talents
+// TODO: Optimize performance
+// @param:
+//   $role: Role node object
+//   $get_tas: boolean determining if the Talent Attributes need to be
+//             provided as well
+// @return
+//   Array of Talent node objects keyed by [nid<nid>][node]
+//     example: [nid123][node]
+//   If $get_tas = TRUE
+//    The [nid<nid>][tas] holds the Talent Attributes
+//    of Talent with node id = nid.
+//    Setting this flag will improve the performance
+function get_talents($role, $get_tas = TRUE) {
+  $lang = LANGUAGE_NONE; //TODO
+  $items = array('business' => array(), 'behavioral' => array());
+  if(!empty($role->field_talent_ref)) {
+    foreach($role->field_talent_ref[$lang] as $item) {
+      $node = node_load($item['nid']);
+      $type = strtolower ($node->field_type['und'][0]['value']);
+      $items[$type]['nid' . $item['nid']]['node'] = $node;
+      if($get_tas) $items[$type]['nid'.$item['nid']]['tas'] = get_tas($node);
+    }
+  }
+  return $items;
+}
+
+// TODO: make generic with tasks and talents
+// TODO: Optimize performance
+// @param:
+//   $talent: Talent node object
+// @return
+//   Array of Talent Attribute node objects keyed by [nid<nid>][node]
+//     example: [nid123][node]
+function get_tas($talent) {
+  $items = array();
+  if(!empty($talent->field_talent_attr_ref['und'])) {
+    foreach($talent->field_talent_attr_ref['und'] as $item) {
+      $items['nid' . $item['nid']]['node'] = node_load($item['nid']);
+    }
+  }
+  return $items;
+}
+
+
+/*
+ Render arrays
+ */
+ function sidemenu_item_ra($module, $title_node, $subtitle='', $actions='') {
+  $page = get_tf_page($module);
+  $link = '<div class="title">' . $title_node->title . '</div>';
+  if(!empty($subtitle)) {
+    $link .= '<div class="subtitle">(' . $subtitle . ')</div>';
+  }
+  $url = $module . '/' . $title_node->nid . $page;
+
+  return array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('item', $module, $module . '-' . $title_node->nid),
+    ),
+    'link' => array(
+      '#markup' => l($link, $url, array('html' => TRUE)),
+    ),
+    'actions' => $actions,
+  );
+}
+
+
+function container_ra($regions = array()) {
+  $ra = array();
+
+  foreach($regions as $key => $region) {
+    $ra[$key] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array($key),
+      ),
+      // If the element of an array is an array, it adds the array,
+      // otherwise it sets the #markup
+      $key => is_array($region) ? $region : array('#markup' => $region),
+    );
+  }
+
+  return $ra;
+}
+
+function region_ra($name, $ra) {
+  return array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('tf-region', $name),
+    ),
+    'data' => $ra,
+  );
+}
+
+function slide_pane_ra($content, $title = '') {
+  $ra = container_ra(array(
+    'sp-title' => $title,
+    'sp-content' => $content,
+    'sp-close' => array(),
+  ));
+  return region_ra('slide-pane', $ra);
+}
+
+function empty_ra($tf_module) {
+  return array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array($tf_module, 'no-selected'),
+    ),
+    'data' => array(
+      '#markup' => t('No ' . $tf_module . ' selected'),
+    ),
+  );
+}
+
+// Returns a renderable array for the flames (expert level) for skills
+function flames_ra($node, $field_name) {
+  $ra = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('level'),
+    ),
+  );
+
+  $field_info = field_info_field($field_name);
+  $number_of_flames = count($field_info['settings']['allowed_values']);
+
+  // The 4 flames
+  for($i = 1; $i<=$number_of_flames; $i++) {
+    $on = '';
+    $field = $node->$field_name;
+    if(!empty($field)) {
+      $on = $field['und'][0]['value'] >= $i ? 'on' : '';
+    }
+    $ra['level' . $i] = array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('level' . $i, $on)),
+    );
+  }
+
+  return $ra;
+}
+
+function items_ra($items, $type, $role_nid = 0, $display = 'edit') {
+  $body = array();
+  $index = 0;
+  foreach($items as $key => $item) {
+    $position = array(
+      'first'    => $index === 0 ? 'first' : '',
+      'index'    => $index,
+      'even_odd' => $index % 2 === 0 ? 'even' : 'odd',
+      'last'     => $index === (count($items) - 1) ? 'last' : '',
+    );
+    $body[$key] = item_ra($item, $display, $position, $role_nid);
+    $index++;
+  }
+
+  // Set the default title and update if needed of the list
+  $title = t(ucfirst($type) . 's');
+  switch($type) {
+    case 'person':
+      $title = "test";
+      break;
+  }
+
+  // We never need the show_hide titles or Add buttons for TAs
+  if($type === 'talent_attribute') {
+    return $body;
+  }
+  else {
+    // The Add buttons only need to appear in the edit display
+    if($display === 'edit') {
+      $text = "Add a new $type";
+
+      switch($type) {
+        case 'behavioral':
+        case 'business':
+          $text = "Add a new $type talent";
+          $title = ucfirst($type) . " talents";
+          break;
+      }
+
+      $body['add'] = array(
+        '#type' => 'container',
+        '#attributes' => array('class' => array('add-link')),
+        '#theme' => 'link',
+        '#text' => t($text),
+        '#path' => "roles/$role_nid/nojs/ipa/$type",
+        '#options' => array(
+          'attributes' => array('class' => array('use-ajax')),
+          'html' => FALSE,
+        ),
+      );
+    }
+    return show_hide($title, $body);
+  }
+}
+
+function item_ra($node_array, $display='edit', $position=array(), $role_nid=0) {
+  if(empty($position)) {
+    $position = array(
+      'index' => 0,
+      'even_odd' => 'even',
+      'first' => 'first',
+      'last' => 'last',
+    );
+  }
+
+  return array_merge(
+    array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array(
+          $node_array['node']->type,
+          'nid-' . $node_array['node']->nid,
+          'index-' . $position['index'],
+          $position['even_odd'],
+          $position['first'],
+          $position['last'],
+          "display-$display",
+        ),
+      ),
+    ),
+    item_inner_ra($node_array, $role_nid, $display)
+  );
+}
+
+
+// Make content container and adds edit and delete links
+// if the $display is 'edit'
+function make_content_container($node, $display = 'edit') {
+  $ra = array(
+    'content' => array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('content')),
+      // Needs to be completed below
+    ),
+  );
+
+  if($display === 'edit') {
+    $ra['edit-link'] = array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('edit-link')),
+      '#theme' => 'link',
+      '#text' => t('edit'),
+      '#path' => "roles/nojs/ipe/" . $node->nid,
+      '#options' => array(
+        'attributes' => array('class' => array('use-ajax')),
+        'html' => FALSE,
+      ),
+    );
+    $ra['delete-link'] = array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('delete-link')),
+      '#theme' => 'link',
+      '#text' => t('delete'),
+      '#path' => "roles/nojs/ipd/" . $node->nid,
+      '#options' => array(
+        'attributes' => array('class' => array('use-ajax')),
+        'html' => FALSE,
+      ),
+    );
+  }
+  return $ra;
+}
+
+//All fields that need to be displayed should be added here in the right order
+// TODO: This role_nid is a hack to make it possible to add talents
+function item_inner_ra($node_array, $role_nid = 0, $display = 'edit') {
+  $ra = make_content_container($node_array['node'], $display);
+
+  // Populate the 'content' part
+  switch($node_array['node']->type) {
+    case 'task':
+      if($display === 'edit') {
+        $ra['content']['edit'] = container_ra(array('edit' => array()));
+        $ra['content']['delete'] = container_ra(array('delete' => array()));
+      }
+      $ra['content']['title'] = field_view_title($node_array['node']);
+      break;
+    case 'skill':
+      $ra['content']['level'] = flames_ra($node_array['node'],
+                                                        'field_expert_level');
+      if($display === 'edit') {
+        $ra['content']['edit'] = container_ra(array('edit' => array()));
+        $ra['content']['delete'] = container_ra(array('delete' => array()));
+      }
+      $ra['content']['title'] = field_view_title($node_array['node']);
+      $ra['content']['body'] = field_view_field('node', $node_array['node'],
+            'body', array('label' => 'hidden', 'weight' => 30));
+      break;
+    case 'role':
+      if($display === 'edit') {
+        $ra['content']['delete'] = container_ra(array('delete' => array()));
+        $ra['content']['edit'] = container_ra(array('edit' => array()));
+      }
+      $ra['content']['title'] = field_view_title($node_array['node']);
+      $ra['content']['categories'] = role_categories_ra(
+                                         $node_array['node']->field_category);
+      $ra['content']['body'] = field_view_field('node', $node_array['node'],
+                          'body', array('label' => 'hidden', 'weight' => 20));
+      break;
+    case 'talent':
+      if($display !== 'person-details') {
+        $ra['content']['tas'] = container_ra(array('tas' => items_ra(
+               $node_array['tas'], 'talent_attribute', $role_nid, $display)));
+      }
+      $ra['content']['body'] = field_view_field('node', $node_array['node'],
+                          'body', array('label' => 'hidden', 'weight' => 0 ));
+      $ra['content']['title'] = field_view_title($node_array['node'], 0);
+      if($display === 'edit') {
+        $ra['content']['delete'] = container_ra(array('delete' => array()));
+      }
+      $ra['content']['level'] = flames_ra($node_array['node'],
+                                                           'field_cap_level');
+      if($display === 'edit') {
+        $ra['content']['save'] = container_ra(array('save' => array()));
+        $ra['flame-links'] = get_flame_links($node_array['node'],
+                                                'field_cap_level', $role_nid);
+        $ra['save-link'] = array(
+          '#type' => 'container',
+          '#attributes' => array('class' => array('save-link')),
+          '#theme' => 'link',
+          '#text' => t('save'), // For debug only: should not be visible
+          '#path' => "roles/$role_nid/nojs/save_talent/"
+                   . $node_array['node']->nid,
+          '#options' => array(
+            'attributes' => array('class' => array('use-ajax')),
+            'html' => FALSE,
+          ),
+        );
+      }
+      break;
+    case 'talent_attribute':
+      $ra['content']['title'] = field_view_title($node_array['node']);
+      $ra['content']['body'] = field_view_field('node', $node_array['node'],
+                          'body', array('label' => 'hidden', 'weight' => 20));
+      break;
+    case 'person':
+      if($display === 'widget') {
+        $ra['content']['avatar'] = field_view_field('node', $node_array['node'],
+          'field_avatar', array(
+          'label' => 'hidden',
+          'weight' => 0,
+          'settings' => array('image_style' => 'icon')));
+        $ra['content']['full_name'] = array(
+          '#type' => 'container',
+          '#attributes' => array('class' => array('assign-to-link')),
+          '#weight' => 10,
+          '#theme' => 'link',
+          '#text' => get_full_name($node_array['node']),
+          '#path' => "roles/$role_nid/assign_to/" . $node_array['node']->nid,
+          '#options' => array(
+            'attributes' => array(),
+            'html' => FALSE,
+          ),
+        );
+      }
+      if($display === 'manage') {
+        module_load_include('inc', 'tf_manage', 'person_details');
+
+        $ra['content']['avatar'] = field_view_field('node', $node_array['node'],
+          'field_avatar', array(
+          'label' => 'hidden',
+          'weight' => -40,
+          'settings' => array('image_style' => 'overview_square')));
+        $ra['content']['remark'] = drupal_get_form('tf_manage_remark_form',
+                                                         $node_array['node']);
+        $ra['content']['first_name'] = field_view_field('node',
+          $node_array['node'], 'field_first_name', array('label' => 'hidden',
+                                                             'weight' => -30));
+        $ra['content']['last_name'] = field_view_title($node_array['node'],-20);
+        $ra['content']['roles'] = tf_manage_roles_ra($node_array['roles']); // TODO: Update
+        $ra['content']['button'] = array(
+          '#theme' => 'link',
+          '#type' => 'container',
+          '#attributes' => array('class' => array('manage')),
+          '#text' => t('Manage'),
+          '#path' => 'manage/person/' . $node_array['node']->nid,
+          '#weight' => 40,
+          '#options' => array(
+            'attributes' => array(),
+            'html' => FALSE,
+          ),
+        );
+
+      }
+      break;
+  }
+
+  return $ra;
+}
+
+
+
+function persons_ra($person_types, $role_nid, $display) {
+  $ra = array();
+
+  // Translate the LOV
+  $lov = list_allowed_values(field_info_field('field_person_type'));
+
+  // Define what types should be shown
+  $show_array = array(1, 2, 3, 4);
+  switch($display) {
+    case 'widget':
+      $show_array = array(2, 3, 4);
+      break;
+  }
+
+  $index = 0;
+  foreach($person_types as $person_type_id => $persons) {
+    if(in_array($person_type_id, $show_array)) {
+      $type = $lov[$person_type_id];
+      $ra[$person_type_id] = array(
+        '#type' => 'container',
+        '#attributes' => array(
+          'class' => array(
+            'person-type',
+            'person-type-' . $person_type_id,
+            'person-type-' . $type,
+            'index-' . $index,
+          ),
+        ),
+        'data' => items_ra($persons, $type, $role_nid, $display),
+      );
+      $index++;
+    }
+  }
+
+  return $ra;
+}
+
+
+/*
+ Helper functions
+*/
+function show_hide($title, $body) {
+  $header = container_ra(array(
+    'title' => $title,
+    'show' => t('show'),
+    'hide' => t('hide'),
+  ));
+
+  return container_ra(array(
+    'show-hide-header' => $header,
+    'body' => $body,
+    'footer' => array(),
+  ));
+}
+
+function get_singular($prural) {
+  return substr($prural, 0, (strlen($prural) - 1 ));
+}
+
+// Mimics Drupals field_view_field for the containers
+function field_view_title($node, $weight = 0) {
+  return array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array(
+        'node-' . $node->type,
+        'field',
+        'field-name-title',
+        'field-type-text',
+        'field-label-hidden',
+      ),
+    ),
+    '#weight' => $weight,
+    'data' => array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('field-items'),
+      ),
+      'data' => array(
+        '#type' => 'container',
+        '#attributes' => array(
+          'class' => array('field-item', 'even'),
+        ),
+        'data' => array(
+          '#markup' => $node->title,
+        ),
+      )
+    )
+  );
+}
+
+function get_items_to_assess($role_nids) {
+  $lang = LANGUAGE_NONE; //TODO
+  $items = array();
+
+  foreach($role_nids as $role_nid) {
+    $full_role = get_full_role($role_nid);
+
+    // Loop over the skills
+    foreach($full_role['skills'] as $item) {
+      if(!empty($item['node']->field_assess)) {
+        if($item['node']->field_assess[$lang][0]['value'] == 1) {
+          $items['nid-' . $item['node']->nid] = $item['node'];
+        }
+      }
+    }
+
+    // Loop over the business talents for talent attributes
+    foreach($full_role['talents']['business'] as $talent) {
+      foreach($talent['tas'] as $item) {
+        if(!empty($item['node']->field_assess)) {
+          if($item['node']->field_assess[$lang][0]['value'] == 1) {
+            $items['nid-' . $item['node']->nid] = $item['node'];
+          }
+        }
+      }
+    }
+
+    // Loop over the business talents for talent attributes
+    foreach($full_role['talents']['behavioral'] as $talent) {
+      foreach($talent['tas'] as $item) {
+        if(!empty($item['node']->field_assess)) {
+          if($item['node']->field_assess[$lang][0]['value'] == 1) {
+            $items['nid-' . $item['node']->nid] = $item['node'];
+          }
+        }
+      }
+    }
+
+  }
+
+  return $items;
+}
+
+
+
+// This function creates an Interpretation for every Skill or Talent Attributes
+// currently related to a Person (through his/her Roles).
+// Every Interpretation is linked to an Assessment
+// Parameters:
+//   $role_nids: The array of nids to make Interpretations for
+//   $parent: The the Evaluation or Assessment
+function prepare_interpretations($role_nids, $parent) {
+  $ais = get_items_to_assess($role_nids);
+
+  foreach ($ais as $ai) {
+    $node = new stdClass();
+    $node->type = 'interpretation';
+    node_object_prepare($node);
+    $node->field_ass_item_ref['und'][] = array('nid' => $ai->nid);
+    $node->field_parent_ref['und'][] = array('nid' => $parent->nid);
+    $node->field_score = array(LANGUAGE_NONE => array(array('value' => 0)));
+// We don't want this text to appear all the time, we take No Comment
+//    $node->title = "Interpretation for interview " . $parent->nid
+//                 . ' and ' . $ai->type . ' ' . $ai->nid;
+    $node->title = t("No comment");
+    node_save($node);
+  }
+}
+
+
+// Returns an array holding the values of a member for the objects passed
+//  $objects: array of objects
+//  $member: the name of the object member to put in the array
+function flatten_objects($objects, $member) {
+  $flat_array = array();
+
+  foreach($objects as $object) {
+    // TODO: be more specific
+    if(is_object($object)) {
+      $flat_array[] = $object->$member;
+    }
+    else {
+      $flat_array[] = $object['node']->$member;
+    }
+  }
+
+  return $flat_array;
+}
+
+
+// Returns and array of nid
+// Can be used to loop over a set of nodes
+function flatten_nids($array) {
+  foreach($array as $el) {
+    $nids[] = $el['nid'];
+  }
+  return $nids;
+}
+
+// Assumes format aaa-bbb-ccc-1234 and returns 1234
+function get_nid($class) {
+  $class_array = explode('-', $class);
+  return $class_array[count($class_array) - 1];
+}
+
+// Returns the full name of a Person as a string
+function get_full_name($person) {
+  $first_name = $person->field_first_name['und'][0]['value'];
+  $last_name = $person->title;
+  return "$first_name $last_name";
+}
+
+
+// This function checks in the node belonging to the $nid passed belongs to the
+// currently logged in user.
+// For a ROLE, CAMPAIGN and PERSON it means be linked to the company linked to
+// the currently logged in user
+// We return TRUE if the $nid is 0 or if a match has been found
+// In all other cases we return FALSE
+function tf_is_own_item($nid) {
+  // this is a special case (add or not given) and should be ignored
+  if($nid === '0') {
+    return TRUE;
+  } else {
+    // Load the node to check
+    $node = node_load($nid);
+
+    if(!empty($node->type)) {
+      switch($node->type) {
+        case 'interview':
+          if(!empty($node->field_person_back_ref['und'][0]['nid'])
+          && !empty($node->field_campaign_ref['und'][0]['nid'])) {
+            $person_nid   = $node->field_person_back_ref['und'][0]['nid'];
+            $campaign_nid = $node->field_campaign_ref['und'][0]['nid'];
+            return tf_is_own_item($person_nid) && tf_is_own_item($campaign_nid);
+          }
+          break;
+        case 'role':
+        case 'campaign':
+        case 'person':
+          $company = tf_em_get_company();
+          if(!empty($company['und'][0]['nid'])) {
+            if(!empty($node->field_company_ref)) {
+              foreach($node->field_company_ref as $role_company) {
+                if($role_company[0]['nid'] === $company['und'][0]['nid']) {
+                  return TRUE;
+                }
+              }
+            }
+          }
+          break; // Is not really needed, but it doesn't hurt
+      }
+    }
+  }
+  return FALSE;
+}
+
+// 3 arguments should be enough
+function tf_is_own($nid1 = '0', $nid2 = '0', $nid3 = '0') {
+  $nids = array($nid1, $nid2, $nid3);
+
+  foreach($nids as $nid) {
+    if(!tf_is_own_item($nid)) return FALSE;
+  }
+  return TRUE;
+}
+
+function get_default_avatar() {
+  return array(
+    'und' => array(
+      array(
+        'fid' => 145,
+        'alt' => '',
+        'title' => '',
+        'width' => 425,
+        'height' => 402,
+        'uid' => 1,
+        'filename' => 'person.jpg',
+        'uri' => 'public://default_images/person.jpg',
+        'filemime' => 'image/jpeg',
+        'filesize' => 13113,
+        'status' => 1,
+  //    timestamp (String, 10 characters ) 1345628731
+      ),
+    ),
+  );
+}

@@ -1,0 +1,133 @@
+//
+// Custom sass mixins
+//
+// To use a mixin in this file, add this line to the top of your .scss file:
+//   @import "base";
+// Then to use a mixin for a particular rule, add this inside the ruleset's
+// curly brackets:
+//   @include mix-in-name;
+
+
+// element-invisible as defined by http://snook.ca/archives/html_and_css/hiding-content-for-accessibility
+@mixin element-invisible {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  @if $legacy-support-for-ie6 or $legacy-support-for-ie7 {
+    clip: rect(1px 1px 1px 1px); // IE6 and IE7 use the wrong syntax.
+  }
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
+// Turns off the element-invisible effect.
+@mixin element-invisible-off {
+  position: static !important;
+  clip: auto;
+  height: auto;
+  width: auto;
+  overflow: auto;
+}
+
+@mixin element-focusable {
+  @include element-invisible;
+
+  &:active,
+  &:focus {
+    @include element-invisible-off;
+  }
+}
+
+// The word "Unpublished" displayed underneath unpublished nodes and comments.
+@mixin unpublished-div {
+  height: 0;
+  overflow: visible;
+  color: #d8d8d8;
+  font-size: 75px;
+  line-height: 1;
+  font-family: Impact, "Arial Narrow", Helvetica, sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+  word-wrap: break-word; // A very nice CSS3 property
+
+  @if $legacy-support-for-ie6 or $legacy-support-for-ie7 {
+    .lt-ie8 &>* {
+      position: relative; // Otherwise these elements will appear below the "Unpublished" text.
+    }
+  }
+}
+
+
+// Big score
+@mixin score {
+  color: $orange_dark;
+  font-size: 30px;
+  line-height: 2*$icon_width;
+}
+
+// Box shadow
+@mixin shadow {
+  -webkit-box-shadow: 0px 1px 1px 1px rgba(0,0,0, .3);
+  -ms-box-shadow: 0px 1px 1px 1px rgba(0,0,0, .3);
+  -o-box-shadow: 0px 1px 1px 1px rgba(0,0,0, .3);
+  -moz-box-shadow: 0px 1px 1px 1px rgba(0,0,0, .3);
+  box-shadow: 0px 1px 1px 1px rgba(0,0,0, .3);
+}
+
+@mixin shadow-grey {
+  $val: 0 0 2px 2px rgba(239, 239, 239, .5);
+  -webkit-box-shadow: $val;
+  -ms-box-shadow: $val;
+  -o-box-shadow: $val;
+  -moz-box-shadow: $val;
+  box-shadow: $val;
+}
+
+
+// Rounded corners for fields
+@mixin rounded-fields {
+  $px: 5px;
+  -webkit-border-radius: $px;
+  -moz-border-radius: $px;
+  -o-border-radius: $px;
+  -ms-border-radius: $px;
+  border-radius: $px;
+}
+
+@mixin rounded-left {
+  $px: 5px;
+  -webkit-border-top-left-radius: $px;
+  -webkit-border-bottom-left-radius: $px;
+  -moz-border-radius-topleft: $px;
+  -moz-border-radius-bottomleft: $px;
+  -o-border-radius-topleft: $px;
+  -o-border-radius-bottomleft: $px;
+  -ms-border-radius-topleft: $px;
+  -ms-border-radius-bottomleft: $px;
+  border-top-left-radius: $px;
+  border-bottom-left-radius: $px;
+}
+
+@mixin rounded-right {
+  $px: 5px;
+  -webkit-border-top-right-radius: $px;
+  -webkit-border-bottom-right-radius: $px;
+  -moz-border-radius-topright: $px;
+  -moz-border-radius-bottomright: $px;
+  -o-border-radius-topright: $px;
+  -o-border-radius-bottomright: $px;
+  -ms-border-radius-topright: $px;
+  -ms-border-radius-bottomright: $px;
+  border-top-right-radius: $px;
+  border-bottom-right-radius: $px;
+}
+
+@mixin icon {
+  cursor: pointer;
+  width: $icon_width;
+  height: $icon_width;
+  background: $sprites;
+  text-indent: -9999px;
+  line-height: $icon_width;
+}

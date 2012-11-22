@@ -1,0 +1,1080 @@
+<?php
+$lang = LANGUAGE_NONE; //TODO
+
+function tf_roles_init() {
+}
+
+function tf_roles_menu() {
+  /*
+  Tabs
+  */
+  $items['roles'] = array(
+    'title' => 'Roles',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'roles',
+    'access arguments' => array('access tf_roles'),
+  );
+
+  $items['roles/%'] = array(
+    'title' => 'Roles',
+    'page callback' => 'role',
+    'page arguments' => array(1), // If the argument is 0, insert is assumed
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+  // Clone link
+  $items['roles/%/clone'] = array(
+    'page callback' => 'tf_roles_clone',
+    'page arguments' => array(1),
+    'type' => MENU_CALLBACK,
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+  // Assign link
+  $items['roles/%/ajax/assign'] = array(
+    'page callback' => 'tf_roles_assign',
+    'page arguments' => array(1),
+    'type' => MENU_CALLBACK,
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+  // Assign-to link
+  $items['roles/%/assign_to/%'] = array(
+    'page callback' => 'tf_roles_assign_to',
+    'page arguments' => array(1, 3),
+    'type' => MENU_CALLBACK,
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1, 3),
+  );
+
+  // Start campaign from a role
+  $items['roles/%/start-campaign'] = array(
+    'page callback' => 'campaign',
+    'page arguments' => array('', 1),
+    'type' => MENU_CALLBACK,
+    'file' => 'campaign.inc',
+    'file path' => drupal_get_path('module', 'tf_recruit'),
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+  // Add link
+  $items['roles/%/ajax/ipa/%'] = array(
+    'page callback' => 'ipa',
+    'page arguments' => array(1, 4),
+    'type' => MENU_CALLBACK,
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+  // Edit link
+  $items['roles/ajax/ipe'] = array(
+    'page callback' => 'ipe',
+    'type' => MENU_CALLBACK,
+    'access callback' => 'tf_is_own',
+  );
+
+  // Delete link
+  $items['roles/ajax/ipd'] = array(
+    'page callback' => 'ipd',
+    'type' => MENU_CALLBACK,
+    'access callback' => 'tf_is_own',
+  );
+
+  // Talent Save link
+  $items['roles/%/ajax/save_talent/%'] = array(
+    'page callback' => 'save_talent',
+    'page arguments' => array(1, 4),
+    'type' => MENU_CALLBACK,
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+  // Change Talent by level link
+  $items['roles/%/ajax/level'] = array(
+    'page callback' => 'change_talent',
+    'page arguments' => array(1, 4, 5, 6),
+    'type' => MENU_CALLBACK,
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+  // Button link
+  $items['roles/new/ajax'] = array(
+    'page callback' => 'roles_button',
+    'access arguments' => array('access tf_roles'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // Skill autocomplete
+  $items['roles/%/ajax/autocomplete/%/%'] = array(
+    'page callback' => 'roles_autocomplete',
+    'page arguments' => array(1, 4, 5),
+    'type' => MENU_CALLBACK,
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1),
+  );
+
+  return $items;
+}
+
+
+/*
+Queries
+*/
+// The $query needs to hold the alias r for a node (of type role)
+function add_condition_role_autocomplete(&$query, $string) {
+  $query->condition('r.title', '%' . db_like($string) . '%', 'LIKE');
+  return $query;
+}
+
+// The $query needs to hold the alias n for a node (of type skill)
+function add_condition_autocomplete(&$query, $type, $string) {
+  $db_or = db_or();
+  $db_or->condition('n.title', '%' . db_like($string) . '%', 'LIKE')
+        ->condition('b.body_value', '%' . db_like($string) . '%', 'LIKE');
+
+
+  switch($type) {
+    case 'skill':
+      $fif = field_info_field('field_expert_level');
+      $allowed_values = $fif['settings']['allowed_values'];
+
+      foreach($allowed_values as $key => $value) {
+        if(stripos($value, $string) !== FALSE) {
+          $db_or->condition('e.field_expert_level_value', $key);
+        }
+      }
+
+      $db_or->condition('st.field_skill_type_value',
+                        '%' . db_like($string) . '%', 'LIKE');
+
+      break;
+  }
+
+
+
+  return $query->condition($db_or);
+}
+
+// Returns a resultset
+// TODO: Probably we need to add a condition to take only skills of own roles
+function autocomplete_query($type, $string) {
+  $query = db_select('node', 'n');
+
+  switch($type) {
+    case 'skill':
+      $query->leftJoin('field_data_field_expert_level', 'e',
+                       'n.nid = e.entity_id');
+      $query->leftJoin('field_data_body', 'b', 'n.nid = b.entity_id');
+      $query->leftJoin('field_data_field_skill_type', 'st',
+                      'n.nid = st.entity_id');
+      $query->condition('n.type','skill')
+            ->fields('n', array('title','nid'))
+            ->fields('e', array('field_expert_level_value'))
+            ->fields('b', array('body_value'))
+            ->fields('st', array('field_skill_type_value'));
+      add_condition_autocomplete($query, 'skill', $string);
+      break;
+    case 'behavioral':
+    case 'business':
+      $query->leftJoin('field_data_field_type', 't', 'n.nid = t.entity_id');
+      $query->leftJoin('field_data_body', 'b', 'n.nid = b.entity_id');
+      $query->leftJoin('field_data_field_cloned_from', 'c',
+                                                       'n.nid = c.entity_id');
+      $query->leftJoin('field_data_field_cap_level', 'l',
+                                                       'n.nid = l.entity_id');
+      $query->condition('n.type','talent')
+            ->condition('t.field_type_value', ucfirst($type))
+            ->condition('l.field_cap_level_value', 1)
+            ->condition(db_or()
+                          ->condition('c.field_cloned_from_nid',0)
+                          ->isNull('c.field_cloned_from_nid')
+                       )
+            ->fields('n', array('title','nid'))
+            ->fields('b', array('body_value'));
+      add_condition_autocomplete($query, 'talent', $string);
+      break;
+    case 'role':
+//      $query->leftJoin('field_data_field_type', 't', 'n.nid = t.entity_id');
+      $query->leftJoin('field_data_body', 'b', 'n.nid = b.entity_id');
+      $query->condition('n.type','role')
+//            ->condition('t.field_type_value', ucfirst($type))
+            ->fields('n', array('title','nid'));
+//            ->fields('b', array('body_value'));
+      add_condition_autocomplete($query, 'role', $string);
+      break;
+  }
+
+  $query->range(0, 5);
+
+  return $query->execute();
+}
+
+
+
+
+// Returns a resultset
+function query_my_role_matches($string = '') {
+  $query = db_select('node', 'r');
+  $query->leftJoin('field_data_field_category', 'c', 'r.nid = c.entity_id');
+  $query->condition('r.type','role')
+        ->fields('r', array('title','nid','type'));
+  $query->addField('c', 'field_category_value', 'category');
+  add_condition_my($query, 'r');
+  add_condition_role_autocomplete($query, $string);
+
+  return $query->execute();
+}
+
+// Returns a resultset
+function query_repos_role_matches($string = '') {
+  $query = db_select('node', 'r');
+  $query->leftJoin('field_data_field_cloned_from', 'c',
+                   'r.nid = c.entity_id');
+  $query->condition('r.type','role')
+        ->condition(db_or()
+                      ->condition('c.field_cloned_from_nid',0)
+                      ->isNull('c.field_cloned_from_nid')
+                  )
+        ->fields('r', array('title','nid','type'));
+  add_condition_role_autocomplete($query, $string);
+
+  return $query->execute();
+}
+
+
+// Returns a resultset
+// TODO: Could be optimized with db_slect
+function query_talent_by_level($title, $level) {
+/*
+  $query = new EntityFieldQuery();
+
+  $query->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'talent')
+        ->propertyCondition('title', $title)
+        ->fieldCondition('field_cloned_from', 'nid', NULL, 'IS NULL')
+        ->fieldCondition('field_cap_level', 'value', $level, '=');
+
+ return $query->execute();
+*/
+  $query = db_select('node', 't');
+  $query->leftJoin('field_data_field_cap_level', 'l',
+                                                       't.nid = l.entity_id');
+  $query->leftJoin('field_data_field_cloned_from', 'c',
+                   't.nid = c.entity_id');
+  $query->condition('t.type', 'talent')
+        ->condition('t.title', $title)
+        ->condition('l.field_cap_level_value', $level)
+        ->condition(db_or()
+                      ->condition('c.field_cloned_from_nid',0)
+                      ->isNull('c.field_cloned_from_nid')
+                  )
+        ->fields('t', array('nid'));
+  return $query->execute()->fetchField();
+}
+
+
+// Rerurns an array of resultsets
+function query_role_matches($string) {
+  return array(
+           'my' => query_my_role_matches($string),
+           'repos' => query_repos_role_matches($string),
+         );
+}
+
+function get_roles() {
+  $role_matches = query_my_role_matches()->fetchAllAssoc('nid');
+  dpm($role_matches);
+  return $role_matches;
+  return query_my_role_matches()->fetchAllAssoc('nid');
+}
+
+
+
+// Returns an array for the talent, searched by title and level
+function get_talent_array($title, $level) {
+//  $result = query_talent_by_level($title, $level);
+//  $nid = key(reset($result)); // Get the key of the first element (=the nid)
+  $nid = query_talent_by_level($title, $level);
+  $node = node_load($nid);
+
+  return array(
+    'node' => $node,
+    'tas' => get_tas($node)
+  );
+}
+
+
+
+
+
+/*
+Forms
+*/
+
+
+function role_pick_form($form, &$form_state) {
+  $ac_path ='roles/ajax/autocomplete/role';
+  return array(
+    'autocomplete' => array(
+      '#title' => t('Search for roles'),
+      '#type' => 'textfield',
+      '#autocomplete_path' => $ac_path,
+    ),
+    'actions' => array(
+      'submit' => array(
+        '#type' => 'submit',
+        '#value' => t('Show'),
+        '#ajax' => array(
+          'callback' => 'roles_ajax_show',
+          'progress' => array('type' => 'none'),
+        ),
+      ),
+    ),
+  );
+}
+
+
+
+/*
+Form Alters
+*/
+
+
+
+
+/*
+Form Submits
+*/
+function cancel_new_role() {
+  drupal_goto('roles');
+}
+
+
+
+
+/*
+ Page Callbacks
+*/
+function roles($regions = array()) {
+  $empty_regions = array(
+    'left-sidebar' => roles_ra(),
+    'message' => array('#markup' => t('Choose a role on the left')),
+    'content' => empty_ra('role'),
+  );
+
+  return tf_module('roles', $empty_regions, $regions);
+}
+
+function role($role_nid) {
+  $full_role = get_full_role($role_nid);
+
+  $message = array(
+    '#markup' => t('Here you can tailer a role to your specific needs'),
+  );
+
+  // If the $full_role is empty (at least the node part of it)
+  // it concerns an insert, otherwise it is an edit
+  if(empty($full_role['node'])) {
+    $content = new_role_ra();
+  } else {
+    $content = role_ra($full_role);
+  }
+
+
+  return roles(array(
+    'message' => $message,
+    'content' => $content,
+  ));
+}
+
+// Clone role
+function tf_roles_clone($role_nid) {
+  $clone = deep_clone_do(node_load($role_nid));
+  remove_assessment_data_from_role($clone);
+
+  drupal_goto('roles/' . $clone->nid);
+}
+
+// In Place Add: Called through AJAX
+function ipa($role_nid, $type) {
+  // Fist we create a new node to show in the form
+  $node = new stdClass();
+
+  // Set the prefix of the selector
+  if($type === 'business' || $type === 'behavioral') {
+    $node->field_type['und'][0]['value'] = ucfirst($type);
+    $sel_prefix = $type;
+    $type = 'talent';
+  }
+  else {
+    $sel_prefix = $type. 's';
+  }
+
+  $node->type = $type;
+  $node->field_role_back_ref['und'][0]['nid'] = $role_nid;
+  node_object_prepare($node);
+
+  // Set some default fields and handle the focus
+  switch($type) {
+    case 'task':
+      $focus_selector = ".$sel_prefix form.new .form-item-title input";
+      break;
+    case 'skill':
+      $node->field_expert_level['und'][0]['value'] = 1; // Defaults to Junior
+    case 'talent':
+      $focus_selector = ".$sel_prefix .autocomplete input.form-autocomplete";
+      break;
+  }
+
+  $html = drupal_render(drupal_get_form('item_form', $node, $role_nid));
+  $commands[] = ajax_command_invoke('.' . $sel_prefix . ' .add-link', 'hide');
+  $commands[] = ajax_command_append('.' . $sel_prefix . ' .body', $html);
+  $commands[] = ajax_command_invoke($focus_selector, 'focus');
+  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+}
+
+// Show widget to assign role to a person
+function tf_roles_assign($nid) {
+  $persons = tf_get_my_persons();
+  $html = drupal_render(persons_widget_ra($persons, $nid));
+  $sel_base = '.roles-' . $nid;
+  $commands[] = ajax_command_append($sel_base, $html);
+  $commands[] = ajax_command_invoke("$sel_base .persons-widget", 'hide');
+  $commands[] = ajax_command_invoke("$sel_base .persons-widget", 'slideDown');
+  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+}
+
+// Assign a role to a person
+function tf_roles_assign_to($role_nid, $person_nid) {
+  $person = node_load($person_nid);
+
+  // First we check is the person has the role yet
+  $exists = FALSE;
+  foreach($person->field_role_ref['und'] as $role_array_node) {
+    if($role_array_node['nid'] == $role_nid) {
+      $exists = TRUE;
+      break;
+    }
+  }
+
+  // If the role doesn't exist yet, we add the role
+  if(!$exists) {
+    $person->field_role_ref['und'][] = array('nid' => $role_nid);
+    node_save($person);
+  }
+  drupal_goto("roles/$role_nid");
+}
+
+
+
+
+// In Place Edit: Called through AJAX
+function ipe($nid) {
+  $node = node_load($nid);
+  $type = $node->type;
+  $html = drupal_render(drupal_get_form('item_form', $node));
+  $commands[] = ajax_command_invoke('.nid-' . $nid . ' .content', 'hide');
+  $commands[] = ajax_command_append('.nid-' . $nid, $html);
+  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+}
+
+// In Place Delete: Called through AJAX
+function ipd($nid) {
+  // TODO: Add some delay
+  $node = node_load($nid);
+  $type = $node->type;
+
+  switch($type) {
+    case 'task':
+    case 'skill':
+    case 'talent':
+      tf_em_delete($node);
+      break;
+  }
+
+  // TODO: Think about how we can delete a role
+
+  $commands[] = ajax_command_remove('.nid-' . $nid);
+  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+}
+
+
+// In Place Talent Save: Called through AJAX
+function save_talent($role_nid, $talent_nid) {
+  $role =  node_load($role_nid);
+  $talent = node_load($talent_nid);
+
+  // First we check if a talent with same title already exists.
+  // If it does, we remember that talent.
+  // If also the level is the same it means the user has
+  // saved the talent with the same level as it was stored in the DB
+  // It is assumed the title for a talent is unique and th same for all levels
+  // TODO: This is very heavy, performance wise
+  // $old_talent = NULL if no old talent has been found
+  // $old_talent = old talent node if the node has been found
+  // $old_talent = 'IDENTICAL' if title and level are the same
+
+  $old_talent = NULL;
+  $old_key = NULL;
+  if(!empty($role->field_talent_ref['und'])) {
+    foreach($role->field_talent_ref['und'] as $key => $item) {
+      $temp_talent =  node_load($item['nid']);
+      if($temp_talent->title === $talent->title) {
+        // By design there can be only 1 talent with the same title
+        $old_talent = $temp_talent;
+        $old_key = $key;
+        // If also the level is the same we shouldn't do anything
+        if($temp_talent->field_cap_level['und'][0]['value'] ===
+         $talent->field_cap_level['und'][0]['value'] ) {
+           $old_talent = 'IDENTICAL';
+           break;
+         }
+      }
+    }
+  }
+
+  // If the the talent level has been changed, we remove the old talent
+  // including talent attributes, then we clone the newly chosen talent
+  // TODO: Change this with soft deletes
+  if($old_talent !== 'IDENTICAL') {
+    if(is_object($old_talent)) {
+      tf_em_delete($old_talent);
+      unset($role->field_talent_ref['und'][$old_key]);
+      $clone = deep_clone_do($talent);
+      $role->field_talent_ref['und'][] = array('nid' => $clone->nid);
+      node_save($role);
+    }
+  }
+
+  // TODO: Add some delay
+  $commands[] = ajax_command_invoke('.nid-' . $talent_nid,
+                                             'removeClass', array('updated'));
+  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+}
+
+
+
+
+function roles_autocomplete($role_nid, $type, $string) {
+  $full_role = get_full_role($role_nid);
+  drupal_json_output(
+    autocomplete_items($full_role, $type, $string)
+  );
+}
+
+// In Place Change the talent by level: Called through AJAX
+function change_talent($role_nid, $original_nid, $title, $level) {
+  $talent_array = get_talent_array($title, $level);
+
+dpm($talent_array);
+
+  // If the query returns no results, we shouldn't do anything
+  // TODO: Decide what should be done
+  if(!empty($talent_array['node'])) {
+    $html = render(item_inner_ra($talent_array, $role_nid));
+
+    $html = '<div class="talent nid-' . $talent_array['node']->nid
+          . ' display-edit updated">' . $html . '</div>';
+          // TODO: Add index and even/odd
+
+    // If $role_nid is 0, then we need to insert the talent at the end
+    if($role_nid == 0) {
+      $selector = '.' . strtolower($talent_array['node']
+                                     ->field_type['und'][0]['value']) . ' body';
+      $commands[] = ajax_command_append($selector, $html);
+    } else {
+      $commands[] = ajax_command_replace('.nid-' . $original_nid, $html);
+    }
+
+    ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+  }
+}
+
+function roles_button($name) {
+  switch($name) {
+    case 'existing':
+      $commands[] = ajax_command_invoke('.existing', 'show');
+      $commands[] = ajax_command_invoke('.scratch' , 'hide');
+      break;
+    case 'scratch':
+      $commands[] = ajax_command_invoke('.existing', 'hide');
+      $commands[] = ajax_command_invoke('.scratch' , 'show');
+      break;
+  }
+  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+}
+
+
+
+
+/*
+ AJAX Callbacks
+*/
+// All form fields that need to be handled on a submit, should be added here
+function ipe_submit_callback($form, &$form_state) {
+  $node = $form_state['build_info']['args'][0];
+  $role_nid = $form_state['build_info']['args'][1];
+
+  $node->title = $form_state['values']['title'];
+  $is_new = empty($node->nid) ? true : false;
+
+  switch($node->type) {
+    case 'task':
+      $node_array = array('node' => $node);
+      break;
+    case 'role':
+      $node->body = $form_state['values']['body'];
+      $node->field_category = $form_state['values']['field_category'];
+      $node_array = array('node' => $node);
+      break;
+    case 'skill':
+      $node->body = $form_state['values']['body'];
+      $node->field_expert_level = $form_state['values']['field_expert_level'];
+      $node_array = array('node' => $node);
+      break;
+    case 'talent':
+      $title = $form_state['values']['title'];
+      $level = 1; // standard it is level 1
+      $node_array = get_talent_array($title, $level);
+      $node = deep_clone_do($node_array['node']);
+      // Should not be needed as reference talents should be virgen
+      $tas = get_tas($node);
+      $talent_array = array(
+        'node' => $node,
+        'tas' => $tas,
+      );
+      remove_assessment_data_from_talent($talent_array);
+      $node->field_role_back_ref['und'] = array(array('nid' => $role_nid));
+      break;
+  }
+
+  // We save the node to have the nid
+  node_save($node);
+
+  // If we add a new role, we need a page reload and redirect
+  if($node->type === 'role' && $is_new) {
+    $url = 'roles/' . $node->nid;
+    $form_state['redirect'] = $url;
+    return;
+  }
+
+  // Get the HTML of the updated element
+  $html = render(item_inner_ra($node_array, $role_nid));
+
+  if($is_new) {
+    $html = '<div class="' .$node->type. ' nid-' .$node->nid .' display-edit">'
+          . $html . '</div>'; // TODO: Add index and even/odd
+    // For talents, we need to change the selector
+    if($node->type == 'talent') {
+      $selector = '.' . strtolower($node->field_type['und'][0]['value'])
+                . ' .add-link';
+    } else {
+      $selector = '.' . $node->type . 's .add-link';
+    }
+    // The add commands
+    $commands[] = ajax_command_remove('form.new.' . $node->type);
+    $commands[] = ajax_command_invoke($selector, 'show');
+    $commands[] = ajax_command_before($selector, $html);
+  } else {
+    // The edit commands
+    $commands[] = ajax_command_remove('.nid-'.$node->nid . ' form');
+    $commands[] = ajax_command_html('.nid-'.$node->nid, $html);
+                                    // TODO: Why does this insert a ghost div
+  }
+
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+function ipe_cancel_callback($form, $form_state) {
+  $node = $form_state['build_info']['args'][0];
+  $is_new = empty($node->nid) ? true : false;
+
+  if($is_new) {
+    if($node->type === 'talent') {
+      $new_type = strtolower($node->field_type['und'][0]['value']);
+    }
+    else {
+      $new_type = $node->type . 's';
+    }
+
+    // The add commands
+    $commands[] = ajax_command_remove('form.new.' . $node->type);
+    $commands[] = ajax_command_invoke(".$new_type .add-link",'show');
+
+  } else {
+    // The edit commands
+    $commands[] = ajax_command_remove('.nid-'.$node->nid . ' form');
+    $commands[] = ajax_command_invoke('.nid-' . $node->nid.' .content', 'show');
+  }
+
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+function roles_ajax_show($form, $form_state) {
+  $nid = $form_state['values']['autocomplete'];
+  $html = drupal_render(role_preview_ra($nid));
+  $commands[] = ajax_command_html('.existing .pane', $html);
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+
+
+/*
+ Renderable arrays
+*/
+// Roles for the sidebar
+function roles_ra() {
+  $roles = get_roles();
+  $items = array();
+
+  foreach($roles as $role) {
+    $items['role-' . $role->nid] = sidemenu_item_ra('roles', $role,
+                                     $role->category, role_actions_ra($role));
+  }
+
+  $header = array(
+    '#markup' => t('My roles:'),
+  );
+
+  $body = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('roles'),
+    ),
+    'data' => $items,
+  );
+
+  $path = 'roles/0';
+
+  $new = array(
+    '#theme' => 'link',
+    '#text' => 'Add new Role',
+    '#path' => $path,
+    '#options' => array(
+      'attributes' => array('class' => array($path == current_path()
+                                                           ? 'active' : '' )),
+      'html' => FALSE,
+    ),
+  );
+
+  return container_ra(array(
+    'header' => $header,
+    'body' => $body,
+    'new' => $new,
+  ));
+
+}
+
+
+// This function returns the actions available on a role
+// These actions are: clone, assign and start campaign
+function role_actions_ra($role) {
+  $actions = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('actions'),
+    ),
+  );
+
+  foreach(array(t('clone'), t('assign'), t('start campaign')) as $item) {
+    $key = str_replace(' ', '-', strtolower($item));
+    $actions[$key] = array(
+      '#theme' => 'link',
+      '#text' => $item,
+      '#path' => 'roles/' . $role->nid . '/'.$key,
+      '#options' => array(
+        'attributes' => array(),
+        'html' => FALSE,
+      ),
+    );
+  }
+
+  // Make the assign AJAX
+  $actions['assign']['#path'] = 'roles/' . $role->nid . '/nojs/assign';
+  $actions['assign']['#options']['attributes'] =
+                                          array('class' => array('use-ajax'));
+  return $actions;
+}
+
+
+
+function role_ra($full_role, $display = 'edit') {
+  $role_nid = $full_role['node']->nid;
+
+  return container_ra(array(
+    'role' => item_ra($full_role, $display),
+    'tasks' => items_ra($full_role['tasks'], 'task', $role_nid, $display),
+    'skills' => items_ra($full_role['skills'], 'skill', $role_nid, $display),
+    'business' => items_ra($full_role['talents']['business'],
+                                             'business', $role_nid, $display),
+    'behavioral' => items_ra($full_role['talents']['behavioral'],
+                                           'behavioral', $role_nid, $display),
+  ));
+}
+
+function role_categories_ra($category_field) {
+  $ra = array(
+    '#type' => 'container',
+    '#weight' => 10,
+    '#attributes' => array(
+      'class' => array('categories'),
+    ),
+  );
+
+  if(!empty($category_field['und'])) {
+    foreach($category_field['und'] as $category) {
+      $ra[] = container_ra(array(
+        'category' => $category['value']));
+    }
+  }
+
+  return $ra;
+}
+
+
+function autocomplete_item_ra($node, $highlight) {
+  return array_merge(
+    array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array(
+          $node->type,
+        ),
+      ),
+    ),
+    autocomplete_item_inner_ra($node, $highlight)
+  );
+}
+
+//All fields that need to be displayed should be added here in the right order
+function autocomplete_item_inner_ra($node, $highlight) {
+  // Populate the 'content' part
+  switch($node->type) {
+    case 'skill':
+      $ra['content']['level'] = flames_ra($node, 'field_expert_level');
+      $ra['content']['title'] = highlight_ra_text(field_view_title($node),
+                                                                  $highlight);
+      $ra['content']['body'] = highlight_ra_text(
+        field_view_field('node', $node, 'body',
+                                  array('label' => 'hidden', 'weight' => 30)),
+        $highlight
+      );
+      break;
+    case 'role':
+      $ra['content']['title'] =
+        highlight_ra_text(field_view_title($node), $highlight);
+      break;
+    case 'talent':
+//      $ra['content']['body'] = highlight_ra_text(
+//        field_view_field('node', $node, 'body', array('label' => 'hidden')),
+//        $highlight
+//      );
+      $ra['content']['title'] = highlight_ra_text(field_view_title($node),
+                                                                  $highlight);
+//      $ra['content']['level'] = flames_ra($node, 'field_cap_level');
+      break;
+  }
+  return $ra;
+}
+
+
+
+
+function new_role_ra() {
+  // Prepare empty new role
+  $new_role = new stdClass();
+  $new_role->title = '';
+  $new_role->type = 'role';
+  $new_role->field_company_ref = tf_em_get_company();
+  node_object_prepare($new_role);
+
+  // The RAs
+  $header = array(
+/* Temporarily disabled
+    'existing-link' => array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('existing-link')),
+      '#theme' => 'link',
+      '#text' => t('Choose from library'),
+      '#path' => "roles/new/nojs/existing",
+      '#options' => array(
+        'attributes' => array('class' => array('use-ajax')),
+        'html' => FALSE,
+      ),
+    ),
+*/
+    'scratch-link' => array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('scratch-link')),
+      '#theme' => 'link',
+      '#text' => t('Start from scratch'),
+      '#path' => "roles/new/nojs/scratch",
+      '#options' => array(
+        'attributes' => array('class' => array('use-ajax')),
+        'html' => FALSE,
+      ),
+    ),
+  );
+  $existing = container_ra(array(
+    'input' => drupal_get_form('role_pick_form'),
+    'pane' => '',
+  ));
+  $scratch = container_ra(array(
+    'role' => drupal_get_form('item_form', $new_role, 0),
+  ));
+
+  return container_ra(array(
+    'buttons' => $header,
+    'existing' => $existing,
+    'scratch' => $scratch,
+  ));
+}
+
+function role_preview_ra($nid) {
+  $full_role = get_full_role($nid);
+  return role_ra($full_role, 'preview');
+}
+
+
+
+function persons_widget_ra($persons, $role_nid) {
+  $persons_ra = persons_ra($persons, $role_nid, 'widget');
+
+  if(empty($persons_ra)) {
+    $persons_ra = array(
+      '#markup' => t('You have are no persons to assign to'),
+    );
+  }
+
+  $ra = container_ra(array(
+    'close' => 'close',
+    'widget' => $persons_ra,
+  ));
+
+  $container = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('persons-widget'),
+    ),
+  );
+
+  return array_merge($container, $ra);
+}
+
+
+
+
+function get_flame_links($node, $field_name, $role_nid = 0) {
+  $field_info = field_info_field($field_name);
+  $number_of_flames = count($field_info['settings']['allowed_values']);
+
+  $ra = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('flame-links'),
+    ),
+  );
+
+  for($i = 1; $i <= $number_of_flames; $i++) {
+    $path = "roles/$role_nid/nojs/level/"
+          . $node->nid   . "/"  // the node nid clicked on (needed to replace)
+          . $node->title . "/"  // the title of the talent to look for
+          . "$i";               // The level to look for
+    $ra[] = array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('flame-link', 'level' . $i)),
+      '#theme' => 'link',
+      '#text' => t('edit flame '.$i), // For debug only: should not be visible
+      '#path' => $path,
+      '#options' => array(
+        'attributes' => array('class' => array('use-ajax')),
+        'html' => FALSE,
+      ),
+    );
+  }
+
+  return $ra;
+}
+
+
+function test_callback() {
+  dpm('hkjsdhkj');
+  $commands[] = ajax_command_invoke(NULL,'test_123');
+  $p = array('#type' => 'ajax', '#commands' => $commands);
+  ajax_deliver($p);
+}
+
+
+
+
+// TODO: Transform to render array
+function autocomplete_items($full_role, $type, $string) {
+  $rs = autocomplete_query($type, $string);
+  $items = array();
+
+  foreach($rs as $item) {
+    $node = node_load($item->nid); // TODO: improve performance
+
+    $add_item = TRUE;
+
+    // If a talent with the same exists already on the role,
+    // don't suggest it in the autocomplete list
+
+    if($type === 'business' || $type === 'behavioral') {
+      // TODO: put this in the query
+      foreach($full_role['talents'][$type] as $talent_array) {
+        if($talent_array['node']->title == $node->title) {
+          $add_item = FALSE;
+          break;
+        }
+      }
+    }
+
+    if($add_item) {
+      $items[$item->nid] = drupal_render(autocomplete_item_ra($node,$string));
+    }
+  }
+
+  if($type == 'skill' && count($items) == 0) {
+    $html = '<div class="new-empty">'
+          . '<div class="element-hidden title">' . $string . '</div>'
+          . '<span>' . t('Add new: ') . '</span>'
+          . $string . '</div>';
+    $items[$string] = $html;
+  }
+
+  return $items;
+}
+
+
+
+
+
+
+
+/*
+ Helper functions
+*/
+// TODO: Exclude HTML-tag replacement
+// Highlights $highlight in $string
+function highlight_text($string, $highlight) {
+  $replace = '<span class="highlight">' . check_plain($highlight) . '</span>';
+  return str_ireplace($highlight, $replace, $string);
+}
+
+// Highlights the markup part in an array. Used in ra fields.
+function highlight_ra_text($ra, $highlight) {
+  if(!empty($ra['data']['data']['data']['#markup'])) {     // For title fields
+    $string = &$ra['data']['data']['data']['#markup'];
+  }
+  elseif(!empty($ra[0]['#markup'])) {  // For body field
+    $string = &$ra[0]['#markup'];
+  }
+  $string = highlight_text($string,$highlight);
+  return $ra;
+}

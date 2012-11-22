@@ -1,0 +1,8 @@
+name = Tribeforce Roles
+description = Roles module for Tribeforce
+core = 7.x
+package = Tribeforce
+
+dependencies[] = tf_common
+dependencies[] = tf_migrate
+scripts[] = js/behaviors.js
