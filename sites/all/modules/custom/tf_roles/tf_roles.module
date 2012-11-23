@@ -363,7 +363,7 @@ function cancel_new_role() {
 function roles($regions = array()) {
   $empty_regions = array(
     'left-sidebar' => roles_ra(),
-    'message' => array('#markup' => t('Choose a role on the left')),
+    'message' => array('#markup' => t('Choose a role on the left and go')),
     'content' => empty_ra('role'),
   );
 
