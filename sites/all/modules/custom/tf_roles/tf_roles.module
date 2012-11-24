@@ -288,7 +288,6 @@ function query_role_matches($string) {
 
 function get_roles() {
   $role_matches = query_my_role_matches()->fetchAllAssoc('nid');
-  dpm($role_matches);
   return $role_matches;
   return query_my_role_matches()->fetchAllAssoc('nid');
 }
@@ -570,8 +569,6 @@ function roles_autocomplete($role_nid, $type, $string) {
 // In Place Change the talent by level: Called through AJAX
 function change_talent($role_nid, $original_nid, $title, $level) {
   $talent_array = get_talent_array($title, $level);
-
-dpm($talent_array);
 
   // If the query returns no results, we shouldn't do anything
   // TODO: Decide what should be done
@@ -1003,7 +1000,6 @@ function get_flame_links($node, $field_name, $role_nid = 0) {
 
 
 function test_callback() {
-  dpm('hkjsdhkj');
   $commands[] = ajax_command_invoke(NULL,'test_123');
   $p = array('#type' => 'ajax', '#commands' => $commands);
   ajax_deliver($p);
