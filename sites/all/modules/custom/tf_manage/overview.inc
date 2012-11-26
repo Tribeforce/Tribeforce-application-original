@@ -70,10 +70,16 @@ function add_remark_callback($form, $form_state) {
  Render Arrays
 ***************/
 function manage_overview_ra($people) {
+  $new = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('person-new')),
+    'data' => show_hide(t("Add a person"), add_person()),
+  );
+
   return array(
     '#type' => 'container',
     '#attributes' => array('class' => array('manage-overview')),
-    'new' => show_hide(t("Add a person"), add_person()),
+    'new' => $new,
     'list' => persons_ra($people, 0, 'manage'),
   );
 }
