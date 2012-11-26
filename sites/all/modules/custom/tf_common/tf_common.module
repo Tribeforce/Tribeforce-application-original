@@ -661,6 +661,9 @@ function persons_ra($person_types, $role_nid, $display) {
   // Define what types should be shown
   $show_array = array(1, 2, 3, 4);
   switch($display) {
+    case 'manage':
+      $show_array = array(2, 3, 4);
+      break;
     case 'widget':
       $show_array = array(2, 3, 4);
       break;
