@@ -25,12 +25,47 @@
       });
 
       // Get rid of all the containers for a date field
-      $('.field-type-datetime').once(function() {
-        $field = $(this).find('.form-type-textfield').children();
+      $('.form-wrapper.field-type-datetime').once(function() {
+        $field = $(this).find('.form-type-textfield');
         $label = $(this).find('legend').html();
         $(this).children().remove();
         $(this).append($field);
         $(this).find('label').html($label);
+      });
+    }
+  };
+
+  Drupal.behaviors.tf_common = {
+    attach: function (context, settings) {
+      // TABS
+      // Set the active tab logic
+      $('.tab-pane .tabs div').click(function(event) {
+        event.preventDefault();
+        var tab = $(this).parents('.tab-pane').find('.panes .' +$(this).attr('class'));
+        tab.addClass('active');
+        tab.siblings().removeClass('active');
+
+        $(this).addClass('active');
+        $(this).siblings().removeClass('active');
+        return false;
+      });
+
+      // Set the first pane and first tab in a tab-pane to active
+      $('.tab-pane .tabs > div:first-child').addClass('active');
+      $('.tab-pane .panes > div:first-child').addClass('active');
+
+      // DROPDOWN
+      // Clicking on the item or the dropdown icon slides the dropdown down
+      $('.dropdown-widget .btn, .dropdown-widget .item').click(function(event) {
+        event.stopImmediatePropagation();
+        $(this).parents('.dropdown-widget').children().toggleClass('open');
+      });
+
+      // OVERLAY
+      // Close the overlay
+      $('.overlay .close').click(function(event) {
+        event.stopImmediatePropagation();
+        $(this).parents('.overlay').remove();
       });
 
 

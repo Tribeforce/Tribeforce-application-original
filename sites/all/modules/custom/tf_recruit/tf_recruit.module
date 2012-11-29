@@ -225,6 +225,7 @@ Form Alters
 */
 
 // Auto link nodes
+/*
 function tf_recruit_form_alter(&$form, &$form_state, $form_id) {
   // Register all the forms on which this should be applied
   $autolink_form_ids = array(
@@ -253,7 +254,7 @@ function tf_recruit_form_alter(&$form, &$form_state, $form_id) {
     }
   }
 }
-
+*/
 
 /*
  Queries

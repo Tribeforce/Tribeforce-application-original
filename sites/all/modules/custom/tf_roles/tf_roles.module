@@ -288,7 +288,6 @@ function query_role_matches($string) {
 
 function get_roles() {
   $role_matches = query_my_role_matches()->fetchAllAssoc('nid');
-  dpm($role_matches);
   return $role_matches;
   return query_my_role_matches()->fetchAllAssoc('nid');
 }
@@ -952,7 +951,7 @@ function persons_widget_ra($persons, $role_nid) {
   }
 
   $ra = container_ra(array(
-    'close' => 'close',
+    'close' => '&times',
     'widget' => $persons_ra,
   ));
 

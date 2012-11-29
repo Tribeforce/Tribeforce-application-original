@@ -2064,7 +2064,7 @@ function tribeforce_application_field_default_fields() {
       ),
       'entity_type' => 'node',
       'field_name' => 'field_birth_date',
-      'label' => 'Birth Date',
+      'label' => 'Born',
       'required' => 0,
       'settings' => array(
         'default_value' => 'blank',
@@ -2635,7 +2635,7 @@ function tribeforce_application_field_default_fields() {
       ),
       'entity_type' => 'node',
       'field_name' => 'field_hire_date',
-      'label' => 'Hire Date',
+      'label' => 'Start in company',
       'required' => 0,
       'settings' => array(
         'default_value' => 'blank',
@@ -6495,7 +6495,7 @@ function tribeforce_application_field_default_fields() {
   t('Attached to');
   t('Attributes');
   t('Avatar');
-  t('Birth Date');
+  t('Born');
   t('CV');
   t('Campaign');
   t('Campaigns');
@@ -6509,7 +6509,6 @@ function tribeforce_application_field_default_fields() {
   t('Evaluations');
   t('Expert Level');
   t('First Name');
-  t('Hire Date');
   t('In a nex version, this should be on the relation');
   t('Interpretations');
   t('Interviews');
@@ -6533,6 +6532,7 @@ function tribeforce_application_field_default_fields() {
   t('Roles');
   t('Score');
   t('Skills');
+  t('Start in company');
   t('Summary');
   t('Talent');
   t('Talents');

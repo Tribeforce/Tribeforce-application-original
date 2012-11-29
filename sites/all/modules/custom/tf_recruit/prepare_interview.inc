@@ -173,10 +173,14 @@ function prepare_interview_ra($role, $locked = FALSE) {
     ),
     'data' => container_ra(array(
       'role' => $role_ra,
-      'tabs' => $tabs,
-      'skills' => $skills,
-      'business' => $business,
-      'behavioral' => $behavioral,
+      'tab-pane' => container_ra(array(
+        'tabs' => $tabs,
+        'panes' => container_ra(array(
+          'skills' => $skills,
+          'business' => $business,
+          'behavioral' => $behavioral,
+        )),
+      )),
     )),
   );
 }

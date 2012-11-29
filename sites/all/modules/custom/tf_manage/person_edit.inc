@@ -181,6 +181,24 @@ function tf_manage_person_edit_ra($person, $display = 'details', $extra = array(
   form_load_include($form_state, 'inc', 'tf_manage', 'person_edit');
   $form = drupal_build_form('tf_manage_person_form', $form_state);
 
+  // Get the roles data if the person exists
+  if(isset($person->nid)) {
+    $enriched_person = get_enriched_person(array('node' => $person));
+    $empty_roles = container_ra(array('empty' => array(
+      '#markup' => t('No role added yet')
+    )));
+
+    $roles = empty($enriched_person['roles']) ? $empty_roles :
+       items_ra($enriched_person['roles'], 'role', $person->nid, 'person-edit');
+
+    $item = t('Assign role');
+    $my_roles = tf_get_my_roles(); // TODO: cache this
+    $dropdown = items_ra($my_roles, 'role', $person->nid, 'widget');
+    $assign_role = dropdown_widget_ra('assign-role', $item, $dropdown);
+  } else {
+    $roles = $assign_role = array();
+  }
+
   $ra = array(
     '#type' => 'container',
     '#attributes' => array(
@@ -195,7 +213,6 @@ function tf_manage_person_edit_ra($person, $display = 'details', $extra = array(
         )),
       )),
       'col-2' => $form,
-//      'col-2' => drupal_get_form('tf_manage_person_form', $person, $display, $extra),
       'col-3' => container_ra(array(
         'cv' => container_ra(array(
           'file-defined' => t('CV'),
@@ -209,6 +226,8 @@ function tf_manage_person_edit_ra($person, $display = 'details', $extra = array(
           'remove' => t('Remove Motivation Letter'),
           'add' => t('Add Motivation Letter'),
         )),
+        'roles' => $roles,
+        'assign_role' => $assign_role,
 
       )),
     )),

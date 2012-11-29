@@ -236,26 +236,6 @@
 
   Drupal.behaviors.prepare_interview = {
     attach: function (context, settings) {
-
-     // Set the active tab logic
-     $('.prepare-interview .tabs div').click(
-       function() {
-         var tab = $(this).parent().parent().find('.' +$(this).attr('class'));
-         tab.addClass('active');
-         tab.siblings().removeClass('active');
-
-         $(this).addClass('active');
-         $(this).siblings().removeClass('active');
-         return false;
-       }
-     );
-
-     // If no tab is active, set the skills tab active
-     if($('.prepare-interview .tabs .active').length === 0) {
-       $('.prepare-interview .skills').addClass('active');
-     }
-
-
       // The header toggle for skills and Talent Attributes
       $('.prepare-interview:not(.locked) .switch').click(
         function(event) {

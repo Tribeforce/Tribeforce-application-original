@@ -69,14 +69,15 @@ $helvetica:       Helvetica, Arial, "Nimbus Sans L", sans-serif;
 $arial:           Arial, Helvetica, "Nimbus Sans L", sans-serif;
 
 $titillium: Titillium, Arial, sans-serif;
+$titillium_web: "Titillium Web", Arial, sans-serif;
 
 // For an explanation of why "sans-serif" is at the end of this list, see
 // http://meyerweb.com/eric/thoughts/2010/02/12/fixed-monospace-sizing/
 $courier:         "Courier New", "DejaVu Sans Mono", monospace, sans-serif;
 
 // Now create some variables for the font stacks we want to use on this site.
-$base-font-family: $titillium; // The font family set on the html element.
-$font-body:        $titillium;
+$base-font-family: $titillium_web; // The font family set on the html element.
+$font-body:        $titillium_web;
 $font-monospace:   $courier;
 
 
@@ -87,6 +88,7 @@ $orange_light: #ff8b00;
 $orange_dark: #ff7f1b;
 $orange_light_t: rgba(255, 139, 0, .2);
 $black: #505050;
+$black_t: rgba(80, 80, 80, 0.9);
 $blue: #43698f;
 $blue_border: #d2ebf4;
 $grey_bg: #fafafa;
@@ -103,6 +105,7 @@ $gutter-pct: 2%;
 
 $icon_width: 32px;
 
+$btn_height: 30px;
 
 // Sprites
 $sprites: url(../images/sprites.png) no-repeat;
