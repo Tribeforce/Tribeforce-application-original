@@ -6,7 +6,7 @@
         $('body').addClass('tbr_menu_hidden');
     });
   }
-  $(document.ready(
+  $(document).ready(
     function() {
       if ($.cookie('toolbar_hide_hidden')) {
         $('#toolbar').hide();
@@ -16,7 +16,7 @@
         $('body').removeClass('tbr_menu_hidden');
       }
     }
-  ));
+  );
   $(document).keypress(function(e) {
     var unicode=e.keyCode? e.keyCode : e.charCode;
     if (String.fromCharCode(unicode)==Drupal.settings.toolbar_hide.key){
