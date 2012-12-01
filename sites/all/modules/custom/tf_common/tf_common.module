@@ -33,22 +33,22 @@ function tf_common_permission() {
  * Page Callbacks *
  * ****************/
 function dashboard() {
-  tf_help_msg('Some help text');
+  if(user_is_logged_in()) {
+    tf_help_msg('Some help text');
+    $block = block_load('menu', 'menu-dashboard');
+    $content = _block_get_renderable_array(_block_render_blocks(array($block)));
+  } else {
+    $block = block_load('user', 'login');
+    $content = _block_get_renderable_array(_block_render_blocks(array($block)));
+  }
 
-  $block = block_load('menu', 'menu-dashboard');
-  $menu = _block_get_renderable_array(_block_render_blocks(array($block)));
 
   $empty_regions = array(
     'left-sidebar' => array(),
-    'content' => $menu,
+    'content' => $content,
   );
 
   return tf_module('dashboard', $empty_regions);
-
-
-
-
-//  return array();
 }
 
 
@@ -238,45 +238,46 @@ function tf_module($module, $empty_regions, $regions = array()) {
 
 function header_ra() {
   global $user;
+  $ra = array();
+  if($user->uid) {
+    $settings = container_ra(array(
+      'icon' => '',
+      'text' => t('Settings'),
+    ));
+    $logout = container_ra(array(
+      'icon' => '',
+      'text' => t('Logout'),
+    ));
 
+    $block = block_load('menu', 'menu-dashboard');
+    $menu = _block_get_renderable_array(_block_render_blocks(array($block)));
 
-  $settings = container_ra(array(
-    'icon' => '',
-    'text' => t('Settings'),
-  ));
-  $logout = container_ra(array(
-    'icon' => '',
-    'text' => t('Logout'),
-  ));
-
-  $block = block_load('menu', 'menu-dashboard');
-  $menu = _block_get_renderable_array(_block_render_blocks(array($block)));
-
-  return container_ra(array(
-    'menu' => $menu,
-    'admin' => container_ra(array(
-      'user' => t('Hello'). " " . strtoupper($user->name),
-      'settings' => array(
-        '#theme' => 'link',
-        '#text' => drupal_render($settings),
-        '#path' => "",
-        '#options' => array(
-          'attributes' => array(),
-          'html' => TRUE,
-        )
-      ),
-      'logout' => array(
-        '#theme' => 'link',
-        '#text' => drupal_render($logout),
-        '#path' => "logout",
-        '#options' => array(
-          'attributes' => array(),
-          'html' => TRUE,
-        )
-      ),
-    )),
-  ));
-
+    $ra = container_ra(array(
+      'menu' => $menu,
+      'admin' => container_ra(array(
+        'user' => t('Hello'). " " . strtoupper($user->name),
+        'settings' => array(
+          '#theme' => 'link',
+          '#text' => drupal_render($settings),
+          '#path' => "",
+          '#options' => array(
+            'attributes' => array(),
+            'html' => TRUE,
+          )
+        ),
+        'logout' => array(
+          '#theme' => 'link',
+          '#text' => drupal_render($logout),
+          '#path' => "user/logout",
+          '#options' => array(
+            'attributes' => array(),
+            'html' => TRUE,
+          )
+        ),
+      )),
+    ));
+  }
+  return array();
 }
 
 /*
