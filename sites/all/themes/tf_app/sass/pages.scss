@@ -492,7 +492,13 @@ h2, h3 {
  * Dashboard
  */
 .page-dashboard {
-  #block-menu-menu-dashboard {
+  .tf-region.left-sidebar .dashboard {
+     height: 94.6%
+   }
+  .tf-region.header .menu {
+    display: none;
+  }
+  .tf-region.content > [id^="block-menu-menu-dashboard"] {
     margin-top: 50px;
     ul.menu {
       margin: 0;

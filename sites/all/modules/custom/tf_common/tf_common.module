@@ -33,7 +33,22 @@ function tf_common_permission() {
  * Page Callbacks *
  * ****************/
 function dashboard() {
-  return array();
+  tf_help_msg('Some help text');
+
+  $block = block_load('menu', 'menu-dashboard');
+  $menu = _block_get_renderable_array(_block_render_blocks(array($block)));
+
+  $empty_regions = array(
+    'left-sidebar' => array(),
+    'content' => $menu,
+  );
+
+  return tf_module('dashboard', $empty_regions);
+
+
+
+
+//  return array();
 }
 
 
