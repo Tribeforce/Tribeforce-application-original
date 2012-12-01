@@ -4,6 +4,8 @@
 ***************/
 function tf_manage_person_form($form, &$form_state, $node,
                                $display = 'details', $extra = array()){
+  $is_new = empty($node->nid);
+
   // Get the form elements of the node
   field_attach_form('node', $node, $form, $form_state, 'und');
 
@@ -12,7 +14,7 @@ function tf_manage_person_form($form, &$form_state, $node,
     '#title' => t('Last name'),
     '#type' => 'textfield',
     '#required' => TRUE,
-    '#default_value' => empty($node->title) ? '' : $node->title,
+    '#default_value' => $is_new ? '' : $node->title,
     '#weight' => 2,
   );
 
@@ -30,20 +32,21 @@ function tf_manage_person_form($form, &$form_state, $node,
 
   $my_form['actions'] = array(
     // We assume the submit button is always last
+    'cancel' => array(
+      '#theme' => 'link',
+      '#text' => t('Cancel'),
+      '#options' => array(
+        'attributes' => array('class' => array('cancel', 'btn')),
+        'html' => FALSE,
+      ),
+    ),
     '#type' => 'container',
     '#attributes' => array('class' => array('actions')),
     '#weight' => 99,
     'submit' => array(
       '#type' => 'submit',
-      '#value' => t('Edit'),
-    ),
-    'cancel' => array(
-      '#theme' => 'link',
-      '#text' => t('Cancel'),
-      '#options' => array(
-        'attributes' => array('class' => array('cancel')),
-        'html' => FALSE,
-      ),
+      '#value' => $is_new ? t('Add') : t('Edit'),
+      '#attributes' => array('class' => array('btn', 'btn-primary')),
     ),
   );
 
@@ -128,9 +131,9 @@ function person_edit($nid) {
   $node = node_load($nid);
   $enriched_person = get_enriched_person(array('node' => $node));
 
+  tf_help_msg('Some help text');
   $empty_regions = array(
     'left-sidebar' => array(),
-    'message' => array('#markup' => t('Some help text')),
     'content' => tf_manage_person_edit_ra($enriched_person['node'], 'details'),
   );
 
@@ -181,10 +184,28 @@ function tf_manage_person_edit_ra($person, $display = 'details', $extra = array(
   form_load_include($form_state, 'inc', 'tf_manage', 'person_edit');
   $form = drupal_build_form('tf_manage_person_form', $form_state);
 
+  // Get the roles data if the person exists
+  if(isset($person->nid)) {
+    $enriched_person = get_enriched_person(array('node' => $person));
+    $empty_roles = container_ra(array('empty' => array(
+      '#markup' => t('No role added yet')
+    )));
+
+    $roles = empty($enriched_person['roles']) ? $empty_roles :
+       items_ra($enriched_person['roles'], 'role', $person->nid, 'person-edit');
+
+    $item = t('Assign role');
+    $my_roles = tf_get_my_roles(); // TODO: cache this
+    $dropdown = items_ra($my_roles, 'role', $person->nid, 'widget_old');
+    $assign_role = dropdown_widget_ra('', $item, $dropdown);
+  } else {
+    $roles = $assign_role = array();
+  }
+
   $ra = array(
     '#type' => 'container',
     '#attributes' => array(
-      'class' => array('person-edit'),
+      'class' => array('person-edit', 'clearfix'),
     ),
     'data' => container_ra(array(
       'col-1' => container_ra(array(
@@ -195,7 +216,6 @@ function tf_manage_person_edit_ra($person, $display = 'details', $extra = array(
         )),
       )),
       'col-2' => $form,
-//      'col-2' => drupal_get_form('tf_manage_person_form', $person, $display, $extra),
       'col-3' => container_ra(array(
         'cv' => container_ra(array(
           'file-defined' => t('CV'),
@@ -209,6 +229,8 @@ function tf_manage_person_edit_ra($person, $display = 'details', $extra = array(
           'remove' => t('Remove Motivation Letter'),
           'add' => t('Add Motivation Letter'),
         )),
+        'roles' => $roles,
+        'assign-role' => $assign_role,
 
       )),
     )),

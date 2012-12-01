@@ -7,56 +7,46 @@
       Bind Events
       */
 
-      // When clicking on a person, a remark needs to pop up
-      $('.manage .person .field-name-field-avatar').click(function(event) {
-        var num_remarks_open = $('.manage .person.remark').length;
-        event.stopImmediatePropagation();
-        switch(num_remarks_open) {
-          case 0:
-            $(this).parents('.person').addClass('remark');
-            $(this).parents('.person').find('form').show();
-            $(this).parents('.person').find('form textarea').focus();
-            break;
-          case 1:
-            // TODO: How do we check for equality
-            // If the one we click on is already a remark (open)
-            // we don't do anything
-            if($('.manage .person.remark').attr('class')
-                 !== $(this).parents('.person').attr('class')) {
-              hideRemarks();
-            }
-            break;
-        }
+      // Click on a skill or a talent_attribute in the widget
+      // sets the nid in the hidden field
+      $('.skill.display-widget, .talent_attribute.display-widget').click(function(event) {
+        event.stopPropagation();
+        console.log('item clicked');
+
+        var nid = get_nid_in_classes($(this).attr('class'));
+        $(this).parents('.edit-remark').find('form input[name=attached_to]')
+          .val(nid);
+        return false;
       });
 
-      // When the popup is open, ESC key should remove it
-      $(document).keyup(function(event) {
-        event.stopImmediatePropagation();
-        switch(event.which) {
-          case 13: // ENTER
-            break;
-          case 27: // ESC
-            hideRemarks();
-            break;
-        }
+      // Clicking on none removes the value from the hidden field
+      $('.dropdown .none').click(function(event) {
+        event.stopPropagation();
+        $(this).parents('.edit-remark').find('form input[name=attached_to]')
+          .val('');
       });
 
 
       /*******
       Helpers
       *******/
-      function hideRemarks() {
-        $('.manage .person form').hide();
-        $('.manage .person form textarea').val('');
-        $('.manage .person').removeClass('remark');
+      // TODO: Remove duplicate function with tf_recruit
+      function get_nid_in_classes(classes) {
+        var arr = classes.split(' ');
+        var i;
+        for(i = 0; i < arr.length; i++) {
+          index = arr[i].indexOf("nid-");
+          if(index >= 0) {
+            return arr[i].substring(index + 4, arr[i].length);
+          }
+        }
+        return false;
       }
-
-
       /****
       Main
       ****/
       // Mage remarks in the person details draggable
-      $('.page-manage-person .remark').draggable();
+//      $('.page-manage-person .remark').draggable();
 
 
       /**********
@@ -65,8 +55,15 @@
       // This function is invoked by ajax_command_invoke
       // It finds the unchecked candidates and adds the "unchecked" classs
       $.fn.invoke_hide_remarks = function() {
-        hideRemarks();
+//        hideRemarks();
       };
+    }
+  };
+
+
+  Drupal.behaviors.person_details = {
+    attach: function (context, settings) {
+
     }
   };
 
@@ -196,8 +193,6 @@
       $.fn.invoke_init_edit_person();
 
 
-//<img src="http://tf_dev.localhost/sites/default/files/styles/medium/public/default_images/person.jpg" width="220" height="208" alt="">
-//<img src="http://tf_dev.localhost/sites/default/files/styles/medium/public/pasfoto_8.jpg" width="220" height="208" alt="">
     }
   };
 

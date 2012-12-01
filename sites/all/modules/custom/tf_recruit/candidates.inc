@@ -3,59 +3,6 @@
 /*
  Forms
 */
-/*
-function candidate_form($form, &$form_state, $node) {
-  // Get the form elements of the node
-  field_attach_form('node', $node, $form, $form_state);
-
-  $fields = array(
-    'field_first_name' => $form['field_first_name'],
-    'last_name' => array(
-      '#title' => t('Last name'),
-      '#type' => 'textfield',
-      '#required' => TRUE,
-      '#default_value' => empty($node->title) ? '' : $node->title,
-      '#weight' => 2,
-    ),
-    'field_email' => $form['field_email'],
-    'field_phone' => $form['field_phone'],
-    'field_cv' => $form['field_cv'],
-    'field_motivation' => $form['field_motivation'],
-  );
-
-  $buttons = container_ra(array(
-    'cv' => container_ra(array('button' => array())),
-    'motivation' => container_ra(array('button' => array())),
-    'actions' => array(
-//      '#weight' => 500,
-      'submit' => array(
-        '#type' => 'submit',
-        '#value' => t('Add'),
-      ),
-    ),
-  ));
-
-  $img = theme_image(
-    array(
-      'path' => '/sites/all/themes/tf_app/images/person.png',
-      'attributes' => array(),
-//        'alt' => 'person',
-//        'title' => 'person',
-//      ),
-//      'image_style' => 'thumbnail',
-//      'path' => ,
-    )
-  );
-
-  return container_ra(array(
-    'icon' => array(
-      '#markup' => $img,
-    ),
-    'fields' => $fields,
-    'buttons' => $buttons,
-  ));
-}
-*/
 
 function compare_form($form, &$form_state, $campaign_nid) {
   return array(
@@ -106,29 +53,6 @@ function interview_interpretation_form($form, &$form_state, $node) {
 /*
  Forms submits
 */
-/*
-function candidate_form_submit($form, &$form_state) {
-  $person = $form_state['build_info']['args'][0];
-  $person->title = $form_state['values']['last_name'];
-  $person->field_first_name = $form_state['values']['field_first_name'];
-  $person->field_email = $form_state['values']['field_email'];
-  $person->field_phone = $form_state['values']['field_phone'];
-  $person->field_person_type = array('und' => array(array('value' => 1)));
-
-  // Check if a file has been uploaded
-  if($form_state['values']['field_cv']['und'][0]['fid'] != 0)
-    $person->field_cv = $form_state['values']['field_cv'];
-
-  // Check if a file has been uploaded
-  if($form_state['values']['field_motivation']['und'][0]['fid'] != 0)
-    $person->field_motivation = $form_state['values']['field_motivation'];
-
-  node_save($person);
-//  $form_state['redirect'] = dirname(current_path());
-}
-*/
-
-
 function hire_submit($form, &$form_state) {
   $candidate_nids_string = $form_state['values']['selected'];
   $campaign_nid = $form_state['build_info']['args'][0];
@@ -148,12 +72,10 @@ function candidates($campaign_nid, $candidate_nid = 0) {
   // Returns FALSE if no node given or nid doesn not exist
   $candidate = node_load($candidate_nid);
 
-  $message = array(
-    '#markup' => t('Here you can add candidates.'),
-  );
+  tf_help_msg('Here you can add candidates.');
 
   return recruit(array(
-    'message' => $message,
+    'menu' => recruit_tabs_ra($campaign_nid),
     'content' => candidates_ra($campaign_nid, $persons, $candidate),
   ));
 
@@ -746,7 +668,6 @@ function get_categorized_scores($role, $candidates) {
   // Fill the array with all values in the right order to be able to take
   // an average
   foreach(get_scores($role, $candidates) as $type_key => $type) {
-    dpm($type_key);
     foreach($type as $item_key => $item) {
       foreach($item as $can_key => $candidate) {
         switch($type_key) {

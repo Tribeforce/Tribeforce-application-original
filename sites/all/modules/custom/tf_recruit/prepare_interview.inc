@@ -35,12 +35,17 @@ function prepare_interview_form($form, &$form_state, $node, $locked = FALSE) {
   }
 
   $form = array_merge($form, array(
-    'confirm' => array(
-      '#type' => 'submit',
-      '#value' => t('Edit'),
-      '#ajax' => array(
-        'callback' => 'prepare_interview_callback',
-        'progress' => array('type' => 'none'),
+    'actions' => array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('actions')),
+      'confirm' => array(
+        '#type' => 'submit',
+        '#value' => t('Edit'),
+        '#attributes' => array('class' => array('btn', 'btn-primary')),
+        '#ajax' => array(
+          'callback' => 'prepare_interview_callback',
+          'progress' => array('type' => 'none'),
+        ),
       ),
     ),
   ));
@@ -58,15 +63,12 @@ function prepare_interview($campaign_nid) {
   $full_role = get_full_role($role_nid);
   $locked = is_campaign_locked($campaign_nid);
 
-  $message = array(
-    '#markup' => t('Here you can prepare the interview.'),
-  );
+  tf_help_msg('Here you can prepare the interview.');
 
   return recruit(array(
-    'message' => $message,
+    'menu' => recruit_tabs_ra($campaign_nid),
     'content' => prepare_interview_ra($full_role, $locked),
   ));
-
 }
 
 
@@ -156,11 +158,21 @@ function prepare_interview_ra($role, $locked = FALSE) {
     }
   }
 
-  $tabs = container_ra(array(
+  $tabs = array(
    'skills' => array('#markup' => t('Skills')),
    'business' => array('#markup' => t('Business talents')),
    'behavioral' => array('#markup' => t('Behavioral talents')),
-  ));
+  );
+
+  $panes = array(
+    'skills' => $skills,
+    'business' => $business,
+    'behavioral' => $behavioral,
+  );
+
+  $tab_pane = tabs_widget_ra($tabs, $panes);
+
+  $ra = array_merge(container_ra(array('role' => $role_ra)), $tab_pane);
 
   // Return the RA consisting of Skills RA and the Talents RA
   return array(
@@ -171,13 +183,7 @@ function prepare_interview_ra($role, $locked = FALSE) {
         $locked ? 'locked' : '',
       ),
     ),
-    'data' => container_ra(array(
-      'role' => $role_ra,
-      'tabs' => $tabs,
-      'skills' => $skills,
-      'business' => $business,
-      'behavioral' => $behavioral,
-    )),
+    'data' => $ra,
   );
 }
 

@@ -58,9 +58,9 @@ function deep_clone_do($node_from, $node_to = NULL) {
                                       '%nid'        => $node_from->nid,
                                       '%cloned_nid' => $cloned_node->nid)));
   } else {
-    drupal_set_message(t('Node %nid has been NOT cloned.',
-                        array('%nid' => $node_from->nid),
-                        'error'));
+    drupal_set_message(t('Node %nid has NOT been cloned.',
+                        array('%nid' => $node_from->nid)),
+                        'error');
   }
 
   return $cloned_node;
@@ -337,12 +337,13 @@ function tf_em_get_company() {
 }
 
 // Returns the field_roles_back_ref field of the company of the logged in user
+/*
 function tf_get_my_roles() {
   $company_ref = tf_em_get_company();
   $company = node_load($company_ref['und'][0]['nid']);
   return $company->field_roles_back_ref;
 }
-
+*/
 // Returns the xxx field of the company of the logged in user
 function tf_get_my_persons() {
   $lang = LANGUAGE_NONE; //TODO
@@ -366,6 +367,7 @@ function tf_get_my_persons() {
 // Function that returns an array to be used as a checkbox element in a form
 // $node: The node for which the checkbox element in a form is to be generated
 // $field: The name of the node field for which checkboxes need to be generated
+/*
 function tf_checkboxes($node, $field) {
   $lang = LANGUAGE_NONE; //TODO
   $options = array();
@@ -414,3 +416,4 @@ function tf_checkboxes($node, $field) {
     );
   }
 }
+*/

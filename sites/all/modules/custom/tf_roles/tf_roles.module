@@ -360,9 +360,10 @@ function cancel_new_role() {
  Page Callbacks
 */
 function roles($regions = array()) {
+  tf_help_msg('Choose a role on the left and go');
+
   $empty_regions = array(
     'left-sidebar' => roles_ra(),
-    'message' => array('#markup' => t('Choose a role on the left and go')),
     'content' => empty_ra('role'),
   );
 
@@ -753,16 +754,16 @@ function roles_ra() {
     '#text' => 'Add new Role',
     '#path' => $path,
     '#options' => array(
-      'attributes' => array('class' => array($path == current_path()
-                                                           ? 'active' : '' )),
+      'attributes' => array('class' => array('btn', 'btn-primary',
+                                    $path == current_path() ? 'active' : NULL )),
       'html' => FALSE,
     ),
   );
 
   return container_ra(array(
+    'new' => $new,
     'header' => $header,
     'body' => $body,
-    'new' => $new,
   ));
 
 }
@@ -778,7 +779,7 @@ function role_actions_ra($role) {
     ),
   );
 
-  foreach(array(t('clone'), t('assign'), t('start campaign')) as $item) {
+  foreach(array(t('clone'), t('start campaign'), t('assign')) as $item) {
     $key = str_replace(' ', '-', strtolower($item));
     $actions[$key] = array(
       '#theme' => 'link',
@@ -949,7 +950,7 @@ function persons_widget_ra($persons, $role_nid) {
   }
 
   $ra = container_ra(array(
-    'close' => 'close',
+    'close' => '&times',
     'widget' => $persons_ra,
   ));
 

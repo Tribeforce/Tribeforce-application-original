@@ -123,7 +123,7 @@ button,
 input,
 select,
 textarea {
-  font-family: Titillium, Arial, sans-serif;
+  font-family: "Titillium Web", Arial, sans-serif;
 }
 
 /*
@@ -150,7 +150,7 @@ a {
 /* line 168, ../sass/normalize.scss */
 a:hover,
 a:focus {
-  color: #ff7f1b;
+  color: #ff7200;
 }
 
 /*

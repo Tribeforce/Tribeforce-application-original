@@ -29,7 +29,7 @@ function tf_recruit_menu() {
 
   $items['recruit/%'] = array(
     'title' => 'Recruit',
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
     'page callback' => 'campaign',
     'page arguments' => array(1), // If the argument is 0, insert is assumed
     'file' => 'campaign.inc',
@@ -39,7 +39,7 @@ function tf_recruit_menu() {
 
   $items['recruit/%/campaign'] = array(
     'title' => 'Campaign details',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'type' => MENU_CALLBACK,
     'page callback' => 'campaign',
     'page arguments' => array(1), // If the argument is 0, insert is assumed
     'weight' => 5,
@@ -51,7 +51,7 @@ function tf_recruit_menu() {
 
   $items['recruit/%/prepare_interview'] = array(
     'title' => 'Prepare interview',
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_CALLBACK,
     'page callback' => 'prepare_interview',
     'page arguments' => array(1),
     'weight' => 20,
@@ -62,7 +62,7 @@ function tf_recruit_menu() {
 
   $items['recruit/%/candidates'] = array(
     'title' => 'Candidates',
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_CALLBACK,
     'page callback' => 'candidates',
     'page arguments' => array(1),
     'weight' => 40,
@@ -204,60 +204,12 @@ function hire($campaign_nid, $person_nid) {
 /**************
 AJAX callbacks
 **************/
-/*
-TODO: This doesn't work for some reason: clicks don't work after AJAX load
-function tf_recruit_ipe($nid) {
-  $node = node_load($nid);
-  $type = $node->type;
-  $display = 'candidate';
-  $html = drupal_render(tf_manage_person_edit_ra($node, $display));
-//  $commands[] = ajax_command_append('.nid-' . $nid, $html);
-  $commands[] = ajax_command_html('.header .add', $html);
-//  $commands[] = ajax_command_invoke(NULL, 'invoke_test');
-  $commands[] = ajax_command_invoke(NULL, 'invoke_init_edit_person');
-//  $commands[] = ajax_command_invoke('.person-edit .field-name-field-motivation .file-widget a', 'click');
-  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
-}
-*/
-
-/*
-Form Alters
-*/
-
-// Auto link nodes
-function tf_recruit_form_alter(&$form, &$form_state, $form_id) {
-  // Register all the forms on which this should be applied
-  $autolink_form_ids = array(
-    'person_node_form', // Used in recruit/%/candidates
-  );
-
-  if (in_array($form_id, $autolink_form_ids)) {
-    $lang = LANGUAGE_NONE; // TODO: Make language independant
-    $path = current_path();
-    $parent = tf_get_parent_bundle($path);
-
-    if (!empty($parent)) {
-      switch ($parent->type) {
-        case 'campaign':
-          if (isset($form['field_campaigns_ref'])) {
-            $company = tf_em_get_company();
-            $company_nid = $company[$lang][0]['nid'];
-            $form['field_company_ref'][$lang]['#default_value']
-              = array($company_nid);
-            $form['field_person_type'][$lang]['#default_value'] = array('1');
-            $form['field_campaigns_ref'][$lang]['#value'][] = $parent->nid;
-            // TODO: This (#value) seems like a bug
-          }
-          $form['actions']['submit']['#submit'][] = 'tf_submit';
-      }
-    }
-  }
-}
 
 
-/*
+
+/**************
  Queries
-*/
+**************/
 // TODO: This can probably be optimized
 function query_candidates($campaign_nid) {
   $query = new EntityFieldQuery();
@@ -398,52 +350,6 @@ function get_scores_by_nids($role, $candidate_nids) {
 }
 
 
-/*
-// Returns a resultset
-function query_skills($string) {
-  $query = db_select('node', 's');
-  $query->leftJoin('field_data_field_type', 't', 's.nid = t.entity_id');
-  $query->leftJoin('field_data_field_expert_level', 'e',
-                   's.nid = e.entity_id');
-  $query->leftJoin('field_data_body', 'b', 's.nid = b.entity_id');
-  $query->leftJoin('field_data_field_skill_type', 'st',
-                  's.nid = st.entity_id');
-  $query->condition('s.type','skill')
-        ->fields('s', array('title','nid'))
-        ->fields('e', array('field_expert_level_value'))
-        ->fields('b', array('body_value'))
-        ->fields('st', array('field_skill_type_value'))
-        ->range(0, 5);
-  add_condition_skill_autocomplete($query, $string);
-
-  return $query->execute();
-}
-
-
-function query_repos_talents() {
-  $query = db_select('node', 'r');
-  $query->leftJoin('field_data_field_talent_ref', 't', 'r.nid = t.entity_id');
-  $query->leftJoin('field_data_field_cloned_from', 'c','r.nid = c.entity_id');
-//$query->leftJoin('field_data_field_skill_type','st','r.nid = st.entity_id');
-  $query->condition('r.type','role')
-        ->condition(db_or()
-                      ->condition('c.field_cloned_from_nid',0)
-                      ->isNull('c.field_cloned_from_nid'))
-        ->fields('t', array('field_talent_ref_nid'));
-  return $query->execute();
-}
-
-// TODO: Optimize performance
-function get_role_details($nid, $type) {
-  $role = get_full_role($nid);
-  $role['extras']['type'] = $type;
-
-  return $role;
-}
-
-*/
-
-
 function get_candidates($campaign_nid) {
   return query_candidates($campaign_nid);
 }
@@ -509,29 +415,73 @@ function campaigns_ra() {
 
   $new = array(
     '#theme' => 'link',
-    '#text' => 'Add new Campaign',
+    '#text' => t('Add new Campaign'),
     '#path' => $path,
     '#options' => array(
-      'attributes' => array('class' => array($path == current_path()
-                                                           ? 'active' : '' )),
+      'attributes' => array('class' => array('btn', 'btn-primary',
+                                    $path == current_path()  ? 'active' : '' )),
       'html' => FALSE,
     ),
   );
 
 
   return container_ra(array(
+    'new' => $new,
     'header' => $header,
     'body' => $body,
-    'new' => $new,
   ));
 }
 
 function recruit($regions = array()) {
+  if(empty($regions)) {
+    tf_help_msg('Choose a campaign on the left');
+  }
+
   $empty_regions = array(
     'left-sidebar' => campaigns_ra(),
-    'message' => array('#markup' => t('Choose a campaign on the left')),
+    'menu' => array(),
     'content' => empty_ra('campaign'),
   );
 
   return tf_module('recruit', $empty_regions, $regions);
+}
+
+function recruit_tabs_ra($campaign_nid) {
+  $prefix = "recruit/$campaign_nid";
+  if(empty($campaign_nid)) {
+    return array();
+  } else {
+    return array(
+      'details' => array(
+        '#theme' => 'link',
+        '#text' => t('Campaign details'),
+        '#path' => $path = "$prefix",
+        '#options' => array(
+          'attributes' => array('class' => array('btn', //'btn-primary',
+                                    $path == current_path()  ? 'active' : '' )),
+          'html' => FALSE,
+        ),
+      ),
+      'prepare' => array(
+        '#theme' => 'link',
+        '#text' => t('Prepare interview'),
+        '#path' => $path = "$prefix/prepare_interview",
+        '#options' => array(
+          'attributes' => array('class' => array('btn', //'btn-primary',
+                                    $path == current_path()  ? 'active' : '' )),
+          'html' => FALSE,
+        ),
+      ),
+      'candidates' => array(
+        '#theme' => 'link',
+        '#text' => t('Candidates'),
+        '#path' => $path = "$prefix/candidates",
+        '#options' => array(
+          'attributes' => array('class' => array('btn', //'btn-primary',
+                                    $path == current_path()  ? 'active' : '' )),
+          'html' => FALSE,
+        ),
+      ),
+    );
+  }
 }

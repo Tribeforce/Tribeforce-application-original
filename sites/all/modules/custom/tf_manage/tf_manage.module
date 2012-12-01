@@ -46,6 +46,35 @@ function tf_manage_menu() {
     'access arguments' => array(2),
   );
 
+  $items['manage/person/%/ajax/remark'] = array( // %5 is redirect type
+    'title' => 'Add remark',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'edit_remark',
+    'page arguments' => array(2, 5, 6),
+    'access arguments' => array('access content'),
+    'file' => 'overview.inc',
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(2),
+  );
+
+  // Assign role to person link
+  $items['manage/person/%/assign/%'] = array(
+    'page callback' => 'assign_role_to',
+    'page arguments' => array(2, 4),
+    'type' => MENU_CALLBACK,
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(2, 4),
+  );
+
+  // Unassign role from person link
+  $items['manage/person/%/unassign/%'] = array(
+    'page callback' => 'unassign_role',
+    'page arguments' => array(2, 4),
+    'type' => MENU_CALLBACK,
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(2, 4),
+  );
+
   return $items;
 }
 
@@ -71,13 +100,14 @@ function get_enriched_persons() {
 
 
 // Returns and array with keys: person and roles
-//   person: person node
+//   person: person node array
 //   roles: array of role nodes (keyed by role-<nid>)
 function get_enriched_person($person) {
   $ret = $person;
   $ret['roles'] = array();
   $ret['skills'] = array();
   $ret['talents'] = array();
+  $ret['tas'] = array();
   $ret['remarks'] = array();
   $ret['evaluations'] = array();
 
@@ -96,14 +126,20 @@ function get_enriched_person($person) {
         $ret['skills']['skill-' . $skill['node']->nid] = $skill;
       }
 
-      // Enrich with the business talents
+      // Enrich with the business talents and talent attributes
       foreach($full_role['talents']['business'] as $talent) {
         $ret['talents']['talent-' . $talent['node']->nid] = $talent;
+        foreach($talent['tas'] as $ta) {
+          $ret['tas']['ta-' . $ta['node']->nid] = $ta;
+        }
       }
 
-      // Enrich with the behavioral talents
+      // Enrich with the behavioral talents and talent attributes
       foreach($full_role['talents']['behavioral'] as $talent) {
         $ret['talents']['talent-' . $talent['node']->nid] = $talent;
+        foreach($talent['tas'] as $ta) {
+          $ret['tas']['ta-' . $ta['node']->nid] = $ta;
+        }
       }
     }
   }
@@ -111,14 +147,74 @@ function get_enriched_person($person) {
   // Enrich with Remarks
   if(!empty($person['node']->field_remarks_ref['und'])) {
     $nids = flatten_nids($person['node']->field_remarks_ref['und']);
-    $ret['remarks'] = node_load_multiple($nids);
+    $remarks = node_load_multiple($nids);
+    foreach($remarks as $remark) {
+      // Put the remark in the array
+      $ret['remarks']['nid-' . $remark->nid]['node'] = $remark;
+      $attached_to = NULL;
+
+      // Set what the remark is attached to in the array
+      if(isset($remark->field_attached_to['und'][0]['nid'])) {
+        $attached_to = node_load($remark->field_attached_to['und'][0]['nid']);
+      }
+
+      if(isset($attached_to->nid)) { // TODO: Do bettter node/object check
+        $ret['remarks']['nid-' . $remark->nid]['attached_to']['node'] =
+                                                                   $attached_to;
+      } else {
+        $ret['remarks']['nid-' . $remark->nid]['attached_to'] = array();
+      }
+    }
   }
 
   // Enrich with Evaluations
   if(!empty($person['node']->field_evaluations_ref['und'])) {
     $nids = flatten_nids($person['node']->field_evaluations_ref['und']);
-    $ret['evaluations'] = node_load_multiple($nids);
+    $evaluations = node_load_multiple($nids);
+    foreach($evaluations as $evaluation) {
+      $ret['evaluations']['nid-' . $evaluation->nid]['node'] = $evaluation;
+    }
   }
 
   return $ret;
+}
+
+
+function assign_role_to($person_nid, $role_nid) {
+  $person = node_load($person_nid);
+
+  $exists = FALSE;
+  if(isset($person->field_role_ref['und'][0]['nid'])) {
+    foreach($person->field_role_ref['und'] as $role_ref) {
+      if($role_ref['nid'] == $role_nid) {
+        $exists = TRUE;
+        break;
+      }
+    }
+  }
+
+  if(!$exists) {
+    $person->field_role_ref['und'][] = array('nid' => $role_nid);
+  }
+
+  node_save($person);
+
+  drupal_goto("manage/person/$person_nid/edit");
+}
+
+function unassign_role($person_nid, $role_nid) {
+  $person = node_load($person_nid);
+
+  if(isset($person->field_role_ref['und'][0]['nid'])) {
+    foreach($person->field_role_ref['und'] as $key => $role_ref) {
+      if($role_ref['nid'] == $role_nid) {
+        unset($person->field_role_ref['und'][$key]);
+        // Allow eventual cleanup:        break;
+      }
+    }
+  }
+
+  node_save($person);
+
+  drupal_goto("manage/person/$person_nid/edit");
 }

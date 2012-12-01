@@ -5,7 +5,7 @@
 /* line 9, ../sass/forms.scss */
 .form-item {
   /* Wrapper for a form element (or group of form elements) and its label */
-  margin: 1.5em 0;
+  margin: 0 0 10px 0;
 }
 /* line 14, ../sass/forms.scss */
 .form-item input.error,
