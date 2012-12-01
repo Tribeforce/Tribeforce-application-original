@@ -23,11 +23,11 @@ function person_details($nid) {
  Render Arrays
 ***************/
 function tf_manage_person_details_ra($enriched_person) {
-  $tabs = container_ra(array(
+  $tabs = array(
     'remarks' => array('#markup' => t('Remarks')),
     'skills' => array('#markup' => t('Skills')),
     'talents' => array('#markup' => t('Talents')),
-  ));
+  );
 
   module_load_include('inc', 'tf_manage', 'overview');
   $remarks_pane = container_ra(array(
@@ -37,6 +37,13 @@ function tf_manage_person_details_ra($enriched_person) {
                                $enriched_person['node']->nid, 'person-details'),
   ));
 
+  $panes = array(
+    'remarks' => $remarks_pane,
+    'skills' => empty($enriched_person['skills']) ? array() :
+         items_ra($enriched_person['skills'], 'skill', 0, 'person-details'),
+    'talents' => empty($enriched_person['talents']) ? array() :
+       items_ra($enriched_person['talents'], 'talent', 0, 'person-details'),
+  );
 
   return array(
     '#type' => 'container',
@@ -45,18 +52,7 @@ function tf_manage_person_details_ra($enriched_person) {
     ),
     'data' =>   container_ra(array(
       'col-1' => item_ra($enriched_person, 'person-details'),
-      'col-2' => container_ra(array(
-        'tab-pane' => container_ra(array(
-          'tabs' => $tabs,
-          'panes' => container_ra(array(
-            'remarks' => $remarks_pane,
-            'skills' => empty($enriched_person['skills']) ? array() :
-                 items_ra($enriched_person['skills'], 'skill', 0, 'person-details'),
-            'talents' => empty($enriched_person['talents']) ? array() :
-               items_ra($enriched_person['talents'], 'talent', 0, 'person-details'),
-          )),
-        )),
-      )),
+      'col-2' => tabs_widget_ra($tabs, $panes),
     )),
   );
 
