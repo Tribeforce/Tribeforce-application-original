@@ -950,26 +950,5 @@ function tribeforce_application_strongarm() {
   );
   $export['theme_tf_app_settings'] = $strongarm;
 
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'toolbar_hide_css';
-  $strongarm->value = 1;
-  $export['toolbar_hide_css'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'toolbar_hide_default';
-  $strongarm->value = 1;
-  $export['toolbar_hide_default'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'toolbar_hide_key';
-  $strongarm->value = '\\';
-  $export['toolbar_hide_key'] = $strongarm;
-
   return $export;
 }
