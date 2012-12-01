@@ -277,7 +277,7 @@ function header_ra() {
       )),
     ));
   }
-  return array();
+  return $ra;
 }
 
 /*
