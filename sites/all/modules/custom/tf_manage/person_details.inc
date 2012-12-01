@@ -7,9 +7,10 @@ function person_details($nid) {
   $node = node_load($nid);
   $enriched_person = get_enriched_person(array('node' => $node));
 
+  tf_help_msg('Some help text');
+
   $empty_regions = array(
     'left-sidebar' => array(),
-    'message' => array('#markup' => t('Some help text')),
     'content' => tf_manage_person_details_ra($enriched_person),
   );
 
@@ -60,70 +61,6 @@ function tf_manage_person_details_ra($enriched_person) {
   );
 
 }
-
-function tf_manage_evaluation_ra($evaluation, $index) {
-   $even_odd = $index % 2 == 0 ? 'even' : 'odd';
-
-  return array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array(
-        'evaluation',
-        'nid-' . $evaluation->nid,
-        'index-' . $index,
-        $even_odd,
-      ),
-    ),
-    'data' => container_ra(array(
-      'date' => array(
-        '#markup' => format_date($evaluation->created,'short_date'),
-      ),
-      'link' => array(
-        '#theme' => 'link',
-        '#text' => t('Evaluation') . ' ' . ($index+1),
-        '#path' => 'recruit/candidates/interview/' . $evaluation->nid,
-        '#options' => array(
-          'attributes' => array('class' => array('use-ajax')),
-          'html' => FALSE,
-        ),
-      ),
-    )),
- );
-}
-
-function tf_manage_evaluations_ra($enriched_person) {
-  $ra = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array('evaluations'),
-    ),
-  );
-
-  $index = 0;
-  foreach($enriched_person['evaluations'] as $eval) {
-    $ra['nid-'. $eval->nid] = tf_manage_evaluation_ra($eval, $index);
-    $index++;
-  }
-
-  $ra['add'] = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array('add'),
-    ),
-    '#theme' => 'link',
-    '#text' => t('Add a new evaluation'),
-    '#path' => 'manage/evaluate/' . $enriched_person['node']->nid,
-    '#options' => array(
-      'attributes' => array(),
-      'html' => FALSE,
-    ),
-  );
-
-  return show_hide(t('Evaluations'), $ra);
-}
-
-
-
 
 
 

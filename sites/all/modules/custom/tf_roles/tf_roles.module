@@ -360,9 +360,10 @@ function cancel_new_role() {
  Page Callbacks
 */
 function roles($regions = array()) {
+  tf_help_msg('Choose a role on the left and go');
+
   $empty_regions = array(
     'left-sidebar' => roles_ra(),
-    'message' => array('#markup' => t('Choose a role on the left and go')),
     'content' => empty_ra('role'),
   );
 
@@ -570,8 +571,6 @@ function roles_autocomplete($role_nid, $type, $string) {
 function change_talent($role_nid, $original_nid, $title, $level) {
   $talent_array = get_talent_array($title, $level);
 
-dpm($talent_array);
-
   // If the query returns no results, we shouldn't do anything
   // TODO: Decide what should be done
   if(!empty($talent_array['node'])) {
@@ -755,16 +754,16 @@ function roles_ra() {
     '#text' => 'Add new Role',
     '#path' => $path,
     '#options' => array(
-      'attributes' => array('class' => array($path == current_path()
-                                                           ? 'active' : '' )),
+      'attributes' => array('class' => array('btn', 'btn-primary',
+                                    $path == current_path() ? 'active' : NULL )),
       'html' => FALSE,
     ),
   );
 
   return container_ra(array(
+    'new' => $new,
     'header' => $header,
     'body' => $body,
-    'new' => $new,
   ));
 
 }
@@ -780,7 +779,7 @@ function role_actions_ra($role) {
     ),
   );
 
-  foreach(array(t('clone'), t('assign'), t('start campaign')) as $item) {
+  foreach(array(t('clone'), t('start campaign'), t('assign')) as $item) {
     $key = str_replace(' ', '-', strtolower($item));
     $actions[$key] = array(
       '#theme' => 'link',

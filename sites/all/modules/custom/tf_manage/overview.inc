@@ -4,6 +4,8 @@
  Forms
 ******/
 function tf_manage_remark_form($form, &$form_state, $node, $redirect) {
+  $is_new = empty($node->nid);
+
   return array(
     'remark' => array(
 //      '#title' => t('Remark'),
@@ -16,12 +18,20 @@ function tf_manage_remark_form($form, &$form_state, $node, $redirect) {
       '#default_value' => isset($node->field_attached_to['und'][0]['nid']) ?
                                  $node->field_attached_to['und'][0]['nid'] : '',
     ),
-    'confirm' => array(
-      '#type' => 'submit',
-      '#value' => t('Edit'),
+    'actions' => array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('actions')),
+      'submit' => array(
+        '#type' => 'submit',
+        '#value' => $is_new ? t('Add') : t('Edit'),
+        '#attributes' => array('class' => array('btn', 'btn-primary')),
+      ),
     ),
   );
 }
+
+
+
 
 
 
@@ -56,10 +66,10 @@ function tf_manage_remark_form_submit($form, &$form_state) {
 ***************/
 function manage($regions = array()) {
   $my_people = get_enriched_persons();
+  tf_help_msg('Click on a tile to add a remark');
 
   $empty_regions = array(
     'left-sidebar' => array(),
-    'message' => array('#markup' => t('Click on a tile to add a remark')),
     'content' => manage_overview_ra($my_people),
   );
 
@@ -70,15 +80,13 @@ function manage($regions = array()) {
 /***************
  AJAX callbacks
 ***************/
-function edit_remark($person_nid, $remark_nid = FALSE) {
+function edit_remark($person_nid, $redirect = 0, $remark_nid = FALSE) {
   $person = node_load($person_nid);
   $remark = node_load($remark_nid);
   $enriched_person = get_enriched_person(array('node' => $person));
 
-  // TODO: Solve this in a proper way
-  $redirect = $remark_nid === FALSE ? 'manage' : "manage/person/$person_nid";
-
-  $html = drupal_render(tf_manage_edit_remark_ra($enriched_person, $redirect, $remark));
+  $html = drupal_render(tf_manage_edit_remark_ra($enriched_person, $redirect,
+                                                                      $remark));
 
   $commands[] = ajax_command_append('.tf-module', $html);
     ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
@@ -88,27 +96,31 @@ function edit_remark($person_nid, $remark_nid = FALSE) {
  Render Arrays
 ***************/
 function manage_overview_ra($people) {
-  $new = array(
-    '#type' => 'container',
-    '#attributes' => array('class' => array('person-new')),
-    'data' => show_hide(t("Add a person"), add_person()),
-  );
 
-  return array(
-    '#type' => 'container',
-    '#attributes' => array('class' => array('manage-overview')),
-    'new' => $new,
-    'list' => persons_ra($people, 0, 'manage'),
-  );
+  $persons_types = persons_ra($people, 0, 'manage');
+
+  foreach($persons_types as $person_type => $persons) {
+    $tabs[$person_type] = $persons['data']
+                     ['show-hide-header']['show-hide-header']['title']['title'];
+    $panes[$person_type] = $persons['data']['body']['body'];
+  }
+
+  $tabs['new'] = t("Add a person");
+  $panes['new'] = add_person();
+
+  $tab_pane = tabs_widget_ra($tabs, $panes);
+
+  return container_ra(array('manage-overview' => $tab_pane));
+
 }
 
 
 function add_remark_ra($enriched_person) {
-  return edit_remark_ra($enriched_person);
+  return edit_remark_ra($enriched_person, 1);
 }
 
 
-function edit_remark_ra($enriched_person, $redirect = 'manage', $remark = FALSE) {
+function edit_remark_ra($enriched_person, $redirect = 0, $remark = FALSE) {
   if($remark === FALSE) {
     // Create a dummy remark with the person linked in
     $remark = new stdClass();
@@ -135,6 +147,10 @@ function edit_remark_ra($enriched_person, $redirect = 'manage', $remark = FALSE)
          items_ra($enriched_person['tas'], 'talent attribute', 0, 'widget'),
   );
 
+  // TODO: Solve this in a proper way
+  $redirect = $redirect == 0 ? 'manage'
+                             : "manage/person/" . $enriched_person['node']->nid;
+
   return array(
     '#type' => 'container',
     '#attributes' => array('class' => array('edit-remark')),
@@ -144,7 +160,7 @@ function edit_remark_ra($enriched_person, $redirect = 'manage', $remark = FALSE)
 }
 
 
-function tf_manage_edit_remark_ra($enriched_person, $redirect, $remark = FALSE) {
+function tf_manage_edit_remark_ra($enriched_person, $redirect = 0, $remark = FALSE) {
   $ra = array(
     'add_remark' => array(
       '#type' => 'container',

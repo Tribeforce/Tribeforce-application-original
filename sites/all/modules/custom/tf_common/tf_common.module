@@ -90,21 +90,21 @@ function item_form($form, &$form_state, $node, $parent_nid = 0) {
     '#weight' => 99,
     '#type' => 'container',
     '#attributes' => array('class' => array('actions')),
-    'submit' => array(
-      '#type' => 'submit',
-      '#attributes' => array('class' => array('submit')),
-      '#value' => $is_new ? t('Add') : t('Edit'),
-      '#ajax' => array(
-        'callback' => 'ipe_submit_callback',
-        'progress' => array('type' => 'none'),
-      ),
-    ),
     'cancel' => array(
       '#type' => 'submit',
-      '#attributes' => array('class' => array('cancel')),
+      '#attributes' => array('class' => array('cancel', 'btn')),
       '#value' => t('Cancel'),
       '#ajax' => array(
         'callback' => 'ipe_cancel_callback',
+        'progress' => array('type' => 'none'),
+      ),
+    ),
+    'submit' => array(
+      '#type' => 'submit',
+      '#attributes' => array('class' => array('submit', 'btn', 'btn-primary')),
+      '#value' => $is_new ? t('Add') : t('Edit'),
+      '#ajax' => array(
+        'callback' => 'ipe_submit_callback',
         'progress' => array('type' => 'none'),
       ),
     ),
@@ -175,7 +175,12 @@ function get_tf_page($module) {
 */
 function tf_module($module, $empty_regions, $regions = array()) {
   // Module container
-  $main = array();
+  $messages = array('#markup' => theme('status_messages'));
+
+  $main = array(
+    'header' => region_ra('header', header_ra()),
+    'messages' => region_ra('messages', $messages),
+  );
 
   foreach($empty_regions as $region_name => $empty_ra) {
     if(empty($regions[$region_name])) {
@@ -187,18 +192,77 @@ function tf_module($module, $empty_regions, $regions = array()) {
     }
   }
 
+  $left_sidebar = array_merge(
+    container_ra(array(
+      'dashboard' => array(
+        '#theme' => 'link',
+        '#text' => t('Dashboard'),
+        '#path' => '',
+        '#options' => array(
+          'attributes' => array(),
+          'html' => FALSE,
+        ),
+      ),
+    )),
+    $regions['left-sidebar']
+  );
+
+
   return array(
     'page' => array(
       '#type' => 'container',
       '#attributes' => array(
         'class' => array('tf-module', $module),
       ),
-      'left-sidebar' => region_ra('left-sidebar', $regions['left-sidebar']),
+      'left-sidebar' => region_ra('left-sidebar', $left_sidebar),
       'main' => region_ra('main', $main),
     ),
   );
 }
 
+
+function header_ra() {
+  global $user;
+
+
+  $settings = container_ra(array(
+    'icon' => '',
+    'text' => t('Settings'),
+  ));
+  $logout = container_ra(array(
+    'icon' => '',
+    'text' => t('Logout'),
+  ));
+
+  $block = block_load('menu', 'menu-dashboard');
+  $menu = _block_get_renderable_array(_block_render_blocks(array($block)));
+
+  return container_ra(array(
+    'menu' => $menu,
+    'admin' => container_ra(array(
+      'user' => t('Hello'). " " . strtoupper($user->name),
+      'settings' => array(
+        '#theme' => 'link',
+        '#text' => drupal_render($settings),
+        '#path' => "",
+        '#options' => array(
+          'attributes' => array(),
+          'html' => TRUE,
+        )
+      ),
+      'logout' => array(
+        '#theme' => 'link',
+        '#text' => drupal_render($logout),
+        '#path' => "logout",
+        '#options' => array(
+          'attributes' => array(),
+          'html' => TRUE,
+        )
+      ),
+    )),
+  ));
+
+}
 
 /*
  Queries
@@ -344,7 +408,7 @@ function region_ra($name, $ra) {
   return array(
     '#type' => 'container',
     '#attributes' => array(
-      'class' => array('tf-region', $name),
+      'class' => array('tf-region', 'clearfix', $name),
     ),
     'data' => $ra,
   );
@@ -449,6 +513,7 @@ function items_ra($items, $type, $parent_nid = 0, $display = 'edit') {
         ),
       );
     } elseif($display === 'person-details'
+          || $display === 'widget_old'
           || $display === 'widget'
           || $display === 'person-edit') {
       return $body;
@@ -575,7 +640,7 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             );
             break;
           }
-        case 'widget':
+        case 'widget_old':
           $path = "manage/person/$parent_nid/assign/". $node_array['node']->nid;
           $ra['content']['title'] = array(
             '#type' => 'container',
@@ -587,6 +652,17 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
               'attributes' => array(),
               'html' => FALSE,
             ),
+          );
+          break;
+        case 'widget':
+          $path = "manage/person/$parent_nid/assign/". $node_array['node']->nid;
+          $ra['content']['title'] = array(
+            '#type' => 'container',
+            '#attributes' => array('class' => array(
+              'title',
+              'nid-'. $node_array['node']->nid,
+            )),
+            'data' => array('#markup' => $node_array['node']->title),
           );
           break;
       }
@@ -782,7 +858,18 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             'field_avatar', array(
               'label' => 'hidden',
               'weight' => -40,
-              'settings' => array('image_style' => 'medium')));
+              'settings' => array('image_style' => 'medium'))
+          );
+          $ra['content']['edit'] = array(
+            '#theme' => 'link',
+            '#text' => t('Edit details'),
+            '#path' => 'manage/person/' . $node_array['node']->nid . "/edit",
+            '#options' => array(
+              'attributes' => array('class'=>array('btn','edit','btn-primary')),
+              'html' => FALSE,
+            ),
+            '#weight' => -35,
+          );
           $ra['content']['first_name'] = field_view_field('node',
             $node_array['node'], 'field_first_name',
                                    array('label' => 'hidden', 'weight' => -30));
@@ -794,8 +881,11 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             $node_array['node'], 'field_hire_date', array('weight' => -3));
           $ra['content']['hire_date']['#formatter'] = 'short_date';
 //          $ra['content']['evaluations'] = items_ra($node_array['evaluations'],
-//                                           'evaluation', $parent_nid, $display);
-          $ra['content']['last_eval'] = item_ra($last_eval, $display);
+//                                         'evaluation', $parent_nid, $display);
+          if(!empty($last_eval)) {
+            $ra['content']['last_eval'] = item_ra($last_eval, $display, array(),
+                                                      $node_array['node']->nid);
+          }
           $ra['add_evaluation'] = array(
             '#type' => 'container',
             '#attributes' => array(
@@ -806,15 +896,6 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             '#path' => 'manage/evaluate/' . $node_array['node']->nid,
             '#options' => array(
               'attributes' => array('class' => array('btn', 'btn-primary')),
-              'html' => FALSE,
-            ),
-          );
-          $ra['content']['edit'] = array(
-            '#theme' => 'link',
-            '#text' => t('Edit details'),
-            '#path' => 'manage/person/' . $node_array['node']->nid . "/edit",
-            '#options' => array(
-              'attributes' => array('class' => 'edit-link'),
               'html' => FALSE,
             ),
           );
@@ -846,7 +927,7 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
         '#attributes' => array('class' => array('edit')),
         '#theme' => 'link',
         '#text' => t('edit'),
-        '#path' => "manage/person/$parent_nid/nojs/remark/"
+        '#path' => "manage/person/$parent_nid/nojs/remark/1/"
                                                      . $node_array['node']->nid,
         '#options' => array(
           'attributes' => array('class' => array(
@@ -869,7 +950,8 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
         '#attributes' => array('class' => array('title')),
         '#theme' => 'link',
         '#text' => format_date($node_array['node']->changed, 'short_date'),
-        '#path' => 'recruit/candidates/interview/' . $node_array['node']->nid,
+        // TODO: Maybe this is not nice to go to another module
+        '#path' => "recruit/$parent_nid/nojs/candidates/interview/" . $node_array['node']->nid,
         '#options' => array(
           'attributes' => array('class' => array('use-ajax')),
           'html' => FALSE,
@@ -915,7 +997,7 @@ function persons_ra($person_types, $parent_nid, $display) {
   foreach($person_types as $person_type_id => $persons) {
     if(in_array($person_type_id, $show_array)) {
       $type = $lov[$person_type_id];
-      $ra[$person_type_id] = array(
+      $ra['person-type-' . $person_type_id] = array(
         '#type' => 'container',
         '#attributes' => array(
           'class' => array(
@@ -950,6 +1032,23 @@ function dropdown_widget_ra($class_name, $item, $dropdown, $button = TRUE) {
   );
 }
 
+function tabs_widget_ra($tabs, $panes) {
+  $ra = container_ra(array(
+    'tab-pane' => container_ra(array(
+      'tabs' => container_ra($tabs),
+      'panes' => container_ra($panes),
+    )),
+  ));
+
+  // Set the first tab active
+  $first = &$ra['tab-pane']['tab-pane']['tabs']['tabs'];
+  $first[key($first)]['#attributes']['class'][] = 'active';
+  // Set the first pane active
+  $first = &$ra['tab-pane']['tab-pane']['panes']['panes'];
+  $first[key($first)]['#attributes']['class'][] = 'active';
+
+  return $ra;
+}
 
 
 /*
@@ -1148,6 +1247,12 @@ function tf_is_own_item($nid) {
 
     if(!empty($node->type)) {
       switch($node->type) {
+        case 'evaluation':
+          if(!empty($node->field_person_back_ref['und'][0]['nid'])) {
+            $person_nid   = $node->field_person_back_ref['und'][0]['nid'];
+            return tf_is_own_item($person_nid);
+          }
+          break;
         case 'interview':
           if(!empty($node->field_person_back_ref['und'][0]['nid'])
           && !empty($node->field_campaign_ref['und'][0]['nid'])) {
@@ -1205,4 +1310,10 @@ function get_default_avatar() {
       ),
     ),
   );
+}
+
+function tf_help_msg($msg) {
+  if(empty($_POST)) {
+    drupal_set_message(t($msg), 'help');
+  }
 }

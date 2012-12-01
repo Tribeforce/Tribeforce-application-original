@@ -46,17 +46,16 @@ function tf_manage_menu() {
     'access arguments' => array(2),
   );
 
-  $items['manage/person/%/ajax/remark'] = array(
+  $items['manage/person/%/ajax/remark'] = array( // %5 is redirect type
     'title' => 'Add remark',
     'type' => MENU_CALLBACK,
     'page callback' => 'edit_remark',
-    'page arguments' => array(2, 5),
+    'page arguments' => array(2, 5, 6),
     'access arguments' => array('access content'),
     'file' => 'overview.inc',
     'access callback' => 'tf_is_own',
     'access arguments' => array(2),
   );
-
 
   // Assign role to person link
   $items['manage/person/%/assign/%'] = array(

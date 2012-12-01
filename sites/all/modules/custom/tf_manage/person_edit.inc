@@ -4,6 +4,8 @@
 ***************/
 function tf_manage_person_form($form, &$form_state, $node,
                                $display = 'details', $extra = array()){
+  $is_new = empty($node->nid);
+
   // Get the form elements of the node
   field_attach_form('node', $node, $form, $form_state, 'und');
 
@@ -12,7 +14,7 @@ function tf_manage_person_form($form, &$form_state, $node,
     '#title' => t('Last name'),
     '#type' => 'textfield',
     '#required' => TRUE,
-    '#default_value' => empty($node->title) ? '' : $node->title,
+    '#default_value' => $is_new ? '' : $node->title,
     '#weight' => 2,
   );
 
@@ -30,20 +32,21 @@ function tf_manage_person_form($form, &$form_state, $node,
 
   $my_form['actions'] = array(
     // We assume the submit button is always last
+    'cancel' => array(
+      '#theme' => 'link',
+      '#text' => t('Cancel'),
+      '#options' => array(
+        'attributes' => array('class' => array('cancel', 'btn')),
+        'html' => FALSE,
+      ),
+    ),
     '#type' => 'container',
     '#attributes' => array('class' => array('actions')),
     '#weight' => 99,
     'submit' => array(
       '#type' => 'submit',
-      '#value' => t('Edit'),
-    ),
-    'cancel' => array(
-      '#theme' => 'link',
-      '#text' => t('Cancel'),
-      '#options' => array(
-        'attributes' => array('class' => array('cancel')),
-        'html' => FALSE,
-      ),
+      '#value' => $is_new ? t('Add') : t('Edit'),
+      '#attributes' => array('class' => array('btn', 'btn-primary')),
     ),
   );
 
@@ -128,9 +131,9 @@ function person_edit($nid) {
   $node = node_load($nid);
   $enriched_person = get_enriched_person(array('node' => $node));
 
+  tf_help_msg('Some help text');
   $empty_regions = array(
     'left-sidebar' => array(),
-    'message' => array('#markup' => t('Some help text')),
     'content' => tf_manage_person_edit_ra($enriched_person['node'], 'details'),
   );
 
@@ -193,8 +196,8 @@ function tf_manage_person_edit_ra($person, $display = 'details', $extra = array(
 
     $item = t('Assign role');
     $my_roles = tf_get_my_roles(); // TODO: cache this
-    $dropdown = items_ra($my_roles, 'role', $person->nid, 'widget');
-    $assign_role = dropdown_widget_ra('assign-role', $item, $dropdown);
+    $dropdown = items_ra($my_roles, 'role', $person->nid, 'widget_old');
+    $assign_role = dropdown_widget_ra('', $item, $dropdown);
   } else {
     $roles = $assign_role = array();
   }
@@ -202,7 +205,7 @@ function tf_manage_person_edit_ra($person, $display = 'details', $extra = array(
   $ra = array(
     '#type' => 'container',
     '#attributes' => array(
-      'class' => array('person-edit'),
+      'class' => array('person-edit', 'clearfix'),
     ),
     'data' => container_ra(array(
       'col-1' => container_ra(array(
@@ -227,7 +230,7 @@ function tf_manage_person_edit_ra($person, $display = 'details', $extra = array(
           'add' => t('Add Motivation Letter'),
         )),
         'roles' => $roles,
-        'assign_role' => $assign_role,
+        'assign-role' => $assign_role,
 
       )),
     )),

@@ -3,9 +3,24 @@
 /*
  Forms
 */
-function campaign_form($form, &$form_state, $node) {
+function campaign_form($form, &$form_state, $node, $prefilled) {
   field_attach_form('node', $node, $form, $form_state);
   unset($form['field_role_ref']['#weight']);
+
+  if($prefilled) {
+    $role = node_load($node->field_role_ref['und'][0]['nid']);
+    $role_widget = container_ra(array('role' => $role->title));
+  } else {
+    if(isset($node->field_role_ref['und'][0]['nid'])) {
+      $role = node_load($node->field_role_ref['und'][0]['nid']);
+      $item = $role->title;
+    } else {
+      $item = t('Assign role');
+    }
+    $my_roles = tf_get_my_roles(); // TODO: cache this
+    $dropdown = items_ra($my_roles, 'role', 0, 'widget');
+    $role_widget = dropdown_widget_ra('', $item, $dropdown);
+  }
 
   return array(
     'title' => array(
@@ -15,11 +30,17 @@ function campaign_form($form, &$form_state, $node) {
     ),
     'role' => $form['field_role_ref'],
 //    'date' => $form['field_date'],
-    'submit' => array(
-      '#type' => 'submit',
-      '#value' => empty($node->nid) ?
-                                    t('Create campaign'): t('Edit Campaign'),
-      '#value' => t('Edit'),
+    'role-widget' => $role_widget,
+    'actions' => array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('actions')),
+      'submit' => array(
+        '#type' => 'submit',
+        '#attributes' => array('class' => array('btn', 'btn-primary')),
+        '#value' => empty($node->nid) ?
+                                      t('Create campaign'): t('Edit Campaign'),
+//        '#value' => t('Edit'),
+      ),
     ),
   );
 }
@@ -57,9 +78,9 @@ function campaign_form_submit($form, &$form_state) {
 Page callbacks
 */
 // If the $role_nid is not empty it propopulates the role widget
-function campaign($nid, $role_nid = 0) {
+function campaign($campaign_nid, $role_nid = 0) {
   // $nid is 0 for new campaigns
-  if(empty($nid)) {
+  if(empty($campaign_nid)) {
     $campaign = new stdClass();
     $campaign->type = 'campaign';
     $campaign->title = '';
@@ -68,20 +89,18 @@ function campaign($nid, $role_nid = 0) {
     $campaign->field_company_ref = tf_em_get_company();
   }
   else {
-    $campaign = node_load($nid); // Returns FALSE if node doesn't exist yet
+    $campaign = node_load($campaign_nid); // Returns FALSE if node doesn't exist
   }
 
   if(!empty($role_nid)) {
     $campaign->field_role_ref['und'][0]['nid'] = $role_nid;
   }
 
-  $message = array(
-    '#markup' => t('Here you can define the information of this campaign.'),
-  );
+  tf_help_msg('Here you can define basic information of this campaign.');
 
   return recruit(array(
+    'menu' => recruit_tabs_ra($campaign_nid),
     'content' => campaign_ra($campaign, $role_nid),
-    'message' => $message,
   ));
 }
 
@@ -97,17 +116,30 @@ Render Arrays
 */
 function campaign_ra($node, $role_nid = 0) {
   // TODO: Other text when $nid = 0 (=new)
+  $prefilled = $role_nid > 0;
 
-  $prefilled = ($role_nid > 0)? 'prefilled' : '';
+/*
+  if($role_nid > 0) {
+    $prefilled = 'prefilled';
+    $role = node_load($role_nid);
+    $role_widget = container_ra(array('role' => $role->title));
+  } else {
+    $prefilled = '';
+    $item = t('Assign role');
+    $my_roles = tf_get_my_roles(); // TODO: cache this
+    $dropdown = items_ra($my_roles, 'role', $node->nid, 'widget');
+    $role_widget = dropdown_widget_ra('', $item, $dropdown);
+  }
+*/
 
   return array(
     '#type' => 'container',
     '#attributes' => array('class' => array(
       'campaign-details',
-      $prefilled,
+      $prefilled ? 'prefilled' : '',
     )),
-    'intro' => array('#markup' => 'A whole intro text',),
-    'form' => drupal_get_form('campaign_form', $node),
+    'intro' => container_ra(array('intro' => 'A whole intro text')),
+    'form' => drupal_get_form('campaign_form', $node, $prefilled),
   );
 }
 

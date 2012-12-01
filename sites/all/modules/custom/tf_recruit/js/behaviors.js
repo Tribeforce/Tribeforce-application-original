@@ -1,6 +1,6 @@
 // Using the closure to map jQuery to $.
 (function ($) {
-  Drupal.behaviors.role_selection = {
+/*  Drupal.behaviors.role_selection = {
     attach: function (context, settings) {
       var roles_container_id = '#roles';
       var role_preview_id = '#preview';
@@ -164,13 +164,42 @@
       // Helper functions
     }
   };
-
+*/
 
   Drupal.behaviors.campaign = {
     attach: function (context, settings) {
       // By default focus on the first text input element
       // TODO: Refine
       $('.campaign-details input[type=text]').focus();
+
+      // Change select in dropdown
+      $('.campaign-details .dropdown .role').click(function(event) {
+        event.stopImmediatePropagation();
+        var nid = get_nid_in_classes($(this).attr('class'));
+        $('.campaign-details .field-name-field-role-ref select').val(nid);
+        return false;
+      });
+
+
+      /*******
+      Helpers
+      *******/
+      // TODO: Remove duplicate function with tf_recruit
+      function get_nid_in_classes(classes) {
+
+        console.log(classes);
+        var arr = classes.split(' ');
+        var i;
+        for(i = 0; i < arr.length; i++) {
+          index = arr[i].indexOf("nid-");
+          if(index >= 0) {
+            return arr[i].substring(index + 4, arr[i].length);
+          }
+        }
+        return false;
+      }
+
+
     }
   };
 
@@ -241,7 +270,7 @@
         function(event) {
           // Very important to prevent flickering side effects
           event.stopImmediatePropagation();
-
+console.log('switch clicked' + event);
           var item = $(this).parent().parent();
           var body = $(this).parent().next(); // Helper variable
 

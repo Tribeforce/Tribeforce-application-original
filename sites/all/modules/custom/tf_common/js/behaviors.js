@@ -39,35 +39,58 @@
     attach: function (context, settings) {
       // TABS
       // Set the active tab logic
-      $('.tab-pane .tabs div').click(function(event) {
+      $('.tab-pane .tabs > div').click(function(event) {
         event.preventDefault();
-        var tab = $(this).parents('.tab-pane').find('.panes .' +$(this).attr('class'));
-        tab.addClass('active');
-        tab.siblings().removeClass('active');
+        $pane = $(this).parents('.tab-pane').find('.panes .' +$(this).attr('class'));
+        $pane.addClass('active');
+        $pane.siblings().removeClass('active');
 
         $(this).addClass('active');
         $(this).siblings().removeClass('active');
         return false;
       });
 
-      // Set the first pane and first tab in a tab-pane to active
-      $('.tab-pane .tabs > div:first-child').addClass('active');
-      $('.tab-pane .panes > div:first-child').addClass('active');
-
       // DROPDOWN
       // Clicking on the item or the dropdown icon slides the dropdown down
-      $('.dropdown-widget .btn, .dropdown-widget .item').click(function(event) {
+      $('.dropdown-widget > .btn, .dropdown-widget > .item').click(function(event) {
         event.stopImmediatePropagation();
+        event.preventDefault();
+        console.log('button');
         $(this).parents('.dropdown-widget').children().toggleClass('open');
+        return false;
+      });
+
+      $('.dropdown-widget .dropdown > div').click(function(event) {
+        event.stopImmediatePropagation();
+        $widget = $(this).parents('.dropdown-widget');
+        $widget.children().toggleClass('open');
+        var txt = $(this).text();
+        $widget.find('.item').text(txt);
       });
 
       // OVERLAY
       // Close the overlay
-      $('.overlay .close').click(function(event) {
+      $('.overlay .close').live('click', function(event) {
         event.stopImmediatePropagation();
+        console.log('close');
         $(this).parents('.overlay').remove();
+        return false;
       });
 
+      // ACTIVE LINKS
+      var pathname = window.location.pathname;
+      $('#block-menu-menu-dashboard .menu a').each(function() {
+        if(pathname.indexOf($(this).attr('href')) === 0) {
+          $(this).addClass('active');
+        }
+      });
+
+      // HEIGHT FIX
+      var max_height = Math.max(
+        $('.tf-region.main').height(),
+        $('.tf-region.left-sidebar').height()
+      );
+      $('.tf-module').height(max_height);
 
     }
   };

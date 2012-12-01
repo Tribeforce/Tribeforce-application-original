@@ -10,21 +10,20 @@
       // Click on a skill or a talent_attribute in the widget
       // sets the nid in the hidden field
       $('.skill.display-widget, .talent_attribute.display-widget').click(function(event) {
+        event.stopPropagation();
+        console.log('item clicked');
+
         var nid = get_nid_in_classes($(this).attr('class'));
-        var txt = $(this).find('.field-item').text();
-        $widget = $(this).parents('.dropdown-widget');
-        // TODO: Make this dropdown closing generic
-        $widget.children().toggleClass('open');
-        $widget.find('.item').text(txt);
-        $(this).parents('.edit-remark').find('form input[name=attached_to]').val(nid);
+        $(this).parents('.edit-remark').find('form input[name=attached_to]')
+          .val(nid);
+        return false;
       });
 
       // Clicking on none removes the value from the hidden field
-      $('.dropdown .none').click(function() {
-        $widget = $(this).parents('.dropdown-widget');
-        $widget.children().toggleClass('open');
-        $widget.find('.item').text('');
-        $(this).parents('.edit-remark').find('form input[name=attached_to]').val('');
+      $('.dropdown .none').click(function(event) {
+        event.stopPropagation();
+        $(this).parents('.edit-remark').find('form input[name=attached_to]')
+          .val('');
       });
 
 
@@ -33,8 +32,6 @@
       *******/
       // TODO: Remove duplicate function with tf_recruit
       function get_nid_in_classes(classes) {
-
-        console.log(classes);
         var arr = classes.split(' ');
         var i;
         for(i = 0; i < arr.length; i++) {
@@ -196,8 +193,6 @@
       $.fn.invoke_init_edit_person();
 
 
-//<img src="http://tf_dev.localhost/sites/default/files/styles/medium/public/default_images/person.jpg" width="220" height="208" alt="">
-//<img src="http://tf_dev.localhost/sites/default/files/styles/medium/public/pasfoto_8.jpg" width="220" height="208" alt="">
     }
   };
 
