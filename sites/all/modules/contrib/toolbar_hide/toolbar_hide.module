@@ -1,5 +1,4 @@
 <?php
-// $Id: toolbar_hide.module,v 1.2.2.6 2010/12/05 14:15:50 joshthegeek Exp $
 /**
  * @file
  * Toolbar Hider, to keep the toolbar out of the way.
@@ -28,17 +27,21 @@ function toolbar_hide_menu() {
  * Implements hook_init().
  */
 function toolbar_hide_init() {
+  if (module_exists('overlay') && overlay_get_mode() == 'child') {
+    // Don't load this module in the overlay
+    return false;
+  }
   $path = drupal_get_path('module', 'toolbar_hide');
   $settings = array(
     'key'     => variable_get('toolbar_hide_key', '`'),
-    'default' => variable_get('toolbar_hide_default', 0),
+    'onload' => variable_get('toolbar_hide_default', 0),
   );
 
-  drupal_add_js($path . '/toolbar_hide.js', array('defer' => TRUE));
+  drupal_add_js($path . '/toolbar_hide.js', array('defer' => TRUE, 'preprocess' => FALSE));
   drupal_add_js(array('toolbar_hide' => $settings), array('type' => 'setting', 'scope' => JS_DEFAULT));
   if (variable_get('toolbar_hide_css',1) == 1)
   {
-    drupal_add_css($path . '/toolbar_hide.css');
+    drupal_add_css($path . '/toolbar_hide.css', array('preprocess' => FALSE));
   }
 }
 
