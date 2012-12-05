@@ -102,6 +102,7 @@ features[field][] = node-role-field_talent_ref
 features[field][] = node-role-field_task_ref
 features[field][] = node-skill-body
 features[field][] = node-skill-field_assess
+features[field][] = node-skill-field_cloned_from
 features[field][] = node-skill-field_expert_level
 features[field][] = node-skill-field_interpret_back_ref
 features[field][] = node-skill-field_neg_answer

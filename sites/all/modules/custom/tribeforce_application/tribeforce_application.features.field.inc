@@ -3541,7 +3541,6 @@ function tribeforce_application_field_default_fields() {
       'module' => 'node_reference',
       'settings' => array(
         'referenceable_types' => array(
-          'application_highight' => 0,
           'article' => 0,
           'campaign' => 0,
           'company' => 0,
@@ -3549,12 +3548,11 @@ function tribeforce_application_field_default_fields() {
           'evaluation' => 0,
           'interpretation' => 0,
           'interview' => 0,
-          'migrate_example_baseball' => 0,
           'page' => 0,
           'person' => 0,
           'remark' => 0,
           'role' => 'role',
-          'skill' => 0,
+          'skill' => 'skill',
           'talent' => 'talent',
           'talent_attribute' => 0,
           'task' => 0,
@@ -4397,6 +4395,94 @@ function tribeforce_application_field_default_fields() {
     ),
   );
 
+  // Exported field: 'node-skill-field_cloned_from'.
+  $fields['node-skill-field_cloned_from'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_cloned_from',
+      'foreign keys' => array(
+        'nid' => array(
+          'columns' => array(
+            'nid' => 'nid',
+          ),
+          'table' => 'node',
+        ),
+      ),
+      'indexes' => array(
+        'nid' => array(
+          0 => 'nid',
+        ),
+      ),
+      'locked' => '0',
+      'module' => 'node_reference',
+      'settings' => array(
+        'referenceable_types' => array(
+          'article' => 0,
+          'campaign' => 0,
+          'company' => 0,
+          'date_migrate_example' => 0,
+          'evaluation' => 0,
+          'interpretation' => 0,
+          'interview' => 0,
+          'page' => 0,
+          'person' => 0,
+          'remark' => 0,
+          'role' => 'role',
+          'skill' => 'skill',
+          'talent' => 'talent',
+          'talent_attribute' => 0,
+          'task' => 0,
+          'webform' => 0,
+        ),
+        'view' => array(
+          'args' => array(),
+          'display_name' => '',
+          'view_name' => '',
+        ),
+      ),
+      'translatable' => '0',
+      'type' => 'node_reference',
+    ),
+    'field_instance' => array(
+      'bundle' => 'skill',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'node_reference',
+          'settings' => array(),
+          'type' => 'node_reference_default',
+          'weight' => 12,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_cloned_from',
+      'label' => 'Cloned From',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
+        'settings' => array(),
+        'type' => 'options_select',
+        'weight' => '18',
+      ),
+    ),
+  );
+
   // Exported field: 'node-skill-field_expert_level'.
   $fields['node-skill-field_expert_level'] = array(
     'field_config' => array(
@@ -5232,7 +5318,6 @@ function tribeforce_application_field_default_fields() {
       'module' => 'node_reference',
       'settings' => array(
         'referenceable_types' => array(
-          'application_highight' => 0,
           'article' => 0,
           'campaign' => 0,
           'company' => 0,
@@ -5240,12 +5325,11 @@ function tribeforce_application_field_default_fields() {
           'evaluation' => 0,
           'interpretation' => 0,
           'interview' => 0,
-          'migrate_example_baseball' => 0,
           'page' => 0,
           'person' => 0,
           'remark' => 0,
           'role' => 'role',
-          'skill' => 0,
+          'skill' => 'skill',
           'talent' => 'talent',
           'talent_attribute' => 0,
           'task' => 0,
