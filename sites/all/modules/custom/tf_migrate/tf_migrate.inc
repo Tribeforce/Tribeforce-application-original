@@ -41,7 +41,8 @@ class TalentAttributeMigration extends CommonMigration {
     );
 
     // Instantiate the class using the path to the CSV file and the columns.
-    $this->source = new MigrateSourceCSV('sites/default/files/talent attributes.csv', $columns,
+    $this->source = new MigrateSourceCSV(
+                        'sites/default/files/talent attributes.csv', $columns,
                         array('header_rows' => 1, 'embedded_newlines' => TRUE));
     $this->destination = new MigrateDestinationNode('talent_attribute');
     $this->addSimpleMappings(array('title', 'body'));
@@ -69,7 +70,8 @@ class TalentMigration extends CommonMigration {
     );
 
     // Instantiate the class using the path to the CSV file and the columns.
-    $this->source = new MigrateSourceCSV('sites/default/files/talents.csv', $columns,
+    $this->source = new MigrateSourceCSV(
+                        'sites/default/files/talents.csv', $columns,
                         array('header_rows' => 1, 'embedded_newlines' => TRUE));
     $this->softDependencies = array('TalentAttribute');
     $this->destination = new MigrateDestinationNode('talent');
@@ -117,10 +119,11 @@ class SkillMigration extends CommonMigration {
     );
 
     // Instantiate the class using the path to the CSV file and the columns.
-    $this->source=new MigrateSourceCSV('sites/default/files/skills.csv',$columns,
-                                                    array('header_rows' => 1));
+    $this->source=new MigrateSourceCSV(
+      'sites/default/files/skills.csv',$columns, array('header_rows' => 1));
     $this->destination = new MigrateDestinationNode('skill');
     $this->addSimpleMappings(array('title', 'body'));
+    $this->addFieldMapping('field_cloned_from')->defaultValue(0);
     $this->addFieldMapping('field_skill_type', 'type');
     $this->addFieldMapping('field_expert_level', 'expert_level')
       ->separator(';');

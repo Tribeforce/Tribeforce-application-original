@@ -52,6 +52,7 @@ function deep_clone_do($node_from, $node_to = NULL) {
 
   $cloned_node = tf_em_shallow_copy($node_from, $traversed_nodes,$stop_fields,
                                    $back_field_patterns, $node_to);
+/*
   if(!empty($cloned_node)) {
     drupal_set_message(t('%title (%nid) has been cloned into %cloned_nid.',
                                 array('%title'      => $node_from->title,
@@ -62,7 +63,7 @@ function deep_clone_do($node_from, $node_to = NULL) {
                         array('%nid' => $node_from->nid)),
                         'error');
   }
-
+*/
   return $cloned_node;
 }
 

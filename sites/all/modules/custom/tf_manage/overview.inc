@@ -96,13 +96,14 @@ function edit_remark($person_nid, $redirect = 0, $remark_nid = FALSE) {
  Render Arrays
 ***************/
 function manage_overview_ra($people) {
-
   $persons_types = persons_ra($people, 0, 'manage');
 
+  // Translate the LOV
+  $lov = list_allowed_values(field_info_field('field_person_type'));
+
   foreach($persons_types as $person_type => $persons) {
-    $tabs[$person_type] = $persons['data']
-                     ['show-hide-header']['show-hide-header']['title']['title'];
-    $panes[$person_type] = $persons['data']['body']['body'];
+    $tabs[$person_type] = $lov[substr($person_type, 12)]; // person-type-
+    $panes[$person_type] = $persons;
   }
 
   $tabs['new'] = t("Add a person");

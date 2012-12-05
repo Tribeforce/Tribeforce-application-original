@@ -175,31 +175,10 @@
       // Change select in dropdown
       $('.campaign-details .dropdown .role').click(function(event) {
         event.stopImmediatePropagation();
-        var nid = get_nid_in_classes($(this).attr('class'));
+        var nid = Drupal.behaviors.tf_common.get_nid_in_classes($(this).attr('class'));
         $('.campaign-details .field-name-field-role-ref select').val(nid);
         return false;
       });
-
-
-      /*******
-      Helpers
-      *******/
-      // TODO: Remove duplicate function with tf_recruit
-      function get_nid_in_classes(classes) {
-
-        console.log(classes);
-        var arr = classes.split(' ');
-        var i;
-        for(i = 0; i < arr.length; i++) {
-          index = arr[i].indexOf("nid-");
-          if(index >= 0) {
-            return arr[i].substring(index + 4, arr[i].length);
-          }
-        }
-        return false;
-      }
-
-
     }
   };
 
@@ -369,7 +348,7 @@ console.log('switch clicked' + event);
 
         $selected.each(function(index) {
           classes = $(this).attr('class');
-          selected_array.push(get_nid_in_classes(classes));
+          selected_array.push(Drupal.behaviors.tf_common.get_nid_in_classes(classes));
         });
 
 //        comp_link.attr('href', link_array[0] + '/compare/' + selected_array);
@@ -377,20 +356,6 @@ console.log('switch clicked' + event);
         $('.page-recruit-candidates form input[name=selected]')
           .val(selected_array); // TODO: probably not needed anymore
       });
-
-
-      function get_nid_in_classes(classes) {
-        var arr = classes.split(' ');
-        var i;
-        for(i = 0; i < arr.length; i++) {
-//        for(i in arr) {
-          index = arr[i].lastIndexOf("nid-");
-          if(index > 0) {
-            return arr[i].substring(index + 4, arr[i].length);
-          }
-        }
-        return false;
-      }
     }
   };
 

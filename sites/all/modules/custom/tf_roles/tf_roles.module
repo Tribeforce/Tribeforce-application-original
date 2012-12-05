@@ -1,8 +1,8 @@
 <?php
 $lang = LANGUAGE_NONE; //TODO
 
-function tf_roles_init() {
-}
+//function tf_roles_init() {
+//}
 
 function tf_roles_menu() {
   /*
@@ -360,10 +360,14 @@ function cancel_new_role() {
  Page Callbacks
 */
 function roles($regions = array()) {
-  tf_help_msg('Choose a role on the left and go');
+  if(empty($regions)) {
+    tf_help_msg('Choose a role on the left and go');
+  } else {
+    tf_help_msg('Here you can tailer a role to your specific needs');
+  }
 
   $empty_regions = array(
-    'left-sidebar' => roles_ra(),
+    'left-sidebar' => roles_sidebar_ra(),
     'content' => empty_ra('role'),
   );
 
@@ -373,10 +377,6 @@ function roles($regions = array()) {
 function role($role_nid) {
   $full_role = get_full_role($role_nid);
 
-  $message = array(
-    '#markup' => t('Here you can tailer a role to your specific needs'),
-  );
-
   // If the $full_role is empty (at least the node part of it)
   // it concerns an insert, otherwise it is an edit
   if(empty($full_role['node'])) {
@@ -385,9 +385,7 @@ function role($role_nid) {
     $content = role_ra($full_role);
   }
 
-
   return roles(array(
-    'message' => $message,
     'content' => $content,
   ));
 }
@@ -442,7 +440,7 @@ function ipa($role_nid, $type) {
 function tf_roles_assign($nid) {
   $persons = tf_get_my_persons();
   $html = drupal_render(persons_widget_ra($persons, $nid));
-  $sel_base = '.roles-' . $nid;
+  $sel_base = '.display-sidebar.role.nid-' . $nid;
   $commands[] = ajax_command_append($sel_base, $html);
   $commands[] = ajax_command_invoke("$sel_base .persons-widget", 'hide');
   $commands[] = ajax_command_invoke("$sel_base .persons-widget", 'slideDown');
@@ -478,8 +476,10 @@ function ipe($nid) {
   $node = node_load($nid);
   $type = $node->type;
   $html = drupal_render(drupal_get_form('item_form', $node));
-  $commands[] = ajax_command_invoke('.nid-' . $nid . ' .content', 'hide');
-  $commands[] = ajax_command_append('.nid-' . $nid, $html);
+  $prefix = '.display-edit.nid-' . $nid;
+  $commands[] = ajax_command_invoke("$prefix .content", 'hide');
+  $commands[] = ajax_command_append("$prefix", $html);
+  $commands[] = ajax_command_invoke("$prefix input.form-text", 'focus');
   ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
 }
 
@@ -580,15 +580,21 @@ function change_talent($role_nid, $original_nid, $title, $level) {
           . ' display-edit updated">' . $html . '</div>';
           // TODO: Add index and even/odd
 
+//dpm($html);
     // If $role_nid is 0, then we need to insert the talent at the end
     if($role_nid == 0) {
       $selector = '.' . strtolower($talent_array['node']
                                      ->field_type['und'][0]['value']) . ' body';
       $commands[] = ajax_command_append($selector, $html);
     } else {
+
+dpm($role_nid);
+dpm($original_nid);
+dpm($title);
+dpm($level);
       $commands[] = ajax_command_replace('.nid-' . $original_nid, $html);
     }
-
+dpm($commands);
     ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
   }
 }
@@ -629,6 +635,10 @@ function ipe_submit_callback($form, &$form_state) {
       $node->body = $form_state['values']['body'];
       $node->field_category = $form_state['values']['field_category'];
       $node_array = array('node' => $node);
+
+      // For a role we need to update the sidebar menu as well
+      $html = drupal_render(item_inner_ra(array('node' => $node), 0, 'sidebar'));
+      $commands[] = ajax_command_html('.left-sidebar .nid-'.$node->nid, $html);
       break;
     case 'skill':
       $node->body = $form_state['values']['body'];
@@ -642,11 +652,11 @@ function ipe_submit_callback($form, &$form_state) {
       $node = deep_clone_do($node_array['node']);
       // Should not be needed as reference talents should be virgen
       $tas = get_tas($node);
-      $talent_array = array(
+      $node_array = array(
         'node' => $node,
         'tas' => $tas,
       );
-      remove_assessment_data_from_talent($talent_array);
+      remove_assessment_data_from_talent($node_array);
       $node->field_role_back_ref['und'] = array(array('nid' => $role_nid));
       break;
   }
@@ -680,8 +690,8 @@ function ipe_submit_callback($form, &$form_state) {
     $commands[] = ajax_command_before($selector, $html);
   } else {
     // The edit commands
-    $commands[] = ajax_command_remove('.nid-'.$node->nid . ' form');
-    $commands[] = ajax_command_html('.nid-'.$node->nid, $html);
+    $commands[] = ajax_command_remove('.display-edit.nid-'.$node->nid . ' form');
+    $commands[] = ajax_command_html('.display-edit.nid-'.$node->nid, $html);
                                     // TODO: Why does this insert a ghost div
   }
 
@@ -706,8 +716,8 @@ function ipe_cancel_callback($form, $form_state) {
 
   } else {
     // The edit commands
-    $commands[] = ajax_command_remove('.nid-'.$node->nid . ' form');
-    $commands[] = ajax_command_invoke('.nid-' . $node->nid.' .content', 'show');
+    $commands[] = ajax_command_remove('.display-edit.nid-'.$node->nid . ' form');
+    $commands[] = ajax_command_invoke('.display-edit.nid-' . $node->nid.' .content', 'show');
   }
 
   return array('#type' => 'ajax', '#commands' => $commands);
@@ -726,14 +736,9 @@ function roles_ajax_show($form, $form_state) {
  Renderable arrays
 */
 // Roles for the sidebar
-function roles_ra() {
-  $roles = get_roles();
-  $items = array();
-
-  foreach($roles as $role) {
-    $items['role-' . $role->nid] = sidemenu_item_ra('roles', $role,
-                                     $role->category, role_actions_ra($role));
-  }
+function roles_sidebar_ra() {
+  $my_roles = tf_get_my_roles(); // TODO: cache this
+  $items = items_ra($my_roles, 'role', 0, 'sidebar');
 
   $header = array(
     '#markup' => t('My roles:'),
@@ -775,7 +780,10 @@ function role_actions_ra($role) {
   $actions = array(
     '#type' => 'container',
     '#attributes' => array(
-      'class' => array('actions'),
+      'class' => array(
+        'actions',
+        current_path() === 'roles/' . $role->nid ? 'active' : '',
+      ),
     ),
   );
 
@@ -786,7 +794,7 @@ function role_actions_ra($role) {
       '#text' => $item,
       '#path' => 'roles/' . $role->nid . '/'.$key,
       '#options' => array(
-        'attributes' => array(),
+        'attributes' => array('class' => array('action')),
         'html' => FALSE,
       ),
     );
@@ -794,8 +802,7 @@ function role_actions_ra($role) {
 
   // Make the assign AJAX
   $actions['assign']['#path'] = 'roles/' . $role->nid . '/nojs/assign';
-  $actions['assign']['#options']['attributes'] =
-                                          array('class' => array('use-ajax'));
+  $actions['assign']['#options']['attributes']['class'][] = 'use-ajax';
   return $actions;
 }
 
@@ -812,6 +819,19 @@ function role_ra($full_role, $display = 'edit') {
                                              'business', $role_nid, $display),
     'behavioral' => items_ra($full_role['talents']['behavioral'],
                                            'behavioral', $role_nid, $display),
+    'page-actions' => array(
+      '#theme' => 'link',
+      '#text' => t('Start a campaign from this role'),
+      '#path' => "roles/$role_nid/start-campaign",
+      '#options' => array(
+        'attributes' => array('class' => array(
+          'btn',
+          'btn-primary',
+          'btn-large',
+        )),
+        'html' => FALSE,
+      ),
+    ),
   ));
 }
 
@@ -1022,14 +1042,44 @@ function autocomplete_items($full_role, $type, $string) {
     // If a talent with the same exists already on the role,
     // don't suggest it in the autocomplete list
 
-    if($type === 'business' || $type === 'behavioral') {
-      // TODO: put this in the query
-      foreach($full_role['talents'][$type] as $talent_array) {
-        if($talent_array['node']->title == $node->title) {
-          $add_item = FALSE;
-          break;
+    switch($type) {
+      case 'business':
+      case 'behavioral':
+        // TODO: put this in the query
+        foreach($full_role['talents'][$type] as $talent_array) {
+          if($talent_array['node']->title == $node->title) {
+            $add_item = FALSE;
+            break;
+          }
         }
-      }
+        break;
+      case 'skill':
+        if(isset($node->field_role_back_ref['und'])) {
+          $own_role_found = FALSE;
+          foreach($node->field_role_back_ref['und'] as $role_ref) {
+            if(tf_is_own($role_ref['nid'])) {
+              $own_role_found = TRUE;
+              break; // OK
+            }
+          }
+
+          if($own_role_found) {
+            break; // OK
+          } else {
+            if(isset($node->field_cloned_from)) {
+              if($node->field_cloned_from['und'][0]['nid'] == 0) {
+                break; // OK
+              }
+            }
+            $add_item = FALSE;
+          }
+        } else {
+          // We have a serious problem
+          drupal_set_message(t('The skill %nid belongs to no role!'),
+                                          array('%nid' => $node->nid), 'error');
+          $add_item = FALSE;
+        }
+        break;
     }
 
     if($add_item) {

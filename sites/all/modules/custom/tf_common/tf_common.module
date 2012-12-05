@@ -1,4 +1,6 @@
 <?php
+$GLOBALS['tf_version'] = 'Beta 1.3';
+
 function tf_common_menu() {
   $items['dashboard'] = array(
     'title' => 'Tribeforce Dashboard',
@@ -8,6 +10,14 @@ function tf_common_menu() {
   );
   return $items;
 }
+
+function tf_common_node_insert($node) {
+  if($node->type === 'company') {
+    drupal_set_message('A company has just been created. Report EXACTLY what you were doing to Femi!!!', 'warning');
+    dpm($node);
+  }
+}
+
 
 function tf_common_permission() {
   return array(
@@ -184,12 +194,13 @@ function get_tf_page($module) {
 
 
 
-
 /*
  Page Callbacks
 */
 function tf_module($module, $empty_regions, $regions = array()) {
   // Module container
+
+  global $tf_version;
   $messages = array('#markup' => theme('status_messages'));
 
   $main = array(
@@ -209,15 +220,18 @@ function tf_module($module, $empty_regions, $regions = array()) {
 
   $left_sidebar = array_merge(
     container_ra(array(
-      'dashboard' => array(
-        '#theme' => 'link',
-        '#text' => t('Dashboard'),
-        '#path' => '',
-        '#options' => array(
-          'attributes' => array(),
-          'html' => FALSE,
+      'dashboard' => container_ra(array(
+        'link' => array(
+          '#theme' => 'link',
+          '#text' => '<img src="/sites/default/files/logo.png">',
+          '#path' => '',
+          '#options' => array(
+            'attributes' => array(),
+            'html' => TRUE,
+          ),
         ),
-      ),
+        'version' => $tf_version,
+      )),
     )),
     $regions['left-sidebar']
   );
@@ -252,6 +266,8 @@ function header_ra() {
     $block = block_load('menu', 'menu-dashboard');
     $menu = _block_get_renderable_array(_block_render_blocks(array($block)));
 
+    $menu = main_menu_ra('header');
+
     $ra = container_ra(array(
       'menu' => $menu,
       'admin' => container_ra(array(
@@ -278,6 +294,69 @@ function header_ra() {
     ));
   }
   return $ra;
+}
+
+function main_menu_ra($display) {
+  $items = array(
+    'manage' => array(
+      'path' => 'manage',
+      'title' => t('Manage'),
+    ),
+    'roles' => array(
+      'path' => 'roles',
+      'title' => t('Roles'),
+    ),
+    'recruit' => array(
+      'path' => 'recruit',
+      'title' => t('Recruit'),
+    ),
+  );
+
+  $ra = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => 'tabs'),
+  );
+
+  foreach($items as $key => $item) {
+    $ra[] = main_menu_item_ra($key, $item);
+  }
+
+  return $ra;
+}
+
+function main_menu_item_ra($key, $item) {
+  $active = current_path() === $item['path'] ? 'active' : '';
+
+  // TODO: Make a generic status object
+  if($key === 'recruit') {
+    if(count(tf_get_my_roles()) === 0) {
+      return array(
+        '#type' => 'container',
+        '#attributes' => array('class' => array(
+          $key,
+          'disabled',
+        )),
+        'data' => array(
+          '#markup' => $item['title'],
+        ),
+      );
+    }
+  }
+
+  return array(
+//    '#type' => 'container',
+//    '#attributes' => array(),
+    '#theme' => 'link',
+    '#text' => $item['title'],
+    '#path' => $item['path'],
+    '#options' => array(
+      'attributes' => array('class' => array(
+        $key,
+        $active,
+      )),
+      'html' => FALSE,
+    ),
+  );
 }
 
 /*
@@ -501,41 +580,47 @@ function items_ra($items, $type, $parent_nid = 0, $display = 'edit') {
   $title = t(ucfirst($type) . 's');
 
   // We never need the show_hide titles or Add buttons for TAs
-  if($type === 'talent_attribute') {
+  if($display === 'edit' && $type !== 'talent_attribute') {
+    $text = "Add a new $type";
+
+    switch($type) {
+      case 'behavioral':
+      case 'business':
+        $text = "Add a new $type talent";
+        $title = ucfirst($type) . " talents";
+        break;
+    }
+
+    $body['add'] = array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('add-link')),
+      '#theme' => 'link',
+      '#text' => t($text),
+      '#path' => "roles/$parent_nid/nojs/ipa/$type",
+      '#options' => array(
+        'attributes' => array('class' => array('use-ajax')),
+        'html' => FALSE,
+      ),
+    );
+    return show_hide($title, $body);
+  } else {
     return $body;
+  }
+
+/*
+  if($type === 'talent_attribute') {
   }
   else {
     // The Add buttons only need to appear in the edit display
     if($display === 'edit') {
-      $text = "Add a new $type";
-
-      switch($type) {
-        case 'behavioral':
-        case 'business':
-          $text = "Add a new $type talent";
-          $title = ucfirst($type) . " talents";
-          break;
-      }
-
-      $body['add'] = array(
-        '#type' => 'container',
-        '#attributes' => array('class' => array('add-link')),
-        '#theme' => 'link',
-        '#text' => t($text),
-        '#path' => "roles/$parent_nid/nojs/ipa/$type",
-        '#options' => array(
-          'attributes' => array('class' => array('use-ajax')),
-          'html' => FALSE,
-        ),
-      );
     } elseif($display === 'person-details'
           || $display === 'widget_old'
           || $display === 'widget'
           || $display === 'person-edit') {
       return $body;
     }
-    return show_hide($title, $body);
   }
+*/
 }
 
 function item_ra($node_array,$display='edit',$position=array(),$parent_nid=0) {
@@ -553,8 +638,8 @@ function item_ra($node_array,$display='edit',$position=array(),$parent_nid=0) {
       '#type' => 'container',
       '#attributes' => array(
         'class' => array(
-          $node_array['node']->type,
-          'nid-' . $node_array['node']->nid,
+          isset($node_array['node']->type) ? $node_array['node']->type : '',
+          isset($node_array['node']->nid) ? 'nid-'.$node_array['node']->nid :'',
           'index-' . $position['index'],
           $position['even_odd'],
           $position['first'],
@@ -671,7 +756,6 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
           );
           break;
         case 'widget':
-          $path = "manage/person/$parent_nid/assign/". $node_array['node']->nid;
           $ra['content']['title'] = array(
             '#type' => 'container',
             '#attributes' => array('class' => array(
@@ -680,6 +764,46 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             )),
             'data' => array('#markup' => $node_array['node']->title),
           );
+          break;
+        case 'sidebar':
+          $path = "roles/". $node_array['node']->nid;
+          $text_ra = (array(
+            'title' => field_view_title($node_array['node'], -10),
+            'subtitle' => field_view_field('node', $node_array['node'],
+                            'field_category', array('label' => 'hidden')),
+          ));
+          $text = drupal_render($text_ra);
+          $ra['content']['item'] = array(
+//            '#type' => 'container',
+//            '#attributes' => array('class' => array('title')),
+            '#theme' => 'link',
+            '#text' => $text,
+            '#path' => $path,
+            '#options' => array(
+              'attributes' => array(),
+              'html' => TRUE,
+            ),
+          );
+          $ra['content']['actions'] = role_actions_ra($node_array['node']);
+
+
+#  $page = get_tf_page($module);
+#  $link = '<div class="title">' . $title_node->title . '</div>';
+#  if(!empty($subtitle)) {
+#    $link .= '<div class="subtitle">(' . $subtitle . ')</div>';
+#  }
+#  $url = $module . '/' . $title_node->nid . $page;
+
+#  return array(
+#    '#type' => 'container',
+#    '#attributes' => array(
+#      'class' => array('item', $module, $module . '-' . $title_node->nid),
+#    ),
+#    'link' => array(
+#      '#markup' => l($link, $url, array('html' => TRUE)),
+#    ),
+#    'actions' => $actions,
+#  );
           break;
       }
       break;
@@ -1048,7 +1172,7 @@ function dropdown_widget_ra($class_name, $item, $dropdown, $button = TRUE) {
   );
 }
 
-function tabs_widget_ra($tabs, $panes) {
+function tabs_widget_ra($tabs, $panes = array()) {
   $ra = container_ra(array(
     'tab-pane' => container_ra(array(
       'tabs' => container_ra($tabs),
@@ -1300,7 +1424,6 @@ function tf_is_own_item($nid) {
 // 3 arguments should be enough
 function tf_is_own($nid1 = '0', $nid2 = '0', $nid3 = '0') {
   $nids = array($nid1, $nid2, $nid3);
-
   foreach($nids as $nid) {
     if(!tf_is_own_item($nid)) return FALSE;
   }

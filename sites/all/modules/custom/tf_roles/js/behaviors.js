@@ -2,26 +2,24 @@
 (function ($) {
   Drupal.behaviors.roles = {
     attach: function (context, settings) {
+      var o = 'once-roles';
 
       /*
       Attach event handlers
       */
 
       // Simulate a click on the edit button like a click on the edit link
-      $('.roles .edit').click(function(event) {
-        event.stopImmediatePropagation();
+      $('.roles .edit').once(o).click(function() {
         $(this).parent().siblings('.edit-link').find('a').click();
       });
 
       // Simulate a click on the delete button like a click on the delete link
-      $('.roles .delete').click(function(event) {
-        event.stopImmediatePropagation();
+      $('.roles .delete').once(o).click(function() {
         $(this).parent().siblings('.delete-link').find('a').click();
       });
 
       // Simulate a click on the save button like a click on the save link
-      $('.roles .save').click(function(event) {
-        event.stopImmediatePropagation();
+      $('.roles .save').once(o).click(function() {
         $(this).parent().siblings('.save-link').find('a').click();
       });
 
@@ -30,8 +28,8 @@
       // TODO: Should selector be more specific or less?
       // TODO: live should maybe be replaced (needed for add )
       $('form .level div').live('click', function(event) {
+        event.stopImmediatePropagation();
         var level = parseInt($(this).attr('class').substring(5,6));
-
         for(i=1; i<=level; i++) {
           $(this).parent().find('.level' + i).addClass('on');
         }
@@ -50,9 +48,9 @@
       $('.talent .level div').live('click', function(event) {
         event.stopImmediatePropagation();
         var level = parseInt($(this).attr('class').substring(5,6));
-        $(this).parents('.talent')
-               .find('.flame-links .level' + level + ' a')
-               .click();
+        $link = $(this).parents('.talent').find('.flame-links .level' + level + ' a');
+        $link.click();
+        $link.mousedown();
       });
 
       // Autocomplete Skill add
@@ -61,11 +59,9 @@
       // TODO: Watch out with the live() method:
       //       see http://api.jquery.com/live/
       // TODO: Generalize for other types
-      $('.skills #autocomplete li').live('click', function(event) {  // For skills only
+      $('.skills #autocomplete li').live('mousedown', function(event) {  // For skills only
         event.stopImmediatePropagation();
-
         $form = $(this).parents('form');
-
        // If a new empty skill is added, we need to populate only the title,
        // Otherwise we need to populate other fields in the form
        if($(this).find('.new-empty').length === 1) {
@@ -99,19 +95,15 @@
       // TODO: Watch out with the live() method:
       //       see http://api.jquery.com/live/
       // TODO: Generalize for other types
-      $('.behavioral #autocomplete li, .business #autocomplete li').live(
-        'click',
-        function(event) {  // For skills only
+      $('.behavioral #autocomplete li, .business #autocomplete li').live('mousedown',
+        function(event) {
           event.stopImmediatePropagation();
-
           $form = $(this).parents('form');
-/* The level is 1 by default and is not chosen
-          // Level field
-          $form.find('.field-name-field-cap-level select').val(
-            get_level($(this).find('.level'))
-          );
-          $form.find('.level').replaceWith($(this).find('.level'));
-*/
+
+          //Set the color to white, the callback sets it back to black
+          $form.find('.autocomplete input.form-autocomplete').css('color', '#fff');
+  console.log('lksd');
+
           // Title field
           $form.find('.form-item-title input').val(
             unhighlight($(this).find('.field-name-title .field-item').html())
@@ -123,6 +115,7 @@
         }
       );
 
+
       // When hitting ENTER some actions need to happen
       $(document).keypress(function(event) {
         if(event.keyCode == 13) {
@@ -130,21 +123,24 @@
           // Simulate a mouseclick when hitting ENTER in the autocomplete list
           $selected = $('#autocomplete li.selected');
           if($selected.length > 0) {
-            $selected.click();
+            $selected.mousedown();
           }
         }
       });
 
-      // When hitting ENTER or ESC in an AJAX input field some actions need to happen
+      // When hitting ENTER or ESC in an input field some actions need to happen
       $('input').keydown(function(event) {
+        console.log(event.target);
         switch(event.keyCode) {
           case 13: // The ENTER (keyCode = 13) actions
             event.stopImmediatePropagation();
-            // Simulate a mouseclick when hitting ENTER in any input field
-            $selected = $(this).parents('form').find('.actions .submit');
-            if($selected.length > 0) {
-              $selected.mousedown();
-              $selected.click();
+            if(!$(event.target).hasClass('form-autocomplete')) {
+              // Simulate a mouseclick when hitting ENTER in any input field
+              $selected = $(this).parents('form').find('.actions .submit');
+              if($selected.length > 0) {
+                $selected.mousedown();
+                $selected.click();
+              }
             }
             break;
           case 27: // The ESCAPE (keyCode = 27) actions
@@ -161,15 +157,10 @@
       });
 
 
-
       $('.persons-widget .close').live('click', function(event) {
         event.stopImmediatePropagation();
         $(this).parents('.persons-widget').remove();
       });
-
-
-
-
 
 
 

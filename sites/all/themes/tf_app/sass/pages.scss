@@ -57,31 +57,6 @@ p {
   margin: 0;
 }
 
-/*
-.tf-region {
-  input[value=Edit],
-  input[value=Add],
-  input[value=Cancel] {
-    border: 0;
-    padding: 0;
-    background: $sprites;
-    width: $icon_width;
-    height: $icon_width;
-    text-indent: -9999px;
-    float: right;
-  }
-
-  input[value=Cancel] {
-    background-position: -62px -203px;
-  }
-
-  input[value=Edit],
-  input[value=Add] {
-    background-position: -154px -535px;
-  }
-}
-*/
-
 .btn + .btn {
   margin: 0 0 0 $gutter-width;
 }
@@ -337,6 +312,25 @@ h2, h3 {
   }
 }
 
+.btn-large {
+  padding: 11px 19px;
+  font-size: 17.5px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 .close {
   position: absolute;
   z-index: 10;
@@ -445,7 +439,8 @@ h2, h3 {
 .tabs {
   clear: both;
   overflow: hidden;
-  > div {
+  padding: 0 2px;
+  > * {
     float: left;
     cursor: pointer;
     text-transform: uppercase;
@@ -492,11 +487,8 @@ h2, h3 {
  * Dashboard
  */
 .page-dashboard {
-  .tf-region.left-sidebar .dashboard {
-     height: 94.6%
-   }
   .tf-region.header .menu {
-    display: none;
+    visibility: hidden;
   }
   .tf-region.content > [id^="block-menu-menu-dashboard"] {
     margin-top: 50px;
@@ -567,8 +559,11 @@ $motivation_position: -1200px -204px;
 
   &.header {
     padding: $gutter-width 0;
+    position: relative;
     .admin {
-      float: right;
+      position: absolute;
+      top: 2*$gutter-width;
+      right: 0;
       .settings .icon {
         background-position: -60px -298px;
       }
@@ -585,6 +580,13 @@ $motivation_position: -1200px -204px;
       }
     }
     .menu {
+      a {
+        color: $black;
+        &.active {
+          color: #fff;
+        }
+      }
+/*
       margin: 0;
       padding: 0;
       float: left;
@@ -611,6 +613,7 @@ $motivation_position: -1200px -204px;
           color: #fff;
         }
       }
+*/
     }
   }
 
@@ -627,14 +630,21 @@ $motivation_position: -1200px -204px;
     }
 
     .dashboard {
+      position: relative;
       padding: 10%;
       a {
-        background: url(../images/logo.png) no-repeat;
-        background-size: 100% auto;
         display: block;
-        height: 70px;
-        text-indent: -9999px;
       }
+      &:only-child {
+       height: 94.6%
+      }
+    }
+
+    .version {
+      position: absolute;
+      top: 0;
+      left: $gutter-pct;
+      color: $grey_light;
     }
 
     .new {
@@ -654,12 +664,13 @@ $motivation_position: -1200px -204px;
       line-height: 28px;
     }
 
-    .item {
+    .item, // To be removed
+    .display-sidebar {
       clear: both;
       border-bottom: 1px solid $grey_light;
       position: relative;
       padding-right: 4px;
-      > a {
+      a:not(.action) {
         height: 5*$gutter-width;
         padding: $gutter-pct;
         display: block;
@@ -683,7 +694,7 @@ $motivation_position: -1200px -204px;
 
     }
 
-    .subtitle,
+    .field-name-field-category,
     .actions {
       font-size: 80%;
     }
@@ -851,6 +862,11 @@ $motivation_position: -1200px -204px;
 }
 
 
+.page-actions {
+  float: right;
+  clear: both;
+  padding: 2*$gutter-width 0;
+}
 
 
 
@@ -1970,7 +1986,8 @@ $col_width: 100px;
  */
 $border: 1px solid $grey_light;
 
-.role {
+.prepare-interview .role,
+.role.display-edit {
   background-color: #fff;
   padding: $gutter-width $gutter-pct;
   position: relative;
@@ -2021,6 +2038,7 @@ div {
   }
 }
 
+.task,
 .skill,
 .talent {
   .field-name-title,
@@ -2115,16 +2133,10 @@ form.skill {
   }
 }
 
-.task {
-  .form-item-title {
-    padding-right: 2*$icon_width;
-  }
-}
-
 .skills .new,
 .skill {
   .form-item-title {
-    padding-right: 4*$icon_width;
+    padding-right: 5*$icon_width;
   }
   .field-name-body .form-item {
     padding-right: 3*$icon_width;
@@ -2303,18 +2315,18 @@ form.skill {
       margin: 0;
     }
     .form-type-textfield {
-      padding-right: 4*$icon_width;
+      padding-right: 5*$icon_width;
       input {
-        width: 100%;
-        margin-bottom: 1px;
+//        width: 100%;
+//        margin-bottom: 1px;
       }
     }
     .form-item-autocomplete {
       padding-right: 3*$icon_width;
     }
     input.form-autocomplete {
-      width: 100%;
-      margin-bottom: 1px;
+//      width: 100%;
+//      margin-bottom: 1px;
     }
   }
 }
@@ -2423,7 +2435,7 @@ Person Details
     left: 0;
   }
 
-  .field-name-field-avatar:hover + a.btn.edit {
+  .person:hover a.btn.edit {
     display: block;
   }
 

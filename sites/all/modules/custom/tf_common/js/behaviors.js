@@ -2,20 +2,20 @@
 (function ($) {
   Drupal.behaviors.sidebar = {
     attach: function (context, settings) {
+      var o = 'once-sidebar'
+
       $('.left-sidebar a.active').each(function() {
         $(this).siblings('.actions').addClass('active');
       });
 
       // Show/Hide functionality
       // TODO: Make selector generic
-      $('.show-hide-header').click(function(event) {
-        event.stopImmediatePropagation();
+      $('.show-hide-header').once(o).click(function(event) {
         $(this).parent().toggleClass('collapsed');
       });
 
       // Hide the slide pane
-      $('.slide-pane .sp-close').click(function(event){
-        event.stopImmediatePropagation();
+      $('.slide-pane .sp-close').once(o).click(function(event){
         $slide_pane = $(this).parents('.slide-pane');
         $slide_pane.removeClass('open');
         setTimeout(function() {
@@ -37,31 +37,28 @@
 
   Drupal.behaviors.tf_common = {
     attach: function (context, settings) {
+      var o = 'once-common'
+
       // TABS
       // Set the active tab logic
-      $('.tab-pane .tabs > div').click(function(event) {
-        event.preventDefault();
-        $pane = $(this).parents('.tab-pane').find('.panes .' +$(this).attr('class'));
+      $('.tab-pane .tabs > div').once(o).click(function() {
+        var class_name = $(this).attr('class').split(' ')[0];
+        $pane = $(this).parents('.tab-pane').find('.panes .' + class_name);
         $pane.addClass('active');
         $pane.siblings().removeClass('active');
 
         $(this).addClass('active');
         $(this).siblings().removeClass('active');
-        return false;
       });
 
       // DROPDOWN
       // Clicking on the item or the dropdown icon slides the dropdown down
-      $('.dropdown-widget > .btn, .dropdown-widget > .item').click(function(event) {
-        event.stopImmediatePropagation();
-        event.preventDefault();
-        console.log('button');
-        $(this).parents('.dropdown-widget').children().toggleClass('open');
-        return false;
-      });
+      $('.dropdown-widget > .btn, .dropdown-widget > .item').once(o)
+        .click(function(event) {
+          $(this).parents('.dropdown-widget').children().toggleClass('open');
+        });
 
-      $('.dropdown-widget .dropdown > div').click(function(event) {
-        event.stopImmediatePropagation();
+      $('.dropdown-widget .dropdown > div').once(o).click(function(event) {
         $widget = $(this).parents('.dropdown-widget');
         $widget.children().toggleClass('open');
         var txt = $(this).text();
@@ -70,16 +67,14 @@
 
       // OVERLAY
       // Close the overlay
-      $('.overlay .close').live('click', function(event) {
-        event.stopImmediatePropagation();
-        console.log('close');
+      $('.overlay .close').once(o).click(function(event) {
         $(this).parents('.overlay').remove();
-        return false;
       });
+
 
       // ACTIVE LINKS
       var pathname = window.location.pathname;
-      $('#block-menu-menu-dashboard .menu a').each(function() {
+      $('.tf-region.header .menu a').each(function() {
         if(pathname.indexOf($(this).attr('href')) === 0) {
           $(this).addClass('active');
         }
@@ -91,7 +86,20 @@
         $('.tf-region.left-sidebar').height()
       );
       $('.tf-module').height(max_height);
-
+    },
+    /*******
+    Helpers
+    *******/
+    get_nid_in_classes: function(classes) {
+      var arr = classes.split(' ');
+      var i;
+      for(i = 0; i < arr.length; i++) {
+        index = arr[i].indexOf("nid-");
+        if(index >= 0) {
+          return arr[i].substring(index + 4, arr[i].length);
+        }
+      }
+      return false;
     }
   };
 }(jQuery));

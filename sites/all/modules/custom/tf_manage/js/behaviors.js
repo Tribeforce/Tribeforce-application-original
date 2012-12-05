@@ -2,6 +2,7 @@
 (function ($) {
   Drupal.behaviors.manage = {
     attach: function (context, settings) {
+      var o = 'once-manage';
 
       /*
       Bind Events
@@ -9,39 +10,18 @@
 
       // Click on a skill or a talent_attribute in the widget
       // sets the nid in the hidden field
-      $('.skill.display-widget, .talent_attribute.display-widget').click(function(event) {
-        event.stopPropagation();
-        console.log('item clicked');
-
-        var nid = get_nid_in_classes($(this).attr('class'));
+      $('.dropdown > div.display-widget').once(o).click(function(event) {
+        var nid = Drupal.behaviors.tf_common.get_nid_in_classes($(this).attr('class'));
         $(this).parents('.edit-remark').find('form input[name=attached_to]')
           .val(nid);
-        return false;
       });
 
-      // Clicking on none removes the value from the hidden field
-      $('.dropdown .none').click(function(event) {
-        event.stopPropagation();
+      // Clicking on NONE removes the value from the hidden field
+      $('.dropdown .none').once(o).click(function(event) {
         $(this).parents('.edit-remark').find('form input[name=attached_to]')
           .val('');
       });
 
-
-      /*******
-      Helpers
-      *******/
-      // TODO: Remove duplicate function with tf_recruit
-      function get_nid_in_classes(classes) {
-        var arr = classes.split(' ');
-        var i;
-        for(i = 0; i < arr.length; i++) {
-          index = arr[i].indexOf("nid-");
-          if(index >= 0) {
-            return arr[i].substring(index + 4, arr[i].length);
-          }
-        }
-        return false;
-      }
       /****
       Main
       ****/
@@ -71,6 +51,14 @@
 
   Drupal.behaviors.person_edit = {
     attach: function (context, settings) {
+
+
+      /****
+      Main
+      ****/
+      var file_fields = ['avatar', 'cv', 'motivation'];
+
+
       /*
       Bind Events
       */
@@ -104,6 +92,27 @@
       });
 
 
+      // When the file upload fails, we receive an error messages
+      // > We move the message to our message area
+      // > We make sure the the upload field show we did not upload anything
+      $('.field-type-file .error').each(function() {
+        var prefix = 'field-name-field-';
+        var type = '';
+
+        $origin = $(this).parents('div[class*="' + prefix + '"]');
+        for(var i = 0; i < file_fields.length; i++) {
+          if($origin.hasClass(prefix+file_fields[i])) {
+            type = file_fields[i];
+            break;
+          }
+        }
+        $('.person-edit .' + type).removeClass('defined');
+        $('.person-edit .' + type).addClass('removed');
+
+        $('.tf-region.messages .error').remove();
+        $('.tf-region.messages').append($(this));
+      });
+
       /*******
       Helpers
       *******/
@@ -132,7 +141,6 @@
       function immediatelyUpload(i) {
         return function(event){
           event.stopImmediatePropagation();
-     console.log('immediatelyUpload called');
           if($(this).val() !== '') {
             $('.person-edit #edit-field-'
                          + file_fields[i] + '-und-0-upload-button').mousedown();
@@ -185,12 +193,8 @@
         });
       };
 
-
-      /****
-      Main
-      ****/
-      var file_fields = ['avatar', 'cv', 'motivation'];
       $.fn.invoke_init_edit_person();
+
 
 
     }
