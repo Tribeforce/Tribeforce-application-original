@@ -635,10 +635,6 @@ function ipe_submit_callback($form, &$form_state) {
       $node->body = $form_state['values']['body'];
       $node->field_category = $form_state['values']['field_category'];
       $node_array = array('node' => $node);
-
-      // For a role we need to update the sidebar menu as well
-      $html = drupal_render(item_inner_ra(array('node' => $node), 0, 'sidebar'));
-      $commands[] = ajax_command_html('.left-sidebar .nid-'.$node->nid, $html);
       break;
     case 'skill':
       $node->body = $form_state['values']['body'];
@@ -664,11 +660,17 @@ function ipe_submit_callback($form, &$form_state) {
   // We save the node to have the nid
   node_save($node);
 
-  // If we add a new role, we need a page reload and redirect
-  if($node->type === 'role' && $is_new) {
-    $url = 'roles/' . $node->nid;
-    $form_state['redirect'] = $url;
-    return;
+  // If we add a NEW role, we need a page reload and redirect
+  // If we edit an EXISTING role, we need to update the sidebar
+  if($node->type === 'role') {
+    if($is_new) {
+      $url = 'roles/' . $node->nid;
+      $form_state['redirect'] = $url;
+      return;
+    } else {
+      $html = drupal_render(item_inner_ra(array('node' => $node), 0, 'sidebar'));
+      $commands[] = ajax_command_html('.left-sidebar .nid-'.$node->nid, $html);
+    }
   }
 
   // Get the HTML of the updated element

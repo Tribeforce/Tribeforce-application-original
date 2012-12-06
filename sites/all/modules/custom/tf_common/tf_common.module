@@ -780,7 +780,8 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             '#text' => $text,
             '#path' => $path,
             '#options' => array(
-              'attributes' => array(),
+              'attributes' => $path == current_path()
+                ? array('class' => array('active')) : array(),
               'html' => TRUE,
             ),
           );

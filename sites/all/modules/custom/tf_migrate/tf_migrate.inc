@@ -123,7 +123,7 @@ class SkillMigration extends CommonMigration {
       'sites/default/files/skills.csv',$columns, array('header_rows' => 1));
     $this->destination = new MigrateDestinationNode('skill');
     $this->addSimpleMappings(array('title', 'body'));
-    $this->addFieldMapping('field_cloned_from')->defaultValue(0);
+//    $this->addFieldMapping('field_cloned_from')->defaultValue(0);
     $this->addFieldMapping('field_skill_type', 'type');
     $this->addFieldMapping('field_expert_level', 'expert_level')
       ->separator(';');
