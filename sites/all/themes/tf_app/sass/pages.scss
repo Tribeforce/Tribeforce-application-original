@@ -490,48 +490,36 @@ h2, h3 {
   .tf-region.header .menu {
     visibility: hidden;
   }
-  .tf-region.content > [id^="block-menu-menu-dashboard"] {
-    margin-top: 50px;
-    ul.menu {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      li {
-        width: (100%/3);
-        overflow: hidden;
-        float: left;
-        list-style-type: none;
-        list-style-image: none;
-        text-align: center;
+  .tf-region.content > .tabs {
+    margin-top: 30px;
+    a {
+      width: 190px;
+      color: $orange_dark;
+      font-size: 1.5em;
+      background: $sprites;
+      padding: 150px 0 0 0;
+      height: 30px;
+      &:hover {
+        background-color: #fff;
       }
-      a {
-        display: block;
-        margin: auto;
-        color: $orange_dark;
-        text-decoration: none;
-        font-size: 1.5em;
-        background: $sprites;
-        width: 190px;
-        padding-top: 140px;
-        height: 30px;
+
+      &.manage {
+        background-position: -780px -325px;
+        &:hover {
+          background-position: -973px -325px;
+        }
       }
-      li:nth-child(1) a {
-        background-position: -780px -518px;
+      &.roles {
+        background-position: -780px -508px;
+        &:hover {
+          background-position: -973px -508px;
+        }
       }
-      li:hover:nth-child(1) a {
-        background-position: -973px -518px;
-      }
-      li:nth-child(2) a {
-        background-position: -780px -159px;
-      }
-      li:hover:nth-child(2) a {
-        background-position: -971px -159px;
-      }
-      li:nth-child(3) a {
-        background-position: -780px -335px;
-      }
-      li:hover:nth-child(3) a {
-        background-position: -973px -335px;
+      &.recruit {
+        background-position: -782px -149px;
+        &:hover {
+          background-position: -973px -149px;
+        }
       }
     }
   }

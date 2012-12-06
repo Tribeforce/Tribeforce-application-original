@@ -45,8 +45,7 @@ function tf_common_permission() {
 function dashboard() {
   if(user_is_logged_in()) {
     tf_help_msg('Some help text');
-    $block = block_load('menu', 'menu-dashboard');
-    $content = _block_get_renderable_array(_block_render_blocks(array($block)));
+    $content = main_menu_ra();
   } else {
     $block = block_load('user', 'login');
     $content = _block_get_renderable_array(_block_render_blocks(array($block)));
@@ -263,10 +262,7 @@ function header_ra() {
       'text' => t('Logout'),
     ));
 
-    $block = block_load('menu', 'menu-dashboard');
-    $menu = _block_get_renderable_array(_block_render_blocks(array($block)));
-
-    $menu = main_menu_ra('header');
+    $menu = main_menu_ra();
 
     $ra = container_ra(array(
       'menu' => $menu,
@@ -296,7 +292,7 @@ function header_ra() {
   return $ra;
 }
 
-function main_menu_ra($display) {
+function main_menu_ra() {
   $items = array(
     'manage' => array(
       'path' => 'manage',
