@@ -74,8 +74,8 @@
 
       // ACTIVE LINKS
       var pathname = window.location.pathname;
-      $('.tf-region.header .menu a').each(function() {
-        if(pathname.indexOf($(this).attr('href')) === 0) {
+      $('.tf-region.header .menu .tabs > div').each(function() {
+        if(pathname.indexOf($(this).find('a').attr('href')) === 0) {
           $(this).addClass('active');
         }
       });

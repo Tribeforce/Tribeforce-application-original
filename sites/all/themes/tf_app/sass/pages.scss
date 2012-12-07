@@ -587,34 +587,6 @@ $motivation_position: -1200px -204px;
           color: #fff;
         }
       }
-/*
-      margin: 0;
-      padding: 0;
-      float: left;
-      li {
-        display: inline-block;
-        list-style-type: none;
-        list-style-image: none;
-        text-align: center;
-        + li {
-          margin-left: $gutter-width;
-        }
-      }
-      .menu a {
-        display: block;
-        text-transform: uppercase;
-        text-align: center;
-        padding: $gutter-width/4 $gutter-width;
-        @include shadow;
-        @include rounded;
-        @include gradient($grey_bg, $grey_bg_darker);
-        color: $grey_dark;
-        &.active {
-          background: $grey_light;
-          color: #fff;
-        }
-      }
-*/
     }
   }
 

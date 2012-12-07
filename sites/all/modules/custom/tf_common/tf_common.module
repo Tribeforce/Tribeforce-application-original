@@ -341,15 +341,12 @@ function main_menu_item_ra($key, $item) {
 
   return array(
     '#type' => 'container',
-    '#attributes' => array(),
+    '#attributes' => array('class' => array($active)),
     '#theme' => 'link',
     '#text' => $item['title'],
     '#path' => $item['path'],
     '#options' => array(
-      'attributes' => array('class' => array(
-        $key,
-        $active,
-      )),
+      'attributes' => array('class' => array($key, $active)),
       'html' => FALSE,
     ),
   );
