@@ -77,6 +77,7 @@
       $('.tf-region.header .menu .tabs > div').each(function() {
         if(pathname.indexOf($(this).find('a').attr('href')) === 0) {
           $(this).addClass('active');
+          $(this).find('a').addClass('active');
         }
       });
 
