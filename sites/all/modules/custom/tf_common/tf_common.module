@@ -340,8 +340,8 @@ function main_menu_item_ra($key, $item) {
   }
 
   return array(
-//    '#type' => 'container',
-//    '#attributes' => array(),
+    '#type' => 'container',
+    '#attributes' => array(),
     '#theme' => 'link',
     '#text' => $item['title'],
     '#path' => $item['path'],

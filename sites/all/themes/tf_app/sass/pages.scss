@@ -492,21 +492,34 @@ h2, h3 {
   }
   .tf-region.content > .tabs {
     margin-top: 30px;
+    overflow: visible;
+    > div {
+      width: (100%/3) - $gutter-pct;;
+      margin: $gutter-width $gutter-pct/2;
+      padding: 0;
+      background-repeat: no-repeat;
+      transition: background-position 0.2s ease-in;
+      -webkit-transition: background-position 0.2s ease-in;
+      -moz-transition: background-position 0.2s ease-in;
+      -ms-transition: background-position 0.2s ease-in;
+      &:hover {
+        background-position-y: 180px;
+      }
+    }
     a {
-      width: 190px;
+      display: block;
+      width: 184px;
+      margin: auto;
       color: $orange_dark;
       font-size: 1.5em;
       background: $sprites;
       padding: 150px 0 0 0;
       height: 30px;
-      &:hover {
-        background-color: #fff;
-      }
 
       &.manage {
-        background-position: -780px -325px;
+        background-position: -784px -325px;
         &:hover {
-          background-position: -973px -325px;
+          background-position: -977px -325px;
         }
       }
       &.roles {
