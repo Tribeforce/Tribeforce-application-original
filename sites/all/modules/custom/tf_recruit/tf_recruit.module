@@ -100,7 +100,7 @@ function tf_recruit_menu() {
     'access arguments' => array('access content'),
     'file' => 'candidates.inc',
     'access callback' => 'tf_is_own',
-    'access arguments' => array(1, 4),
+    'access arguments' => array(1, 3),
   );
 
 

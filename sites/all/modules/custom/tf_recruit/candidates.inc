@@ -32,14 +32,15 @@ function interview_interpretation_form($form, &$form_state, $node) {
 
   return array(
     'score' => $form['field_score'],
-//    'done' => $form['field_done'],
     'notes' => array(
       '#type' => 'textarea',
       '#default_value' => $node->title,
+      '#attributes' => array('placeholder' => t('Enter a note...')),
     ),
     'submit' => array(
       '#type' => 'submit',
       '#value' => t('Done'),
+      '#attributes' => array('class' => array('btn', 'btn-large', 'btn-primary')),
       '#ajax' => array(
         'callback' => 'interview_interpretation_callback',
         'progress' => array('type' => 'none'),
@@ -85,15 +86,7 @@ function interview($interview_nid) {
   $interview = get_interview($interview_nid);
   $person_nid = $interview->field_person_back_ref['und'][0]['nid'];
   $person = get_person($person_nid);
-
-  // TODO: This can be in 1 function (see compare)
-  $ra = slide_pane_ra(interview_ra($person, $interview));
-  $html = drupal_render($ra);
-
-  $commands[] = ajax_command_append('.tf-module', $html);
-  $commands[] = ajax_command_invoke('.tf-region.slide-pane',
-                                                   'addClass', array('open'));
-  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+  show_overlay(interview_ra($person, $interview), 'page');
 }
 
 function add_interview($campaign_nid, $person_nid) {
@@ -262,9 +255,9 @@ function candidate_ra($campaign_nid, $person, $index = 0) {
 
   $buttons = container_ra(array(
     'interview' => $interview_ra,
-    'cv' => field_view_field('node', $person, 'field_cv',
+    'cv fake' => field_view_field('node', $person, 'field_cv',
                                   array('label' => 'hidden')),
-    'motivation' => field_view_field('node', $person, 'field_motivation',
+    'motivation fake' => field_view_field('node', $person, 'field_motivation',
                                   array('label' => 'hidden')),
   ));
 
@@ -394,7 +387,15 @@ function interview_header_ra($person, $interview) {
       $title = field_view_title($interview, 0);
       break;
   }
-//  $campaign = get_campaign($interview);
+
+  $person_interview = array(
+    'node' => $person,
+    'ass' => $interview,
+  );
+
+  $ra = item_ra($person_interview, 'header');
+
+return $ra;
 
   return array(
     '#type' => 'container',

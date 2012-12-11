@@ -2,7 +2,7 @@
 (function ($) {
   Drupal.behaviors.sidebar = {
     attach: function (context, settings) {
-      var o = 'once-sidebar'
+      var o = 'once-sidebar';
 
       $('.left-sidebar a.active').each(function() {
         $(this).siblings('.actions').addClass('active');
@@ -37,7 +37,7 @@
 
   Drupal.behaviors.tf_common = {
     attach: function (context, settings) {
-      var o = 'once-common'
+      var o = 'once-common';
 
       // TABS
       // Set the active tab logic
@@ -68,7 +68,20 @@
       // OVERLAY
       // Close the overlay
       $('.overlay .close').once(o).click(function(event) {
-        $(this).parents('.overlay').remove();
+        $(this).parents('.overlay').fadeOut(function(){
+          $(this).remove();
+        });
+      });
+
+      // ESC closes the overlay
+      $(document).keyup(function(event) {
+        $('.overlay').each(function() {
+          if(event.which === 27) {
+            $(this).fadeOut(function(){
+              $(this).remove();
+            });
+          }
+        });
       });
 
 
@@ -102,5 +115,6 @@
       }
       return false;
     }
+
   };
 }(jQuery));

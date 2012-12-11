@@ -1,5 +1,5 @@
 <?php
-$GLOBALS['tf_version'] = 'Beta 1.3';
+$GLOBALS['tf_version'] = 'Beta 1.4';
 
 function tf_common_menu() {
   $items['dashboard'] = array(
@@ -502,8 +502,8 @@ function region_ra($name, $ra) {
   );
 }
 
-function overlay_ra($ra) {
-  return region_ra('overlay', container_ra(array('inner' => $ra)));
+function overlay_ra($ra, $type = 'popup') {
+  return region_ra('overlay', container_ra(array($type => $ra)));
 }
 
 
@@ -779,25 +779,6 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             ),
           );
           $ra['content']['actions'] = role_actions_ra($node_array['node']);
-
-
-#  $page = get_tf_page($module);
-#  $link = '<div class="title">' . $title_node->title . '</div>';
-#  if(!empty($subtitle)) {
-#    $link .= '<div class="subtitle">(' . $subtitle . ')</div>';
-#  }
-#  $url = $module . '/' . $title_node->nid . $page;
-
-#  return array(
-#    '#type' => 'container',
-#    '#attributes' => array(
-#      'class' => array('item', $module, $module . '-' . $title_node->nid),
-#    ),
-#    'link' => array(
-#      '#markup' => l($link, $url, array('html' => TRUE)),
-#    ),
-#    'actions' => $actions,
-#  );
           break;
       }
       break;
@@ -1033,7 +1014,45 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
               'html' => FALSE,
             ),
           );
-
+          break;
+        case 'header':
+          if($node_array['ass']->type === 'interview') {
+            $title = field_view_title(get_campaign($node_array['ass']), -10);
+          } else {
+            $title = container_ra(array('field-name-title' => t('Evaluation')));
+          }
+          $ra['content']['col-1'] = array(
+            '#type' => 'container',
+            '#attributes' => array('class' => array('col', 'col-1')),
+            'data' => array(
+              'title' => $title,
+              'full_name' => container_ra(array(
+                'field-name-full-name' => get_full_name($node_array['node']),
+              'email' => field_view_field('node',$node_array['node'],
+                      'field_email', array('label' => 'hidden', 'weight' => 5)),
+              'phone' => field_view_field('node',$node_array['node'],
+                     'field_phone', array('label' => 'hidden', 'weight' => 10)),
+              )),
+            ),
+          );
+          $ra['content']['col-2'] = array(
+            '#type' => 'container',
+            '#attributes' => array('class' => array('col', 'col-2')),
+            'data' => container_ra(array(
+              'date' => array(
+                '#type' => 'container',
+                '#attributes' => array('class' => array('date'),),
+                'data' => array(
+                  '#markup' => format_date($node_array['ass']->created, 'short_date'),
+                ),
+              ),
+              'cv fake' => field_view_field('node', $node_array['node'],
+                                                                    'field_cv'),
+              'motivation fake' => field_view_field('node', $node_array['node'],
+                                                            'field_motivation'),
+              'done' => container_ra(array('done btn btn-primary' => 'Done')),
+            )),
+          );
           break;
       }
       break;
@@ -1316,7 +1335,7 @@ function prepare_interpretations($role_nids, $parent) {
 // We don't want this text to appear all the time, we take No Comment
 //    $node->title = "Interpretation for interview " . $parent->nid
 //                 . ' and ' . $ai->type . ' ' . $ai->nid;
-    $node->title = t("No comment");
+    $node->title = '';
     node_save($node);
   }
 }
@@ -1449,4 +1468,13 @@ function tf_help_msg($msg) {
   if(empty($_POST)) {
     drupal_set_message(t($msg), 'help');
   }
+}
+
+
+function show_overlay($ra, $type) {
+  $overlay_ra = overlay_ra($ra, $type);
+  $html = drupal_render($overlay_ra);
+  $commands[] = ajax_command_append('.tf-module', $html);
+  $commands[] = ajax_command_invoke('.tf-region.overlay', 'fadeIn');
+  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
 }

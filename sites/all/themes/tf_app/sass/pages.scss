@@ -748,7 +748,7 @@ $motivation_position: -1200px -204px;
   }
 
   &.overlay {
-    display: table;
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -756,14 +756,22 @@ $motivation_position: -1200px -204px;
     height: 100%;
     background-color: $black_t;
     // Needs to be added for every item to be central in the overlay
-    .inner {
+    > div {
+      position: absolute;
       background-color: #fff;
       @include rounded;
       @include shadow;
-      position: absolute;
+    }
+    .popup {
       width: 50%;
       left: 25%;
       top: 25%
+    }
+    .page {
+      top: 5%;
+      left: 10%;
+      width: 80%;
+      height: 90%;
     }
   }
 
@@ -851,69 +859,58 @@ $motivation_position: -1200px -204px;
 */
 .interview {
   position: relative;
-  .header {
-    overflow: hidden;
-    padding: $gutter-pct;
+  height: 99%;
+  .person {
+    padding: $gutter-width $gutter-pct;
+    margin: $gutter-width;
     @include shadow;
-    margin-bottom: 4*$gutter-width;
-    .field {
-      float: left;
-      width: 33%;
+    @include rounded;
+
+    .col {
+      width: 50%;
+      display: inline-block;
+      vertical-align:top;
     }
+
+    .field-label,
+    .field-label + .field-items {
+        display: inline-block;
+        font-weight: normal;
+    }
+
     .field-name-title,
     .date {
-      font-size: 1.3em;
+      font-size: 24px;
     }
-    .field-name-title {
-      width: 66%;
-    }
-    .node-person.field-name-title {
-      font-size: 1em;
-      width: 33%;
-    }
-    .date {
-      width: 33%;
-    }
-    .field-type-file a {
-      background: $sprites;
-      padding-left: $icon_width;
-    }
-    .field-name-field-cv a {
-      background-position: $cv_position;
-    }
-    .field-name-field-cv a:hover {
-      background-position: -1200px -231px;
-    }
-    .field-name-field-motivation a {
-      background-position: $motivation_position;
-    }
-    .field-name-field-motivation a:hover {
-      background-position: -1200px -257px;
+
+    .done {
+      position: absolute;
+      right: $gutter-pct*1.5;
+      top: 40px;
     }
   }
+
   .print {
     @include icon;
     background-position: -65px -631px;
     position: absolute;
     top: $gutter-width;
-    right: $gutter-pct;
+    right: $gutter-pct*1.5;
   }
-  .body {
-    $col_width: 40%;
 
-    height: 450px;
+  .body {
+    position: absolute;
+    top: 140px;
+    left: 0;
+    bottom: $gutter-width;
+    width: auto;
+    $col_width: 40%;
     overflow-y: scroll;
-    padding: 0 $gutter-width $gutter-width $gutter-width;
-    margin: 0 (-$gutter-width) $gutter-width (-$gutter-width);
+    padding: 0 $gutter-width;
+
     .header {
-      clear: both;
-      padding: 0px;
-      box-shadow: none;
-      margin: 0;
       .field {
         padding: $gutter-width $gutter-pct;
-        float: none;
-        width: auto;
       }
     }
     .field {
@@ -926,12 +923,14 @@ $motivation_position: -1200px -204px;
     }
 
     .question-wrapper {
-//      overflow: hidden;
-      margin-bottom: $gutter-width;
+      margin: 0 0 $gutter-width 0;
       background: $grey_bg_darker;
       color: $grey_light;
       @include shadow;
+      @include rounded;
       position: relative;
+      width: auto;
+      padding: 0;
 
       .more,
       .less {
@@ -962,7 +961,6 @@ $motivation_position: -1200px -204px;
       }
 
       &.collapsed {
-        .answer-body,
         .less {
           display: none;
         }
@@ -994,6 +992,7 @@ $motivation_position: -1200px -204px;
       .field-name-title {
         cursor: pointer;
         background: $grey_light;
+        @include gradient($grey_bg_darker, $grey_light);
         color: $grey_bg_darker;
         font-size: 1em;
       }
@@ -1003,6 +1002,7 @@ $motivation_position: -1200px -204px;
         color: $black;
         .field-name-title {
           background-color: $orange_dark;
+          @include gradient($orange_light, $orange_dark);
           color: #fff;
         }
       }
@@ -1011,6 +1011,7 @@ $motivation_position: -1200px -204px;
 
     .answer-body {
       position: relative;
+      display: none;
       overflow: hidden;
       .col-1,
       .col-3 {
@@ -1037,12 +1038,12 @@ $motivation_position: -1200px -204px;
     .score {
       @include icon;
       margin-bottom: $gutter-width/2;
-      background-position: -154px -491px;
+      background-position: -154px -487px;
       text-align: center;
       color: $grey_light;
       text-indent: 0px;
       &.selected {
-        background-position: -189px -491px;
+        background-position: -189px -487px;
         color: #FFF;
         font-weight: bold;
       }
@@ -1056,25 +1057,10 @@ $motivation_position: -1200px -204px;
     }
 
     textarea {
-      height: 110px;
-      border: $border_width solid $grey_light;
+      height: 120px;
     }
     .form-submit {
-      width: $col_width - $gutter-pct;
-      border: 0;
-      @include rounded;
-      color: #FFF;
-      text-transform: uppercase;
-      background-color: $orange_dark;
-      padding: $gutter-pct/2;
-      position: initial;
-      text-indent: 0;
-      position: absolute;
-      bottom: $icon_width;
-      right: $gutter-pct;
-    }
-    .form-submit:hover {
-      font-weight: bold;
+      width: 100%;
     }
   }
 }
@@ -1495,30 +1481,6 @@ $c_margin: 8px;
       .add-interview a {
         background-image: url('../images/add_interview.png');
       }
-      .cv a {
-        background: $sprites;
-        background-position: -1192px -163px;
-      }
-      .cv a:hover {
-        background-position: -1192px -224px;
-      }
-
-      .motivation a {
-        background: $sprites;
-        background-position: -1192px -196px;
-      }
-      .motivation a:hover {
-        background-position: -1192px -249px;
-      }
-      .file {
-        img {
-          display: none;
-        }
-        a {
-          text-indent: -9999px;
-          display: block;
-        }
-      }
 
     }
 
@@ -1567,6 +1529,40 @@ $c_margin: 8px;
     }
   }
 }
+
+
+.fake {
+  &.cv,
+  &.motivation {
+    a {
+      background: $sprites;
+    }
+    .file {
+      img {
+        display: none;
+      }
+      a {
+        text-indent: -9999px;
+        display: block;
+      }
+    }
+  }
+  &.cv a {
+    background-position: -1192px -163px;
+    &:hover {
+      background-position: -1192px -224px;
+    }
+  }
+  &.motivation a {
+    background-position: -1192px -196px;
+    &:hover {
+      background-position: -1192px -249px;
+    }
+  }
+}
+
+
+
 
 
 /*
@@ -1774,17 +1770,19 @@ $col_width: 100px;
  */
 .manage-overview {
   .person {
-    width: 29%;
+    $right_col: 120px;
+    $num_col: 3;
+    $col_width: (100%/$num_col) - 2*$gutter-pct;
+    width: $col_width;
     background-color: #fff;
     position: relative;
     float: left;
-    margin: $gutter-pct/2;
-    padding: $gutter-pct/2;
+    margin: $gutter-width/2 $gutter-pct/2;
+    padding: $gutter-width/2 $gutter-pct/2;
     @include shadow;
     @include rounded;
 
     .col {
-      float: left;
       height: 160px;
       position: relative;
       .inner {
@@ -1793,11 +1791,15 @@ $col_width: 100px;
     }
 
     .col-1 {
-      width: 60%;
+      margin-right: $right_col;
     }
 
     .col-2 {
-      width: 40%;
+      width: $right_col;
+      position: absolute;
+      right: 100% * $gutter-pct/(2 * $col_width);
+      top: $gutter-width/2;
+
       .inner {
         border-left: 1px solid $grey_bg_darker;
         padding-left: 10%;
@@ -1820,10 +1822,10 @@ $col_width: 100px;
       padding: $gutter-width/2 0;
       text-align: center;
       position: absolute;
-      bottom: $icon_width + $gutter-width/2;
-      margin: 0 -2px;
-      width: 70%;
-      left: 25%;
+      bottom: $icon_width + $gutter-width/4;
+      width: 83px;
+      left: 30px;
+      background-color: #fff;
     }
 
     .manage {
@@ -1857,6 +1859,11 @@ $col_width: 100px;
       font-size: 20px;
     }
 
+    .field-name-field-email,
+    .field-name-field-phone {
+      max-height: 24px;
+      overflow: hidden;
+    }
 
     img {
       width: 100%;

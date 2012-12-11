@@ -85,11 +85,7 @@ function edit_remark($person_nid, $redirect = 0, $remark_nid = FALSE) {
   $remark = node_load($remark_nid);
   $enriched_person = get_enriched_person(array('node' => $person));
 
-  $html = drupal_render(tf_manage_edit_remark_ra($enriched_person, $redirect,
-                                                                      $remark));
-
-  $commands[] = ajax_command_append('.tf-module', $html);
-    ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+  show_overlay(tf_manage_edit_remark_ra($enriched_person, $redirect, $remark));
 }
 
 /***************

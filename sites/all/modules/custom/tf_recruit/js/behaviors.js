@@ -191,7 +191,7 @@
 
   Drupal.behaviors.interview = {
     attach: function (context, settings) {
-
+      var o = 'once-interview';
 
       // BIND EVENT HANDLERS
 
@@ -226,16 +226,27 @@
 
           // The collapsed toggle
           $(this).parents('.question-wrapper').toggleClass('collapsed');
+          $(this).parents('.question-wrapper').find('.answer-body').slideToggle();
       });
 
 
       // Setting done flag
-      $('.interview .form-submit').mousedown(function(event) {
+      $('.interview .form-submit').once(o).mousedown(function(event) {
         var wrapper = $(this).parents('.question-wrapper');
-
         wrapper.addClass('collapsed done');
         wrapper.removeClass('activated');
+        wrapper.find('.answer-body').slideToggle();
       });
+
+
+      // Clicking the Done button
+      $('.interview .person .done').click(function() {
+        $(this).parents('.overlay').fadeOut(function() {
+          $(this).remove();
+        });
+      });
+
+
 
     }
   };

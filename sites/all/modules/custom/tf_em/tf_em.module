@@ -37,18 +37,18 @@ Helper
 */
 function deep_clone_do($node_from, $node_to = NULL) {
   $traversed_nodes = array($node_from->nid);
-  $stop_fields = array();                // By default, we don't stop
+  $stop_fields = array("field_company_ref"); // By default, we stop for the company
   $back_field_patterns = array("_back_");//By default, backpattern is "_back_"
 
   // Do some specifics for a particular node type
+/*
   switch($node_from->type) {
     case 'role':
-      // We stop the recursion at the company field
-      $stop_fields = array("field_company_ref");
     case 'skill':
-      // We stop the recursion at the talent field and the company field
-      $stop_fields = array("field_company_ref");
+    case 'talent':
+      $stop_fields[] = "field_company_ref";
   }
+*/
 
   $cloned_node = tf_em_shallow_copy($node_from, $traversed_nodes,$stop_fields,
                                    $back_field_patterns, $node_to);

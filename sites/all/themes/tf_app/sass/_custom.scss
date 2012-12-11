@@ -162,10 +162,10 @@
 }
 
 @mixin slide-down {
-  -webkit-transition: height 0.3s ease-out;  /* Safari 3.2+, Chrome */
-     -moz-transition: height 0.3s ease-out;  /* Firefox 4-15 */
-       -o-transition: height 0.3s ease-out;  /* Opera 10.5–12.00 */
-          transition: height 0.3s ease-out;  /* Firefox 16+, Opera 12.50+ */
+  -webkit-transition: all 0.3s ease-out;  /* Safari 3.2+, Chrome */
+     -moz-transition: all 0.3s ease-out;  /* Firefox 4-15 */
+       -o-transition: all 0.3s ease-out;  /* Opera 10.5–12.00 */
+          transition: all 0.3s ease-out;  /* Firefox 16+, Opera 12.50+ */
 }
 
 @mixin gradient($top, $bottom) {

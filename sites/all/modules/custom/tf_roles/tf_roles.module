@@ -363,7 +363,7 @@ function roles($regions = array()) {
   if(empty($regions)) {
     tf_help_msg('Choose a role on the left and go');
   } else {
-    tf_help_msg('Here you can tailer a role to your specific needs');
+    tf_help_msg('Here you can tailor a role to your specific needs');
   }
 
   $empty_regions = array(
@@ -580,21 +580,14 @@ function change_talent($role_nid, $original_nid, $title, $level) {
           . ' display-edit updated">' . $html . '</div>';
           // TODO: Add index and even/odd
 
-//dpm($html);
     // If $role_nid is 0, then we need to insert the talent at the end
     if($role_nid == 0) {
       $selector = '.' . strtolower($talent_array['node']
                                      ->field_type['und'][0]['value']) . ' body';
       $commands[] = ajax_command_append($selector, $html);
     } else {
-
-dpm($role_nid);
-dpm($original_nid);
-dpm($title);
-dpm($level);
       $commands[] = ajax_command_replace('.nid-' . $original_nid, $html);
     }
-dpm($commands);
     ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
   }
 }
