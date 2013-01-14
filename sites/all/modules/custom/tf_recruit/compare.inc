@@ -14,11 +14,6 @@ Form Submits
 /*
 Page callbacks
 */
-function compare($campaign_nid, $candidate_nids_string) {
-  $role_nid = get_role_nid_of_campaign($campaign_nid);
-  $role = node_load($role_nid);
-  return compare_ra($campaign_nid, $role, $candidate_nids_string);
-}
 
 
 
@@ -66,10 +61,7 @@ function compare_ra($campaign_nid, $role, $candidate_nids_string) {
   );
 }
 
-// $score: Array holding the score object
-//           or NULL if no score has been profided
-//         $score['score'] holds the score as a number
-function score_board_col_ra($score, $col_num, $key) {
+function score_board_col_ra($val, $col_num, $key) {
   $even_odd = $col_num % 2 == 0 ? 'even' : 'odd';
 
   return array(
@@ -83,8 +75,7 @@ function score_board_col_ra($score, $col_num, $key) {
       ),
     ),
     'col' => array(
-      // If $score is NULL, it means no score has been set, we set N/A
-      '#markup' => is_null($score['score']) ? t('N/A') : $score['score'],
+      '#markup' => $val,
     ),
   );
 }
@@ -109,12 +100,23 @@ function score_board_row_ra($item_class, $scores, $row_num, $candidate_nids_stri
   $counter = 1;
   foreach(explode(',', $candidate_nids_string) as $candidate_nid) {
     $key = "candidate-$candidate_nid";
-    $score = $scores[$key];
-//  if($key != 'type') {
-    $columns[$key] = score_board_col_ra($score, $counter, $key);
+    $score = $scores[$key]; // Array holding the score object
+                            // or NULL if no score has been profided
+                            // $score['score'] holds the score as a number
+
+    // If $score is NULL, it means no score has been set, we set N/A
+    if(is_null($score['score'])) {
+      $val = t('N/A');
+    } else {
+      $val = $score['score'];
+    }
+    $columns[$key] = score_board_col_ra($val, $counter, $key);
     $counter++;
-//  }
   }
+
+  // Add the title column
+  $key = 'title';
+  $columns[$key] = score_board_col_ra('hkjdkjsdfs', $counter, $key);
 
   return array(
     '#type' => 'container',

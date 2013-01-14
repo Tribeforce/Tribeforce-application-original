@@ -68,88 +68,16 @@
 
 // Box shadow down
 @mixin shadow {
-  -webkit-box-shadow: 0px 1px 1px 1px rgba(0,0,0, .3);
-  -ms-box-shadow: 0px 1px 1px 1px rgba(0,0,0, .3);
-  -o-box-shadow: 0px 1px 1px 1px rgba(0,0,0, .3);
-  -moz-box-shadow: 0px 1px 1px 1px rgba(0,0,0, .3);
-  box-shadow: 0px 1px 1px 1px rgba(0,0,0, .3);
+  @include box-shadow(0px 1px 1px 1px rgba(0,0,0, .3));
 }
 
 // Box glow
 @mixin glow {
-  -webkit-box-shadow: 0px 0px 10px 0px rgba(0,0,0, .3);
-  -ms-box-shadow:     0px 0px 10px 0px rgba(0,0,0, .3);
-  -o-box-shadow:      0px 0px 10px 0px rgba(0,0,0, .3);
-  -moz-box-shadow:    0px 0px 10px 0px rgba(0,0,0, .3);
-  box-shadow:         0px 0px 10px 0px rgba(0,0,0, .3);
+  @include box-shadow(0px 0px 10px 0px rgba(0,0,0, .3));
 }
 
 @mixin shadow-grey {
-  $val: 0 0 2px 2px rgba(239, 239, 239, .5);
-  -webkit-box-shadow: $val;
-  -ms-box-shadow: $val;
-  -o-box-shadow: $val;
-  -moz-box-shadow: $val;
-  box-shadow: $val;
-}
-
-
-// Rounded corners for fields
-@mixin rounded {
-  $px: 4px;
-  -webkit-border-radius: $px;
-  -moz-border-radius: $px;
-  -o-border-radius: $px;
-  -ms-border-radius: $px;
-  border-radius: $px;
-}
-
-@mixin rounded-left {
-  $px: 4px;
-  -webkit-border-top-left-radius: $px;
-  -webkit-border-bottom-left-radius: $px;
-  -webkit-border-top-right-radius: 0;
-  -webkit-border-bottom-right-radius: 0;
-  -moz-border-radius-topleft: $px;
-  -moz-border-radius-bottomleft: $px;
-  -moz-border-radius-topright: 0;
-  -moz-border-radius-bottomright: 0;
-  -o-border-radius-topleft: $px;
-  -o-border-radius-bottomleft: $px;
-  -o-border-radius-topright: 0;
-  -o-border-radius-bottomright: 0;
-  -ms-border-radius-topleft: $px;
-  -ms-border-radius-bottomleft: $px;
-  -ms-border-radius-topright: 0;
-  -ms-border-radius-bottomright: 0;
-  border-top-left-radius: $px;
-  border-bottom-left-radius: $px;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-@mixin rounded-right {
-  $px: 4px;
-  -webkit-border-top-right-radius: $px;
-  -webkit-border-bottom-right-radius: $px;
-  -webkit-border-top-left-radius: 0;
-  -webkit-border-bottom-left-radius: 0;
-  -moz-border-radius-topright: $px;
-  -moz-border-radius-bottomright: $px;
-  -moz-border-radius-topleft: 0;
-  -moz-border-radius-bottomleft: 0;
-  -o-border-radius-topright: $px;
-  -o-border-radius-bottomright: $px;
-  -o-border-radius-topleft: 0;
-  -o-border-radius-bottomleft: 0;
-  -ms-border-radius-topright: $px;
-  -ms-border-radius-bottomright: $px;
-  -ms-border-radius-topleft: 0;
-  -ms-border-radius-bottomleft: 0;
-  border-top-right-radius: $px;
-  border-bottom-right-radius: $px;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+  @include box-shadow(0 0 2px 2px rgba(239, 239, 239, .5));
 }
 
 @mixin icon {
@@ -161,24 +89,6 @@
   line-height: $icon_width;
 }
 
-@mixin slide-down {
-  -webkit-transition: all 0.3s ease-out;  /* Safari 3.2+, Chrome */
-     -moz-transition: all 0.3s ease-out;  /* Firefox 4-15 */
-       -o-transition: all 0.3s ease-out;  /* Opera 10.5–12.00 */
-          transition: all 0.3s ease-out;  /* Firefox 16+, Opera 12.50+ */
-}
-
 @mixin gradient($top, $bottom) {
-  background-image: linear-gradient(top, $top 0%, $bottom 100%);
-  background-image: -o-linear-gradient(top, $top 0%, $bottom 100%);
-  background-image: -moz-linear-gradient(top, $top 0%, $bottom 100%);
-  background-image: -webkit-linear-gradient(top, $top 0%, $bottom 100%);
-  background-image: -ms-linear-gradient(top, $top 0%, $bottom 100%);
-  background-image: -webkit-gradient(
-    linear,
-    left top,
-    left bottom,
-    color-stop(0, $top),
-    color-stop(1, $bottom)
-  );
+  @include background-image(linear-gradient(top, $top 0%, $bottom 100%));
 }

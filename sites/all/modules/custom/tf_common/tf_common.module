@@ -1,5 +1,5 @@
 <?php
-$GLOBALS['tf_version'] = 'Beta 1.4';
+$GLOBALS['tf_version'] = 'Beta 1.5';
 
 function tf_common_menu() {
   $items['dashboard'] = array(
@@ -126,7 +126,7 @@ function item_form($form, &$form_state, $node, $parent_nid = 0) {
     'submit' => array(
       '#type' => 'submit',
       '#attributes' => array('class' => array('submit', 'btn', 'btn-primary')),
-      '#value' => $is_new ? t('Add') : t('Edit'),
+      '#value' => $is_new ? t('Add') : t('Save'),
       '#ajax' => array(
         'callback' => 'ipe_submit_callback',
         'progress' => array('type' => 'none'),
@@ -1035,6 +1035,26 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
               )),
             ),
           );
+          // If it is an interview, cliking the done button should invoke an
+          // AJAX call to update the screen with the changed data
+          // Otherwise, nothing should happen
+          if($node_array['ass']->type === 'interview') {
+            $campaign_nid = $node_array['ass']->field_campaign_ref['und'][0]['nid'];
+            $candidate_nid = $node_array['node']->nid;
+            $path = "recruit/$campaign_nid/nojs/candidate/$candidate_nid/update";
+            $done = array(
+              '#theme' => 'link',
+              '#text' => t('Done'),
+              '#path' => $path,
+              '#options' => array(
+                'attributes' => array('class' => array('use-ajax', 'done',
+                                                       'btn', 'btn-primary')),
+                'html' => FALSE,
+              ),
+            );
+          } else {
+            $done = container_ra(array('done btn btn-primary' => 'Done'));
+          }
           $ra['content']['col-2'] = array(
             '#type' => 'container',
             '#attributes' => array('class' => array('col', 'col-2')),
@@ -1043,14 +1063,15 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
                 '#type' => 'container',
                 '#attributes' => array('class' => array('date'),),
                 'data' => array(
-                  '#markup' => format_date($node_array['ass']->created, 'short_date'),
+                  '#markup' => format_date($node_array['ass']->created,
+                                                                  'short_date'),
                 ),
               ),
               'cv fake' => field_view_field('node', $node_array['node'],
                                                                     'field_cv'),
               'motivation fake' => field_view_field('node', $node_array['node'],
                                                             'field_motivation'),
-              'done' => container_ra(array('done btn btn-primary' => 'Done')),
+              'done'=> $done,
             )),
           );
           break;
@@ -1104,7 +1125,8 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
         '#theme' => 'link',
         '#text' => format_date($node_array['node']->changed, 'short_date'),
         // TODO: Maybe this is not nice to go to another module
-        '#path' => "recruit/$parent_nid/nojs/candidates/interview/" . $node_array['node']->nid,
+        '#path' => "recruit/$parent_nid/nojs/candidates/interview/"
+                 . $node_array['node']->nid,
         '#options' => array(
           'attributes' => array('class' => array('use-ajax')),
           'html' => FALSE,
@@ -1471,10 +1493,15 @@ function tf_help_msg($msg) {
 }
 
 
-function show_overlay($ra, $type) {
+function show_overlay($ra, $type, $return = FALSE) {
   $overlay_ra = overlay_ra($ra, $type);
   $html = drupal_render($overlay_ra);
   $commands[] = ajax_command_append('.tf-module', $html);
   $commands[] = ajax_command_invoke('.tf-region.overlay', 'fadeIn');
-  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+  $array = array('#type' => 'ajax', '#commands' => $commands);
+  if($return) {
+    return $array;
+  } else {
+    ajax_deliver($array);
+  }
 }

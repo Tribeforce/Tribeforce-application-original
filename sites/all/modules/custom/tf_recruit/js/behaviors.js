@@ -1,171 +1,5 @@
 // Using the closure to map jQuery to $.
 (function ($) {
-/*  Drupal.behaviors.role_selection = {
-    attach: function (context, settings) {
-      var roles_container_id = '#roles';
-      var role_preview_id = '#preview';
-      var role_picked_id = '#picked';
-      var picked = $('[name=picked]');
-
-      $('#edit-search-field').
-        keyup(
-          function() {
-            var string = $(this).val();
-            search_role(string);
-          }
-        );
-
-      function reset_div(div_id) {
-        switch(div_id) {
-          case role_preview_id:
-            $(div_id).html('<h2 class="no-items">'
-                                          + Drupal.t('Preview Pane')+'</h2>');
-            break;
-          default:
-            $(div_id).html('');
-        }
-      }
-
-      function search_role(value) {
-        var min_length = 2;
-
-        if(value.length === 0) {
-          reset_div(roles_container_id);
-          reset_div(role_preview_id);
-        } else if(value.length < min_length) {
-          $(roles_container_id).html('I need at least '
-                                                + min_length + ' characters');
-        } else {
-          $.ajax({
-             type: "GET",
-             url: "/role/search/autocomplete/"+encodeURI(value),
-             dataType: "html",
-             success: function(msg){$(roles_container_id).html(msg);}
-          });
-        }
-      }
-
-      // Show roles preview when click on a role
-      $('#roles div, #picked div.picked').
-        live('click',
-          function() {
-            var nid = $(this).attr('id');
-            // TODO: fix: Assumed there is only 1 class
-            var class_string = $(this).attr('class');
-            show_role_preview(nid, class_string);
-          }
-        );
-
-      function show_role_preview(nid, type) {
-        $.ajax({
-           type: "GET",
-           url: "/role/preview/"+encodeURI(nid)+"/"+type,
-           dataType: "html",
-           success: function(msg){$(role_preview_id).html(msg);}
-        });
-      }
-
-      // Actions for the buttons
-      $('#preview .button').
-        live('click',
-          function() {
-            var nid = $(this).attr('id');
-            // TODO: fix: Assumed there is only 1 class
-            var class_string = $(this).attr('class');
-            switch(class_string) {
-              case('button delete'):
-                del_selection(nid);
-                break;
-              case('button buy'):
-                add_selection(nid);
-                break;
-              case('button add'):
-                add_selection(nid);
-                break;
-            }
-          }
-        );
-
-      //// Actions to perform for adding a selection
-      function add_selection(nid) {
-        var separator = ',';
-        var picked_string = picked.val();
-        var picked_array = [];
-
-        // To make sure we don't create an array with an empty element,
-        //we only need to create the array if picked_string is not empty
-        if(picked_string.length > 0) {
-          picked_array = picked_string.split(separator);
-        }
-
-        // If element has already been added, highlight it
-        if($.inArray(nid, picked_array) !== -1 ) {
-          $(role_picked_id).children('#'+nid)
-            .effect('highlight',{color: '#FF4000'}, 1000);
-        }
-        // If it had not been added:
-        //   add it, update the hidden form field and upadete the picked div
-        else {
-          // This is where the support for picking and joining multiple roles
-          // is disabled. Switch comment of the 2 lines below
-          // to change the behavior
-//          picked_array.push(nid);  // for multiple
-          picked_array[0] = nid; // For 1
-
-          picked_string = picked_array.join(separator);
-          picked.val(picked_string);
-          theme_picked(picked_string);
-          reset_div(role_preview_id);
-        }
-      }
-
-      //// Actions to perform for deleting a selection
-      function del_selection(nid) {
-        var separator = ',';
-        var picked_string = picked.val();
-        var picked_array = [];
-
-        // To make sure we don't create an array with an empty element,
-        //we only need to create the array if picked_string is not empty
-        if(picked_string.length > 0) {
-          picked_array = picked_string.split(separator);
-        }
-
-        // If the element is present
-        //   remove it from the array, update the hidden form field
-        //   upadete the picked div and reset the preview pane
-        var pos_in_array = $.inArray(nid, picked_array);
-        if(pos_in_array !== -1 ) {
-          picked_array.splice(pos_in_array, 1); // Remove element
-          picked_string = picked_array.join(separator);
-          picked.val(picked_string);
-          theme_picked(picked_string);
-          reset_div(role_preview_id);
-        }
-      }
-
-      //// Updates the HTML of the picked div
-      function theme_picked(picked_string) {
-        $.ajax({
-          type: "GET",
-          url: "/recruit/jobopening/new/role_selection/picked/"
-                                                  + encodeURI(picked_string),
-          dataType: "html",
-          success: function(msg){
-           if($(role_picked_id).children().first().is('.no-items')) {
-             $(role_picked_id).html(msg);
-           } else {
-             $(role_picked_id).html(msg);
-           }
-          }
-        });
-      }
-
-      // Helper functions
-    }
-  };
-*/
-
   Drupal.behaviors.campaign = {
     attach: function (context, settings) {
       // By default focus on the first text input element
@@ -181,13 +15,6 @@
       });
     }
   };
-
-
-
-
-
-
-
 
   Drupal.behaviors.interview = {
     attach: function (context, settings) {
@@ -246,8 +73,18 @@
         });
       });
 
-
-
+      // override the default ESC behavior: Simulate a click on the done button
+      $(document).keyup(function(event) {
+        $('.overlay').each(function() {
+          if(event.which === 27) { // ESC
+            event.stopImmediatePropagation();
+            $(this).find('.person .done.btn').click();
+            $(this).fadeOut(function(){
+              $(this).remove();
+            });
+          }
+        });
+      });
     }
   };
 
@@ -260,7 +97,6 @@
         function(event) {
           // Very important to prevent flickering side effects
           event.stopImmediatePropagation();
-console.log('switch clicked' + event);
           var item = $(this).parent().parent();
           var body = $(this).parent().next(); // Helper variable
 
@@ -309,6 +145,8 @@ console.log('switch clicked' + event);
 
   Drupal.behaviors.candidates = {
     attach: function (context, settings) {
+      var o = 'once-candidates';
+
       // Attach event handlers
 /*
       // Click the Add CV button
@@ -324,17 +162,12 @@ console.log('switch clicked' + event);
       });
 */
       // Select Candidate
-      $('.page-recruit-candidates .candidate .left').click(function(event) {
+      $('.page-recruit-candidates .candidate .left').once(o).click(function(event) {
         var max_selected = 3;
 
         // Set/unset the selected classes
         $candidate = $(this).parents('.candidate');
-        if($candidate.hasClass('selected')) {
-          $candidate.removeClass('selected');
-        }
-        else {
-          $candidate.addClass('selected');
-        }
+        $candidate.toggleClass('selected');
 
         // The selected candidates in a jQuery array
         $selected = $('.page-recruit-candidates .candidate.selected');

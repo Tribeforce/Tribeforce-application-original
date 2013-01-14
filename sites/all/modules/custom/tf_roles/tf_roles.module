@@ -739,13 +739,19 @@ function roles_sidebar_ra() {
     '#markup' => t('My roles:'),
   );
 
-  $body = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array('roles'),
-    ),
-    'data' => $items,
+  if(empty($items)) {
+    $body = array(
+    '#markup' => t('There are currently no roles'),
   );
+  } else {
+    $body = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('roles'),
+      ),
+      'data' => $items,
+    );
+  }
 
   $path = 'roles/0';
 
@@ -782,7 +788,13 @@ function role_actions_ra($role) {
     ),
   );
 
-  foreach(array(t('clone'), t('start campaign'), t('assign')) as $item) {
+  $actions_list = array(t('clone'), t('start campaign'));
+  $t_assign = t('assign');
+
+  // Only show the assign when we have persons
+  if(count(tf_get_my_persons()) > 0) $actions_list[] = $t_assign;
+
+  foreach($actions_list as $item) {
     $key = str_replace(' ', '-', strtolower($item));
     $actions[$key] = array(
       '#theme' => 'link',
@@ -796,8 +808,8 @@ function role_actions_ra($role) {
   }
 
   // Make the assign AJAX
-  $actions['assign']['#path'] = 'roles/' . $role->nid . '/nojs/assign';
-  $actions['assign']['#options']['attributes']['class'][] = 'use-ajax';
+  $actions[$t_assign]['#path'] = 'roles/' . $role->nid . '/nojs/assign';
+  $actions[$t_assign]['#options']['attributes']['class'][] = 'use-ajax';
   return $actions;
 }
 

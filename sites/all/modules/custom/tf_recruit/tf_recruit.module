@@ -17,9 +17,6 @@ function tf_recruit_theme() {
 }
 
 function tf_recruit_menu() {
-  /*
-  Tabs
-  */
   $items['recruit'] = array(
     'title' => 'Recruit',
     'type' => MENU_CALLBACK,
@@ -42,7 +39,6 @@ function tf_recruit_menu() {
     'type' => MENU_CALLBACK,
     'page callback' => 'campaign',
     'page arguments' => array(1), // If the argument is 0, insert is assumed
-    'weight' => 5,
     'file' => 'campaign.inc',
     'access callback' => 'tf_is_own',
     'access arguments' => array(1),
@@ -54,7 +50,6 @@ function tf_recruit_menu() {
     'type' => MENU_CALLBACK,
     'page callback' => 'prepare_interview',
     'page arguments' => array(1),
-    'weight' => 20,
     'file' => 'prepare_interview.inc',
     'access callback' => 'tf_is_own',
     'access arguments' => array(1),
@@ -65,7 +60,6 @@ function tf_recruit_menu() {
     'type' => MENU_CALLBACK,
     'page callback' => 'candidates',
     'page arguments' => array(1),
-    'weight' => 40,
     'file' => 'candidates.inc',
     'access callback' => 'tf_is_own',
     'access arguments' => array(1),
@@ -114,7 +108,6 @@ function tf_recruit_menu() {
     'type' => MENU_CALLBACK,
     'page callback' => 'interview',
     'page arguments' => array(5),
-    'weight' => 40,
     'file' => 'candidates.inc',
     'access callback' => 'tf_is_own',
     'access arguments' => array(1, 5),
@@ -124,10 +117,19 @@ function tf_recruit_menu() {
     'type' => MENU_CALLBACK,
     'page callback' => 'add_interview',
     'page arguments' => array(1, 5),
-    'weight' => 30,
     'file' => 'candidates.inc',
     'access callback' => 'tf_is_own',
     'access arguments' => array(1, 5),
+  );
+
+  $items['recruit/%/ajax/candidate/%/update'] = array(
+    'title' => 'Interview',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'interview_done',
+    'page arguments' => array(1, 4),
+    'file' => 'candidates.inc',
+    'access callback' => 'tf_is_own',
+    'access arguments' => array(1, 4),
   );
 
   $items['recruit/%/candidates/compare/ajax/detail_pane/%/%'] = array(
@@ -151,9 +153,7 @@ function tf_recruit_menu() {
   );
 */
 
-
   return $items;
-
 }
 
 
@@ -403,13 +403,20 @@ function campaigns_ra() {
     '#markup' => t('Active campaigns:'),
   );
 
-  $body = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array('campaigns'),
-    ),
-    'data' => $items,
+  if(empty($items)) {
+    $body = array(
+    '#markup' => t('There are currently no campaigns'),
   );
+  } else {
+    $body = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('campaigns'),
+      ),
+      'data' => $items,
+    );
+  }
+
 
   $path = 'recruit/0';
 

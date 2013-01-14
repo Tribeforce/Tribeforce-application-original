@@ -155,21 +155,35 @@ function interview_interpretation_callback($form, $form_state) {
   node_save($node);
 }
 
-
-
 function compare_candidates_callback($form, $form_state) {
   $candidate_nids_string = $form_state['values']['selected'];
   $campaign_nid = $form_state['build_info']['args'][0];
+  $role_nid = get_role_nid_of_campaign($campaign_nid);
+  $role = node_load($role_nid);
 
   module_load_include('inc', 'tf_recruit', 'compare');
 
   // TODO: This can be in 1 function (See interview)
+  return show_overlay(compare_ra($campaign_nid, $role, $candidate_nids_string),'page', TRUE);
+/*
   $ra = slide_pane_ra(compare($campaign_nid,$candidate_nids_string));
   $html = drupal_render($ra);
   $commands[] = ajax_command_append('.tf-module.recruit', $html);
   $commands[] = ajax_command_invoke('.tf-region.slide-pane',
                                                    'addClass', array('open'));
   return array('#type' => 'ajax', '#commands' => $commands);
+*/
+}
+
+// Updates the candidate box of the candidate for which an inerview has been done
+function interview_done($campaign_nid, $candidate_nid) {
+  $person = node_load($candidate_nid);
+  $ra = candidate_inner_ra($campaign_nid, $person);
+  $html = drupal_render($ra);
+  $selector = ".candidate-nid-$candidate_nid  .record";
+  $commands[] = ajax_command_replace($selector, $html);
+  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+//  return array('#type' => 'ajax', '#commands' => $commands);
 }
 
 
@@ -178,6 +192,24 @@ Render Arrays
 */
 // TODO: 1 function?
 function candidate_ra($campaign_nid, $person, $index = 0) {
+  $even_odd = $index % 2 == 0 ? 'even' : 'odd';
+
+  return array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array(
+        'candidate',
+        'candidate-nid-' . $person->nid,
+        'candidate-' . $index,
+        'candidate-' . $even_odd,
+        'clearfix',
+      ),
+    ),
+    'data' => candidate_inner_ra($campaign_nid, $person),
+  );
+}
+
+function candidate_inner_ra($campaign_nid, $person) {
   // Link in the interview
   // TODO: optimize
   $interview_ref = $person->field_assessments_ref;
@@ -224,6 +256,7 @@ function candidate_ra($campaign_nid, $person, $index = 0) {
     );
   }
 
+
   $role = node_load(get_role_nid_of_campaign($campaign_nid));
   $categorized_scores = get_categorized_scores($role, array($person));
   if(empty($categorized_scores['candidate-'.$person->nid])) {
@@ -261,34 +294,17 @@ function candidate_ra($campaign_nid, $person, $index = 0) {
                                   array('label' => 'hidden')),
   ));
 
-  $graph = array();
-
-  $even_odd = $index % 2 == 0 ? 'even' : 'odd';
-
-  return array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array(
-        'candidate',
-        'candidate-nid-' . $person->nid,
-        'candidate-' . $index,
-        'candidate-' . $even_odd,
-        'clearfix',
-      ),
-    ),
-    'data' => container_ra(array(
-      'record' => container_ra(array(
-        'left' => container_ra(array(
-          'score' => $score,
-          'selected' => array('#markup' => t('Select Candidate')),
-          'not-selected' => array('#markup' => t('Selected')),
-        )),
-        'data' => $data,
-        'buttons' =>  $buttons,
+  return container_ra(array(
+    'record' => container_ra(array(
+      'left' => container_ra(array(
+        'score' => $score,
+        'selected' => array('#markup' => t('Select Candidate')),
+        'not-selected' => array('#markup' => t('Selected')),
       )),
-//      'graph' => $graph,
+      'data' => $data,
+      'buttons' =>  $buttons,
     )),
-  );
+  ));
 }
 
 function candidate_score_ra($score, $type) {

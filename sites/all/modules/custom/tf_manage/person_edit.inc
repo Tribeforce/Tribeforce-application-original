@@ -45,7 +45,7 @@ function tf_manage_person_form($form, &$form_state, $node,
     '#weight' => 99,
     'submit' => array(
       '#type' => 'submit',
-      '#value' => $is_new ? t('Add') : t('Edit'),
+      '#value' => $is_new ? t('Add') : t('Save'),
       '#attributes' => array('class' => array('btn', 'btn-primary')),
     ),
   );
