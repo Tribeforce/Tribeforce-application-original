@@ -361,9 +361,10 @@ function cancel_new_role() {
 */
 function roles($regions = array()) {
   if(empty($regions)) {
-    tf_help_msg('Choose a role on the left and go');
+    tf_help_msg(t('Choose and edit a role on the left or create a brand new one
+                                by hitting the button in the top left corner'));
   } else {
-    tf_help_msg('Here you can tailor a role to your specific needs');
+    tf_help_msg(t('Here you can tailor a role to your specific needs'));
   }
 
   $empty_regions = array(
@@ -661,7 +662,7 @@ function ipe_submit_callback($form, &$form_state) {
       $form_state['redirect'] = $url;
       return;
     } else {
-      $html = drupal_render(item_inner_ra(array('node' => $node), 0, 'sidebar'));
+      $html = drupal_render(item_inner_ra(array('node' => $node), 0,'sidebar'));
       $commands[] = ajax_command_html('.left-sidebar .nid-'.$node->nid, $html);
     }
   }
@@ -685,7 +686,7 @@ function ipe_submit_callback($form, &$form_state) {
     $commands[] = ajax_command_before($selector, $html);
   } else {
     // The edit commands
-    $commands[] = ajax_command_remove('.display-edit.nid-'.$node->nid . ' form');
+    $commands[] = ajax_command_remove('.display-edit.nid-'.$node->nid .' form');
     $commands[] = ajax_command_html('.display-edit.nid-'.$node->nid, $html);
                                     // TODO: Why does this insert a ghost div
   }
@@ -711,8 +712,9 @@ function ipe_cancel_callback($form, $form_state) {
 
   } else {
     // The edit commands
-    $commands[] = ajax_command_remove('.display-edit.nid-'.$node->nid . ' form');
-    $commands[] = ajax_command_invoke('.display-edit.nid-' . $node->nid.' .content', 'show');
+    $commands[] = ajax_command_remove('.display-edit.nid-' .$node->nid.' form');
+    $commands[] = ajax_command_invoke('.display-edit.nid-' .$node->nid
+                                                          .' .content', 'show');
   }
 
   return array('#type' => 'ajax', '#commands' => $commands);
@@ -761,7 +763,7 @@ function roles_sidebar_ra() {
     '#path' => $path,
     '#options' => array(
       'attributes' => array('class' => array('btn', 'btn-primary',
-                                    $path == current_path() ? 'active' : NULL )),
+                                   $path == current_path() ? 'active' : NULL )),
       'html' => FALSE,
     ),
   );

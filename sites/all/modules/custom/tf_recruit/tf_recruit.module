@@ -441,7 +441,8 @@ function campaigns_ra() {
 
 function recruit($regions = array()) {
   if(empty($regions)) {
-    tf_help_msg('Choose a campaign on the left');
+    tf_help_msg(t('Hiring? Pick an existing campaign on the left or start a new
+                                                                        one.'));
   }
 
   $empty_regions = array(

@@ -27,6 +27,9 @@ function campaign_form($form, &$form_state, $node, $prefilled) {
       '#type' => 'textfield',
       '#title' => t('Campaign name'),
       '#default_value' => $node->title,
+      '#description' => t("We at Tribeforce like the name of a campaign and
+                           season for easy remembering"),
+      '#attributes' => array('placeholder' => 'example: User interface designer spring 2012'),
     ),
     'role' => $form['field_role_ref'],
 //    'date' => $form['field_date'],
@@ -96,7 +99,7 @@ function campaign($campaign_nid, $role_nid = 0) {
     $campaign->field_role_ref['und'][0]['nid'] = $role_nid;
   }
 
-  tf_help_msg('Here you can define basic information of this campaign.');
+  tf_help_msg(t('Here you can define basic information of this campaign.'));
 
   return recruit(array(
     'menu' => recruit_tabs_ra($campaign_nid),
@@ -132,13 +135,17 @@ function campaign_ra($node, $role_nid = 0) {
   }
 */
 
+  $intro = t("Start by giving your recruiting campaign a name that works for you.<br />
+              Then select the role you are hiring for. Recruiting with Tribeforce works best if you have focussed well on defining exactly which role you want to hire before you start.<br />
+              If you want to edit your roles a bit more first, click on the <em>Roles</em> button on the top of the screen to go straight there and come back when you are ready. We always save your campaigns in their current state.");
+
   return array(
     '#type' => 'container',
     '#attributes' => array('class' => array(
       'campaign-details',
       $prefilled ? 'prefilled' : '',
     )),
-    'intro' => container_ra(array('intro' => 'A whole intro text')),
+    'intro' => container_ra(array('intro' => $intro)),
     'form' => drupal_get_form('campaign_form', $node, $prefilled),
   );
 }

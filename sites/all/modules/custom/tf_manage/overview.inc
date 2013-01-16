@@ -66,7 +66,7 @@ function tf_manage_remark_form_submit($form, &$form_state) {
 ***************/
 function manage($regions = array()) {
   $my_people = get_enriched_persons();
-  tf_help_msg('Click on a tile to add a remark');
+  tf_help_msg(t('Hover over a person to add a remark or change details'));
 
   $empty_regions = array(
     'left-sidebar' => array(),
@@ -152,12 +152,13 @@ function edit_remark_ra($enriched_person, $redirect = 0, $remark = FALSE) {
     '#type' => 'container',
     '#attributes' => array('class' => array('edit-remark')),
     'form' => drupal_get_form('tf_manage_remark_form', $remark, $redirect),
-    'attached_to' => dropdown_widget_ra('attached-to', $attached_to_title, $dropdown),
+    'attached_to' => dropdown_widget_ra('attached-to', $attached_to_title,
+                                                                     $dropdown),
   );
 }
 
 
-function tf_manage_edit_remark_ra($enriched_person, $redirect = 0, $remark = FALSE) {
+function tf_manage_edit_remark_ra($enriched_person, $redirect=0, $remark=FALSE){
   $ra = array(
     'add_remark' => array(
       '#type' => 'container',
@@ -165,7 +166,9 @@ function tf_manage_edit_remark_ra($enriched_person, $redirect = 0, $remark = FAL
       'header' => array(
         '#type' => 'container',
         '#attributes' => array('class' => array('header')),
-        'full-name' => container_ra(array('full-name'=>get_full_name($enriched_person['node']))),
+        'full-name' => container_ra(array(
+          'full-name' => get_full_name($enriched_person['node'])
+        )),
         'manage' => array(
           '#theme' => 'link',
           '#type' => 'container',

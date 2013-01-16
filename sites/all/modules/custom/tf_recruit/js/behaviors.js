@@ -110,6 +110,10 @@
               body.find('input[name="assess"]').val(item.hasClass('on') ? 1:0);
               body.find('input[type="submit"]').mousedown();
             }
+          }
+          else {
+            var msg = Drupal.t('Please close all children before closing the parent');
+            Drupal.behaviors.tf_common.set_message(msg, 'warning');
 
           }
 

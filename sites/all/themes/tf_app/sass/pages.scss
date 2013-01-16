@@ -88,7 +88,11 @@ html.js input.throbbing {
   background-position: 100% -13px; /* LTR */
 }
 
-
+.stuck {
+  position: fixed;
+  z-index: 10;
+  top: 0;
+}
 
 /*
  * The skip-link link will be completely hidden until a user tabs to the link.
@@ -1054,7 +1058,9 @@ $motivation_position: -1200px -204px;
  */
 .campaign-details {
   position: relative;
-  padding: $gutter-width 0;
+  form {
+    margin-top: 2*$gutter-width;
+  }
   .form-item,
   .dropdown-widget {
     width: 50%;

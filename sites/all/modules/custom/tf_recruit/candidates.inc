@@ -40,7 +40,7 @@ function interview_interpretation_form($form, &$form_state, $node) {
     'submit' => array(
       '#type' => 'submit',
       '#value' => t('Done'),
-      '#attributes' => array('class' => array('btn', 'btn-large', 'btn-primary')),
+      '#attributes' => array('class' => array('btn','btn-large','btn-primary')),
       '#ajax' => array(
         'callback' => 'interview_interpretation_callback',
         'progress' => array('type' => 'none'),
@@ -73,7 +73,7 @@ function candidates($campaign_nid, $candidate_nid = 0) {
   // Returns FALSE if no node given or nid doesn not exist
   $candidate = node_load($candidate_nid);
 
-  tf_help_msg('Here you can add candidates.');
+  tf_help_msg(t('Here you can add candidates.'));
 
   return recruit(array(
     'menu' => recruit_tabs_ra($campaign_nid),
@@ -125,7 +125,8 @@ function add_candidate($campaign_nid, $candidate) {
     );
 
     // TODO: Find source of bug http://drupal.org/node/1824820
-    //       It has something to do with the avatar that doesn't exist for a new person
+    //       It has something to do with the avatar that doesn't exist for a
+    //       new person
     $candidate->field_avatar = get_default_avatar();
   }
 
@@ -164,7 +165,8 @@ function compare_candidates_callback($form, $form_state) {
   module_load_include('inc', 'tf_recruit', 'compare');
 
   // TODO: This can be in 1 function (See interview)
-  return show_overlay(compare_ra($campaign_nid, $role, $candidate_nids_string),'page', TRUE);
+  return show_overlay(compare_ra($campaign_nid, $role, $candidate_nids_string),
+                                                                  'page', TRUE);
 /*
   $ra = slide_pane_ra(compare($campaign_nid,$candidate_nids_string));
   $html = drupal_render($ra);
@@ -175,7 +177,7 @@ function compare_candidates_callback($form, $form_state) {
 */
 }
 
-// Updates the candidate box of the candidate for which an inerview has been done
+// Updates the candidate box of the candidate for which an inerview has been don
 function interview_done($campaign_nid, $candidate_nid) {
   $person = node_load($candidate_nid);
   $ra = candidate_inner_ra($campaign_nid, $person);
@@ -225,6 +227,7 @@ function candidate_inner_ra($campaign_nid, $person) {
   }
 
   if(empty($interview)) {
+    $path = "recruit/$campaign_nid/nojs/candidates/add_interview/".$person->nid;
     $interview_ra = array(
       '#type' => 'container',
       '#attributes' => array(
@@ -233,13 +236,14 @@ function candidate_inner_ra($campaign_nid, $person) {
       '#theme' => 'link',
       '#text' => '',
       '#weight' => 60,
-      '#path' => "recruit/$campaign_nid/nojs/candidates/add_interview/" . $person->nid,
+      '#path' => $path,
       '#options' => array(
         'attributes' => array('class' => array('use-ajax')),
         'html' => FALSE,
       ),
     );
   } else {
+    $path = "recruit/$campaign_nid/nojs/candidates/interview/".$interview->nid;
     $interview_ra = array(
       '#type' => 'container',
       '#attributes' => array(
@@ -248,7 +252,7 @@ function candidate_inner_ra($campaign_nid, $person) {
       '#theme' => 'link',
       '#text' => '',
       '#weight' => 60,
-      '#path' => "recruit/$campaign_nid/nojs/candidates/interview/" . $interview->nid,
+      '#path' => $path,
       '#options' => array(
         'attributes' => array('class' => array('use-ajax')),
         'html' => FALSE,
@@ -262,7 +266,8 @@ function candidate_inner_ra($campaign_nid, $person) {
   if(empty($categorized_scores['candidate-'.$person->nid])) {
     $score = container_ra(array('global-score' => array('#markup' => 0)));
   } else {
-    $score = candidate_score_ra($categorized_scores['candidate-'.$person->nid], 'global');
+    $score = candidate_score_ra($categorized_scores['candidate-'.$person->nid],
+                                                                      'global');
   }
 
   $data =   array(
@@ -583,7 +588,8 @@ function interview_scores_ra($score) {
 
 
 
-function interview_question_ra($interview_item, $interpretation = NULL, $interview_type){
+function interview_question_ra($interview_item, $interpretation = NULL,
+                                                              $interview_type) {
   $type = str_replace('_', '-', $interview_item->type);
   $nid = $interview_item->nid;
   $score = $interpretation->field_score['und'][0]['value'];

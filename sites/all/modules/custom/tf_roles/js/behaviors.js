@@ -102,7 +102,6 @@
 
           //Set the color to white, the callback sets it back to black
           $form.find('.autocomplete input.form-autocomplete').css('color', '#fff');
-  console.log('lksd');
 
           // Title field
           $form.find('.form-item-title input').val(
@@ -130,7 +129,6 @@
 
       // When hitting ENTER or ESC in an input field some actions need to happen
       $('input').keydown(function(event) {
-        console.log(event.target);
         switch(event.keyCode) {
           case 13: // The ENTER (keyCode = 13) actions
             event.stopImmediatePropagation();

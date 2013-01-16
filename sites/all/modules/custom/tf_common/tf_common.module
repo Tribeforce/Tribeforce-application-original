@@ -43,8 +43,11 @@ function tf_common_permission() {
  * Page Callbacks *
  * ****************/
 function dashboard() {
-  if(user_is_logged_in()) {
-    tf_help_msg('Some help text');
+  global $user;
+
+  if($user->uid) {
+    tf_help_msg(t('Where do you want to focus today, @name?',
+                                                array('@name' => $user->name)));
     $content = main_menu_ra();
   } else {
     $block = block_load('user', 'login');
@@ -1486,9 +1489,11 @@ function get_default_avatar() {
   );
 }
 
+// $msg is not stranslated yet
+// Usage: tf_help_msg(t('some text'))
 function tf_help_msg($msg) {
   if(empty($_POST)) {
-    drupal_set_message(t($msg), 'help');
+    drupal_set_message($msg, 'help');
   }
 }
 

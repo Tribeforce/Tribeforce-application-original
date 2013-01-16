@@ -4,4 +4,6 @@ core = 7.x
 package = Tribeforce
 
 dependencies[] = tf_em
+scripts[] = js/waypoints.min.js
+scripts[] = js/waypoints-sticky.min.js
 scripts[] = js/behaviors.js

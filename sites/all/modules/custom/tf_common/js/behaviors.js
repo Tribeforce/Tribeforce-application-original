@@ -73,8 +73,23 @@
         });
       });
 
-      // ESC closes the overlay
+      // Handle global key events
       $(document).keyup(function(event) {
+        $target = $(event.target)
+
+        // If the maxlength has been reached, show a warning for 5 seconds
+        if($target.attr("tagName") === 'INPUT') {
+          event.stopImmediatePropagation();
+          console.log('called');
+          var max_length = $target.attr('maxlength');
+          if($target.val().length >= max_length) {
+            var msg = Drupal.t('This field can hold only @num characters',
+                                                          {'@num': max_length});
+            Drupal.behaviors.tf_common.set_message(msg, 'warning');
+          }
+        }
+
+        // ESC closes the overlay
         $('.overlay').each(function() {
           if(event.which === 27) {
             $(this).fadeOut(function(){
@@ -84,6 +99,16 @@
         });
       });
 
+      // SCROLL EVENTS
+      $(window).scroll(function() {
+        $('.tf-region.messages.stuck').width($('.tf-region.main').width());
+      });
+
+
+
+      // Make the messages sticky
+      $('.tf-region.messages').waypoint('sticky');
+      $('.sticky-wrapper').height('auto'); // We don't need this Auto
 
       // ACTIVE LINKS
       var pathname = window.location.pathname;
@@ -114,6 +139,19 @@
         }
       }
       return false;
+    },
+
+    set_message: function(msg, type) {
+      var timestamp = Date.now();
+      var classes =  'messages ' + type + ' ts-'+ timestamp;
+      var selector = '.messages.'+ type + '.ts-'+ timestamp;
+      var html = '<div class="' + classes + '">' + msg + '</div>';
+      $('.tf-region.messages').append(html);
+      setTimeout(function() {
+        $(selector).fadeOut(function() {
+          $(this).remove();
+        });
+      }, 5000);
     }
 
   };

@@ -7,7 +7,8 @@ function person_details($nid) {
   $node = node_load($nid);
   $enriched_person = get_enriched_person(array('node' => $node));
 
-  tf_help_msg('Some help text');
+  tf_help_msg(t('Add coaching remarks, review skills and talents or edit
+                         employee details by clicking on his or her picture.'));
 
   $empty_regions = array(
     'left-sidebar' => array(),

@@ -63,7 +63,12 @@ function prepare_interview($campaign_nid) {
   $full_role = get_full_role($role_nid);
   $locked = is_campaign_locked($campaign_nid);
 
-  tf_help_msg('Here you can prepare the interview.');
+  tf_help_msg(t('Here you can prepare the interview.'));
+  if($locked) {
+    drupal_set_message('This interview preparation is read only because 1 or
+                        more interviews have been conducted yet in this
+                        campaign.', 'warning');
+  }
 
   return recruit(array(
     'menu' => recruit_tabs_ra($campaign_nid),
@@ -115,6 +120,21 @@ function prepare_interview_ra($role, $locked = FALSE) {
   $business = array();
   $behavioral = array();
 
+  $intro = t("Select relevant questions for your recruiting interview by
+              toggling them with the switch located in the top right corner of
+              every question.<br />
+              Use our pre-made questions and answer indicators when available or
+              overwrite them with your own.<br />
+              We like to prepare our positive and negative indicators before we
+              start seeing applicants so we can focus completely on their
+              answers in the interviews.<br />
+              Talents have up to 3 different Talent Attributes you can inquire about.
+              We suggest you select the most relevant one for your open position
+              to reduce interviewing time.
+              Once you have conducted an interview you cannot change anything anymore here.<br />
+              We advise to prepare well before you start interviewing to save
+              time and improve effectivity of your Tribeforce recruiting campaigns.");
+
   $role_ra = array(
     'name' => field_view_title($role['node'], -10),
     'description' => field_view_field('node', $role['node'],
@@ -131,7 +151,6 @@ function prepare_interview_ra($role, $locked = FALSE) {
       ),
     ),
   );
-
 
 
   // Skills
@@ -172,7 +191,12 @@ function prepare_interview_ra($role, $locked = FALSE) {
 
   $tab_pane = tabs_widget_ra($tabs, $panes);
 
-  $ra = array_merge(container_ra(array('role' => $role_ra)), $tab_pane);
+  $ra = array_merge(
+    container_ra(array(
+      'intro' => $intro,
+      'role' => $role_ra,
+    )),
+    $tab_pane);
 
   // Return the RA consisting of Skills RA and the Talents RA
   return array(
