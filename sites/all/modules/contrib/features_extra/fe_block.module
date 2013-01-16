@@ -124,7 +124,7 @@ function fe_block_settings_features_export_render($module_name = '', $data) {
     $visibility[$block_id]['module'] = $block['module'];
     // Use machine name with boxes.
     if ($block['module'] == 'block') {
-      $visibility[$block_id]['machine_name'] = fe_block_get_machine_name($block['delta']);
+      $visibility[$block_id]['machine_name'] = _fe_block_get_machine_name($block['delta']);
     }
     else {
       $visibility[$block_id]['delta'] = $block['delta'];
@@ -145,7 +145,7 @@ function fe_block_settings_features_export_render($module_name = '', $data) {
   // Export theme specific settings.
   foreach ($themes as $_theme_key => $theme) {
     if ($_theme_key == $theme_default || !empty($theme->status)) {
-      $code[] = '  // Exported block settings for ' . $theme->info['name'] . '.';
+      $code[] = '  // ' . $_theme_key;
       $code[] = '  $theme = array();';
       $code[] = '';
 
@@ -163,7 +163,7 @@ function fe_block_settings_features_export_render($module_name = '', $data) {
         if (in_array($block_id, $data)) {
           // Use machine name with boxes.
           if ($block['module'] == 'block') {
-            $block['machine_name'] = fe_block_get_machine_name($block['delta']);
+            $block['machine_name'] = _fe_block_get_machine_name($block['delta']);
             unset($block['delta']);
           }
           // Region.
@@ -183,9 +183,9 @@ function fe_block_settings_features_export_render($module_name = '', $data) {
   }
 
   // Only return for enabled themes and the default theme.
-  $code[] = '  $theme_default = variable_get(\'theme_default\', \'bartik\');';
+  $code[] = '  $theme_default = variable_get(\'theme_default\', \'garland\');';
   $code[] = '  $themes = list_themes();';
-  $code[] = '  foreach ($export[\'theme\'] as $theme_key => $settings) {';
+  $code[] = '  foreach ($export as $theme_key => $settings) {';
   $code[] = '    if ($theme_key != $theme_default && empty($themes[$theme_key]->status)) {';
   $code[] = '      unset($export[\'theme\'][$theme_key]);';
   $code[] = '    }';
@@ -225,12 +225,13 @@ function fe_block_settings_features_revert($module_name = NULL) {
     foreach ($theme as $block) {
       // Convert machine name back to bid.
       if ($block['module'] == 'block') {
-        $block['delta'] = fe_block_get_bid($block['machine_name'], TRUE);
+        $block['delta'] = _fe_block_get_bid($block['machine_name'], TRUE);
       }
 
       drupal_write_record('block', $block, array('module', 'delta', 'theme'));
     }
   }
+
 
   // Revert node type visibility settings. These have been introduced with the
   // new export format.
@@ -238,7 +239,7 @@ function fe_block_settings_features_revert($module_name = NULL) {
     foreach ($defaults['visibility'] as $block) {
       // Convert machine name back to bid.
       if ($block['module'] == 'block') {
-        $block['delta'] = fe_block_get_bid($block['machine_name']);
+        $block['delta'] = _fe_block_get_bid($block['machine_name']);
       }
 
       db_delete('block_node_type')
@@ -352,7 +353,8 @@ function fe_block_boxes_features_export_render($module_name = '', $data) {
 
         // Code.
         $identifier = $schema['export']['identifier'];
-        $code[] = ctools_export_object($component, $object, '  ', $identifier, $additions) . '  $' . $identifier . '->body = ' . features_var_export($box['body']) . ';';
+        $code[] = ctools_export_object($component, $object, '  ', $identifier, $additions)
+                 . '  $' . $identifier . '->body = ' . features_var_export($box['body']) . ';';
         $code[] = '';
         $code[] = '  $export[\'' . $machine_name . '\'] = $' . $identifier . ';';
         $code[] = '';
@@ -381,7 +383,7 @@ function fe_block_boxes_features_revert($module_name = NULL) {
       continue;
     }
 
-    $bid = fe_block_get_bid($object->machine_name);
+    $bid = _fe_block_get_bid($object->machine_name);
     if (empty($bid) || !($box = block_custom_block_get($bid))) {
       $result = _fe_block_save_box((array) $object);
       if (!empty($result['bid'])) {
@@ -436,7 +438,7 @@ function fe_block_form_alter(&$form, $form_state, $form_id) {
   }
   elseif ($form_id == 'block_admin_configure' && $form['module']['#value'] == 'block' && user_access('administer features')) {
     $bid = $form['delta']['#value'];
-    $machine_name = fe_block_get_machine_name($bid);
+    $machine_name = _fe_block_get_machine_name($bid);
     $default_values['machine_name'] = empty($machine_name) ? '' : $machine_name;
     $default_values['bid'] = $bid;
   }
@@ -476,8 +478,8 @@ function fe_block_machine_name_validate($form, &$form_state) {
   $table = 'fe_block_boxes';
 
   $query = db_select($table)
-    ->condition('bid', $form_state['values']['bid'], '<>')
-    ->condition('machine_name', $form_state['values']['machine_name']);
+                ->condition('bid', $form_state['values']['bid'], '<>')
+                ->condition('machine_name', $form_state['values']['machine_name']);
 
   $count = $query->countQuery()->execute()->fetchField();
 
@@ -496,18 +498,16 @@ function fe_block_machine_name_submit($form, &$form_state) {
   // Insert
   if (empty($form_state['values']['bid'])) {
     $form_state['values']['bid'] = db_select('block_custom')
-       ->fields('block_custom', array('bid'))
-       ->condition('info', $form_state['values']['info'])
-       ->execute()->fetch()->bid;
+                                     ->fields('block_custom', array('bid'))
+                                     ->condition('info', $form_state['values']['info'])
+                                     ->execute()->fetch()->bid;
   }
   if (empty($form_state['values']['bid'])) {
     return;
   }
 
   $table = 'fe_block_boxes';
-  db_delete($table)
-    ->condition('bid', $form_state['values']['bid'])
-    ->execute();
+  db_delete($table)->condition('bid', $form_state['values']['bid'])->execute();
   if (!empty($form_state['values']['machine_name'])) {
     drupal_write_record($table, $form_state['values']);
   }
@@ -543,71 +543,39 @@ function _fe_block_compare($a, $b) {
 }
 
 /**
- * Provided for backwards compatibility. Use fe_block_get_machine_name().
+ * Get box machine name.
  */
 function _fe_block_get_machine_name($bid) {
-  debug(t('The function @function is deprecated.', array('@function' => __FUNCTION__ . '()')));
-  return fe_block_get_machine_name($bid);
-}
+  static $cache = array();
+  if (!isset($cache[$bid])) {
 
-/**
- * Returns the machine name that corresponds to a given block id.
- *
- * @param int $bid
- *   The block id for which to retrieve the machine name.
- *
- * @return string | FALSE
- *   The machine name, or FALSE if it could not be found.
- */
-function fe_block_get_machine_name($bid) {
-  $machine_names = &drupal_static(__FUNCTION__);
-  if (!isset($machine_names[$bid])) {
-    $result = db_select('fe_block_boxes')
-      ->fields('fe_block_boxes', array('machine_name'))
-      ->condition('bid', $bid)
-      ->execute()
-      ->fetch();
+    $query = db_select('fe_block_boxes')
+                ->fields('fe_block_boxes', array('machine_name') )
+                ->condition('bid', $bid)->execute();
 
-    if (empty($result)) {
-      return FALSE;
+    if ($block = $query->fetch()) {
+      $cache[$bid] = $block->machine_name;
     }
-    $machine_names[$bid] = $result->machine_name;
+    else {
+      return NULL;
+    }
   }
-  return $machine_names[$bid];
+  return $cache[$bid];
 }
 
 /**
- * Provided for backwards compatibility. Use fe_block_get_bid() instead.
+ * Get box bid.
  */
 function _fe_block_get_bid($machine_name, $reset = FALSE) {
-  debug(t('The function @function is deprecated.', array('@function' => __FUNCTION__ . '()')));
-  return fe_block_get_bid($machine_name, $reset);
-}
+  static $cache = array();
+  if (!isset($cache[$machine_name]) || $reset) {
+    $query = db_select('fe_block_boxes')
+      ->fields('fe_block_boxes', array('bid') )
+      ->condition('machine_name', $machine_name)->execute();
 
-/**
- * Returns the block id that corresponds to a given machine name.
- *
- * @param string $machine_name
- *   The machine name of a block for which to retrieve the block id.
- *
- * @return int | FALSE
- *   The block id, or FALSE if the machine name was not found.
- */
-function fe_block_get_bid($machine_name, $reset = FALSE) {
-  $bids = &drupal_static(__FUNCTION__);
-  if (!isset($bids[$machine_name]) || $reset) {
-    $result = db_select('fe_block_boxes')
-      ->fields('fe_block_boxes', array('bid'))
-      ->condition('machine_name', $machine_name)
-      ->execute()
-      ->fetch();
-
-    if (empty($result)) {
-      return FALSE;
-    }
-    $bids[$machine_name] = (int) $result->bid;
+    $cache[$machine_name] = (int) $query->fetch()->bid;
   }
-  return $bids[$machine_name];
+  return $cache[$machine_name];
 }
 
 /**
@@ -618,7 +586,7 @@ function _fe_block_build_id($block) {
     return NULL;
   }
   if ($block['module'] == 'block') {
-    $machine_name = fe_block_get_machine_name($block['delta']);
+    $machine_name = _fe_block_get_machine_name($block['delta']);
     if (empty($machine_name)) {
       return NULL;
     }
@@ -645,7 +613,8 @@ function _fe_block_save_box($settings = array()) {
     $conflict = db_query("SELECT COUNT(*) as count FROM {block_custom} WHERE info = :info", array('info' => $settings['info']));
   }
   else {
-    $conflict = db_query("SELECT COUNT(*) as count FROM {block_custom} WHERE info = :info AND bid <> :bid", array('info' => $settings['info'], ':bid' => $settings['bid']));
+    $conflict = db_query("SELECT COUNT(*) as count FROM {block_custom} WHERE info = :info AND bid <> :bid",
+                            array('info' => $settings['info'], ':bid' => $settings['bid']));
   }
 
   if (!empty($conflict->fetch()->count)) {
