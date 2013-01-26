@@ -65,14 +65,26 @@ function prepare_interview($campaign_nid) {
 
   tf_help_msg(t('Here you can prepare the interview.'));
   if($locked) {
-    drupal_set_message('This interview preparation is read only because 1 or
-                        more interviews have been conducted yet in this
-                        campaign.', 'warning');
+    drupal_set_message('You can’t edit this interview anymore since one or more
+                        interviews have taken place.', 'warning');
   }
 
   return recruit(array(
     'menu' => recruit_tabs_ra($campaign_nid),
     'content' => prepare_interview_ra($full_role, $locked),
+    'page-actions' => array(
+      '#theme' => 'link',
+      '#text' => t('Add candidates'),
+      '#path' => "recruit/$campaign_nid/candidates",
+      '#options' => array(
+        'attributes' => array('class' => array(
+          'btn',
+          'btn-primary',
+          'btn-large',
+        )),
+        'html' => FALSE,
+      ),
+    ),
   ));
 }
 
@@ -196,7 +208,8 @@ function prepare_interview_ra($role, $locked = FALSE) {
       'intro' => $intro,
       'role' => $role_ra,
     )),
-    $tab_pane);
+    $tab_pane
+  );
 
   // Return the RA consisting of Skills RA and the Talents RA
   return array(

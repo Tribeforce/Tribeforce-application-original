@@ -31,6 +31,7 @@ class TalentAttributeMigration extends CommonMigration {
     // array of field name then description.
     $columns = array(
       0 => array('id', 'ID'),
+      1 => array('delete', 'Delete'),
       2 => array('title', 'Talent Attribute'),
       3 => array('body', 'Definition'),
       4 => array('question', 'Question'),
@@ -52,7 +53,18 @@ class TalentAttributeMigration extends CommonMigration {
     $this->addFieldMapping('field_pos_hint', 'pos_beh');
     $this->addFieldMapping('field_neg_hint', 'neg_beh');
   }
+
+  public function prepare($entity, stdClass $row) {
+    if(strtoupper($row->delete) === 'NO') {
+      node_delete($entity->nid);
+      return FALSE;
+      // TODO: This generates an error.
+      // I don't know how to make sure the row is skipped from here on
+    }
+  }
 }
+
+
 
 class TalentMigration extends CommonMigration {
   public function __construct() {

@@ -52,6 +52,7 @@ function compare_ra($campaign_nid, $role, $candidate_nids_string) {
       '#attributes' => array(
         'class' => array(
           'compare',
+          'clearfix',
         ),
       ),
       // TODO: Make generic for other than skills
@@ -84,6 +85,7 @@ function score_board_row_ra($item_class, $scores, $row_num, $candidate_nids_stri
   $exploded = explode('-', $item_class);
   $type = $exploded[0]; // is the type of the node
   $nid = $exploded[1]; // is the nid of the node (skill or ta)
+  $candidate_nids = explode(',', $candidate_nids_string);
 
   $even_odd = $row_num % 2 == 0 ? 'even' : 'odd';
 
@@ -93,12 +95,15 @@ function score_board_row_ra($item_class, $scores, $row_num, $candidate_nids_stri
   $columns = array(
     '#type' => 'container',
     '#attributes' => array(
-      'class' => array('columns'),
+      'class' => array(
+        'columns',
+        'columns-' . count($candidate_nids),
+      ),
     ),
   );
 
   $counter = 1;
-  foreach(explode(',', $candidate_nids_string) as $candidate_nid) {
+  foreach($candidate_nids as $candidate_nid) {
     $key = "candidate-$candidate_nid";
     $score = $scores[$key]; // Array holding the score object
                             // or NULL if no score has been profided
@@ -116,12 +121,14 @@ function score_board_row_ra($item_class, $scores, $row_num, $candidate_nids_stri
 
   // Add the title column
   $key = 'title';
-  $columns[$key] = score_board_col_ra('hkjdkjsdfs', $counter, $key);
+  $node = node_load($nid);
+  $columns[$key] = score_board_col_ra($node->title, $counter, $key);
 
   return array(
     '#type' => 'container',
     '#attributes' => array(
       'class' => array(
+        'clearfix',
         'row',
         'row-' . $row_num,
         'row-' . $even_odd,
@@ -140,6 +147,12 @@ function score_board_row_ra($item_class, $scores, $row_num, $candidate_nids_stri
 
 function score_board_ra($campaign_nid, $scores_by_type, $candidate_nids_string) {
   $rows = array();
+  $candidate_nids = explode(',', $candidate_nids_string);
+
+  $even_odd = $row_num % 2 == 0 ? 'even' : 'odd';
+
+  // TODO: nojs implementation
+  $ajax_url = "candidates/compare/ajax/detail_pane/$nid/$candidate_nids_string";
 
   $counter = 1;
   // TODO: add type in the row
@@ -155,7 +168,7 @@ function score_board_ra($campaign_nid, $scores_by_type, $candidate_nids_string) 
   $header = array(
     '#type' => 'container',
     '#attributes' => array(
-      'class' => array('header'),
+      'class' => array('header', 'clearfix'),
     ),
   );
 
@@ -163,13 +176,13 @@ function score_board_ra($campaign_nid, $scores_by_type, $candidate_nids_string) 
   $footer = array(
     '#type' => 'container',
     '#attributes' => array(
-      'class' => array('footer'),
+      'class' => array('footer', 'clearfix'),
     ),
   );
 
   // Populate header and footer
   $counter = 1;
-  foreach(explode(',', $candidate_nids_string) as $candidate_nid) {
+  foreach($candidate_nids as $candidate_nid) {
     $candidate = node_load($candidate_nid);
 
     $even_odd = $counter % 2 == 0 ? 'even' : 'odd';
@@ -211,19 +224,37 @@ function score_board_ra($campaign_nid, $scores_by_type, $candidate_nids_string) 
           'attributes' => array(),
           'html' => FALSE,
         ),
-
-
-
-
       ),
     );
     $counter++;
   }
 
+  // Populate last column of header and footer
+  $even_odd = $counter % 2 == 0 ? 'even' : 'odd';
+  $attributes = array(
+    'class' => array(
+      'col',
+      'col-' . $counter,
+      'col-' . $even_odd,
+    ),
+  );
+
+  $empty = array(
+    '#type' => 'container',
+    '#attributes' => $attributes,
+  );
+
+
+  $header['col-'.$counter] = $empty;
+  $footer['col-'.$counter] = $empty;
+
   return array(
     '#type' => 'container',
     '#attributes' => array(
-      'class' => array('score-board'),
+      'class' => array(
+        'score-board',
+        'columns-' . count($candidate_nids),
+      ),
     ),
     'header' => $header,
     'rows' => $rows,
@@ -235,7 +266,13 @@ function compare_detail_pane_ra($item = NULL,
                                 $scores = array(),
                                 $candidate_nids_string = '') {
 
-  $empty_ra = array('#markup' => t('Click on a row to compare.'));
+  $empty_ra = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('title'),
+    ),
+    'title' => array('#markup' => t('Click on a row to compare.')),
+  );
 
   return container_ra(array(
     'detail-pane' => container_ra(array(
@@ -290,6 +327,7 @@ function compare_scores_row_ra($can_interpret, $row_num, $key) {
     '#type' => 'container',
     '#attributes' => array(
       'class' => array(
+        'clearfix',
         'row',
         'row-' . $row_num,
         'row-' . $even_odd,
@@ -308,7 +346,7 @@ function compare_scores_row_ra($can_interpret, $row_num, $key) {
       'score' => array(
         '#markup' => $can_interpret['score'],
       ),
-      'remark' => array(
+      'comment' => array(
         '#markup' => $can_interpret['remark'],
       ),
     )),

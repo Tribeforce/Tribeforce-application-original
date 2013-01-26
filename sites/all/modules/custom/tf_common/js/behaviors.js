@@ -73,9 +73,50 @@
         });
       });
 
+
+      // IMPLEMENT THE GRACE PERIOD
+      $(".tf-region.messages .grace-5").once(o, function() {
+        var i;
+        $secs = $(this).find('.secs');
+        var ts = $(this).data('ts'); // Timestamp to be sure
+
+        // Do the countdounwn
+        for(i = 0; i < 5; i++) {
+          grace_counter(i, $secs);
+        }
+
+        // Remove the message
+        setTimeout(function() {
+          // We need to make sure we are still selecting the same node.
+          // It could have been removed / recreated in the meanwhile
+          $selector = $('.tf-region.messages .grace-5.ts-' + ts);
+          $selector.find('.start').click();
+        }, 5000);
+      });
+
+      function grace_counter(i, $secs) {
+        setTimeout(function() {$secs.html(5-i);}, i*1000);
+      }
+
+      // Bind the click event on the grace cancel link
+      $(".tf-region.messages .grace-5 .cancel").click(function() {
+        // Remove the action link so it cannot be clicked anymore
+        $(this).parents('.grace-5').find('.start').remove();
+
+        // Fade the message out and then remove the message all together
+        $(this).parents('.grace-5').soft_remove();
+      });
+
+      // Whenever the start link is clicked (manually or by a script)
+      // We need toi remove the message in a nice way
+      $(".tf-region.messages .grace-5 .start").click(function() {
+        $(this).parents('.grace-5').soft_remove();
+      });
+
+
       // Handle global key events
       $(document).keyup(function(event) {
-        $target = $(event.target)
+        $target = $(event.target);
 
         // If the maxlength has been reached, show a warning for 5 seconds
         if($target.attr("tagName") === 'INPUT') {
@@ -99,16 +140,24 @@
         });
       });
 
+      function fix_message_width() {
+        var w = $('.tf-region.main').width();
+        $('.tf-region.messages.stuck').width(w);
+      }
+
       // SCROLL EVENTS
-      $(window).scroll(function() {
-        $('.tf-region.messages.stuck').width($('.tf-region.main').width());
-      });
+      $(window).scroll(fix_message_width);
+
+      // RESIZE EVENTS
+      $(window).resize(fix_message_width);
 
 
 
       // Make the messages sticky
       $('.tf-region.messages').waypoint('sticky');
-      $('.sticky-wrapper').height('auto'); // We don't need this Auto
+      $('.sticky-wrapper').height('auto'); // We don't need this fix height
+      setTimeout(fix_message_width, 500); // Nasty workaround
+
 
       // ACTIVE LINKS
       var pathname = window.location.pathname;
@@ -125,6 +174,15 @@
         $('.tf-region.left-sidebar').height()
       );
       $('.tf-module').height(max_height);
+
+
+      /*******
+      Invokers
+      *******/
+      $.fn.set_message = Drupal.behaviors.tf_common.set_message;
+      $.fn.soft_remove = Drupal.behaviors.tf_common.soft_remove;
+
+
     },
     /*******
     Helpers
@@ -143,15 +201,20 @@
 
     set_message: function(msg, type) {
       var timestamp = Date.now();
-      var classes =  'messages ' + type + ' ts-'+ timestamp;
+      var classes =  'messages slide-down ' + type + ' ts-'+ timestamp;
       var selector = '.messages.'+ type + '.ts-'+ timestamp;
       var html = '<div class="' + classes + '">' + msg + '</div>';
       $('.tf-region.messages').append(html);
+      $(selector).slideDown();
       setTimeout(function() {
-        $(selector).fadeOut(function() {
-          $(this).remove();
-        });
+        $(selector).soft_remove();
       }, 5000);
+    },
+
+    soft_remove: function() {
+      $(this).slideUp(function() {
+        $(this).remove();
+      });
     }
 
   };

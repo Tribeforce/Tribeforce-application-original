@@ -191,7 +191,7 @@ function autocomplete_query($type, $string) {
             ->condition('t.field_type_value', ucfirst($type))
             ->condition('l.field_cap_level_value', 1)
             ->condition(db_or()
-                          ->condition('c.field_cloned_from_nid',0)
+                          ->condition('c.field_cloned_from_nid', 0)
                           ->isNull('c.field_cloned_from_nid')
                        )
             ->fields('n', array('title','nid'))
@@ -370,6 +370,7 @@ function roles($regions = array()) {
   $empty_regions = array(
     'left-sidebar' => roles_sidebar_ra(),
     'content' => empty_ra('role'),
+    'page-actions' => array(),
   );
 
   return tf_module('roles', $empty_regions, $regions);
@@ -388,6 +389,19 @@ function role($role_nid) {
 
   return roles(array(
     'content' => $content,
+    'page-actions' => array(
+      '#theme' => 'link',
+      '#text' => t('Start a campaign from this role'),
+      '#path' => "roles/$role_nid/start-campaign",
+      '#options' => array(
+        'attributes' => array('class' => array(
+          'btn',
+          'btn-primary',
+          'btn-large',
+        )),
+        'html' => FALSE,
+      ),
+    ),
   ));
 }
 
@@ -484,6 +498,7 @@ function ipe($nid) {
   ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
 }
 
+
 // In Place Delete: Called through AJAX
 function ipd($nid) {
   // TODO: Add some delay
@@ -494,13 +509,16 @@ function ipd($nid) {
     case 'task':
     case 'skill':
     case 'talent':
-      tf_em_delete($node);
+//      tf_em_delete($node);
       break;
   }
 
+  $msg = t('%title has been removed', array('%title' => $node->title));
+
   // TODO: Think about how we can delete a role
 
-  $commands[] = ajax_command_remove('.nid-' . $nid);
+  $commands[] = ajax_command_invoke('.nid-' . $nid, 'soft_remove');
+  $commands[] = ajax_command_invoke(NULL, 'set_message', array($msg,'status'));
   ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
 }
 
@@ -681,12 +699,14 @@ function ipe_submit_callback($form, &$form_state) {
       $selector = '.' . $node->type . 's .add-link';
     }
     // The add commands
-    $commands[] = ajax_command_remove('form.new.' . $node->type);
-    $commands[] = ajax_command_invoke($selector, 'show');
+    $commands[] = ajax_command_invoke('form.new.' . $node->type, 'soft_remove');
+
+    $commands[] = ajax_command_invoke($selector, 'slideDown');
     $commands[] = ajax_command_before($selector, $html);
   } else {
     // The edit commands
-    $commands[] = ajax_command_remove('.display-edit.nid-'.$node->nid .' form');
+    $commands[] = ajax_command_invoke('.display-edit.nid-'.$node->nid .' form',
+                                                                 'soft_remove');
     $commands[] = ajax_command_html('.display-edit.nid-'.$node->nid, $html);
                                     // TODO: Why does this insert a ghost div
   }
@@ -707,14 +727,15 @@ function ipe_cancel_callback($form, $form_state) {
     }
 
     // The add commands
-    $commands[] = ajax_command_remove('form.new.' . $node->type);
-    $commands[] = ajax_command_invoke(".$new_type .add-link",'show');
+    $commands[] = ajax_command_invoke('form.new.' . $node->type,'soft_remove');
+    $commands[] = ajax_command_invoke(".$new_type .add-link",'slideDown');
 
   } else {
     // The edit commands
-    $commands[] = ajax_command_remove('.display-edit.nid-' .$node->nid.' form');
+    $commands[] = ajax_command_invoke('.display-edit.nid-' .$node->nid.' form',
+                                                                 'soft_remove');
     $commands[] = ajax_command_invoke('.display-edit.nid-' .$node->nid
-                                                          .' .content', 'show');
+                                                     .' .content', 'slideDown');
   }
 
   return array('#type' => 'ajax', '#commands' => $commands);
@@ -828,19 +849,6 @@ function role_ra($full_role, $display = 'edit') {
                                              'business', $role_nid, $display),
     'behavioral' => items_ra($full_role['talents']['behavioral'],
                                            'behavioral', $role_nid, $display),
-    'page-actions' => array(
-      '#theme' => 'link',
-      '#text' => t('Start a campaign from this role'),
-      '#path' => "roles/$role_nid/start-campaign",
-      '#options' => array(
-        'attributes' => array('class' => array(
-          'btn',
-          'btn-primary',
-          'btn-large',
-        )),
-        'html' => FALSE,
-      ),
-    ),
   ));
 }
 

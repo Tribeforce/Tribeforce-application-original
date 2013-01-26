@@ -449,6 +449,7 @@ function recruit($regions = array()) {
     'left-sidebar' => campaigns_ra(),
     'menu' => array(),
     'content' => empty_ra('campaign'),
+    'page-actions' => array(),
   );
 
   return tf_module('recruit', $empty_regions, $regions);

@@ -8,6 +8,14 @@ function tf_common_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
+
+  // Grace period Action
+  $items['common/ajax/gp_action'] = array(
+    'page callback' => 'gp_action',
+    'type' => MENU_CALLBACK,
+    'access callback' => 'tf_is_own',
+  );
+
   return $items;
 }
 
@@ -64,6 +72,77 @@ function dashboard() {
 }
 
 
+function tf_module($module, $empty_regions, $regions = array()) {
+  // Module container
+
+  global $tf_version;
+  $messages = array('#markup' => theme('status_messages'));
+
+  $main = array(
+    'header' => region_ra('header', header_ra()),
+    'messages' => region_ra('messages', $messages),
+  );
+
+  foreach($empty_regions as $region_name => $empty_ra) {
+    if(empty($regions[$region_name])) {
+      $regions[$region_name] = $empty_ra;
+    }
+
+    if($region_name !== 'left-sidebar') {
+      $main[$region_name] = region_ra($region_name, $regions[$region_name]);
+    }
+  }
+
+  $left_sidebar = array_merge(
+    container_ra(array(
+      'dashboard' => container_ra(array(
+        'link' => array(
+          '#theme' => 'link',
+          '#text' => '<img src="/sites/default/files/logo.png">',
+          '#path' => '',
+          '#options' => array(
+            'attributes' => array(),
+            'html' => TRUE,
+          ),
+        ),
+        'version' => $tf_version,
+      )),
+    )),
+    $regions['left-sidebar']
+  );
+
+
+  return array(
+    'page' => array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('tf-module', $module),
+      ),
+      'left-sidebar' => region_ra('left-sidebar', $left_sidebar),
+      'main' => region_ra('main', $main),
+    ),
+  );
+}
+
+// Grace Period Action
+function gp_action($nid, $type) {
+  $node = node_load($nid);
+  $ts = time();
+
+  switch($type) {
+    case 'delete':
+      $msg =t('%title will be deleted ', array('%title' => $node->title));
+      $url = 'roles/nojs/ipd/' . $node->nid;
+      break;
+  }
+
+  $html = drupal_render(delayed_message_ra($ts, $url, $msg));
+  $commands[] = ajax_command_append('.tf-region.messages', $html);
+  $commands[] = ajax_command_invoke(".tf-region.messages .ts-$ts", 'slideDown');
+  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+}
+
+
 
 // The $query needs to hold the alias r for a node (of type role)
 function add_condition_my(&$query, $alias) {
@@ -94,7 +173,10 @@ function item_form($form, &$form_state, $node, $parent_nid = 0) {
   $my_form['title'] = array(
     '#type' => 'textfield',
     '#default_value' => $node->title,
+    '#attributes' => array('placeholder' => t('Name')),
   );
+
+  $form['body']['und'][0]['#attributes']['placeholder'] = t('Description');
 
   // Depending on the content type, other fields need to be in the form
   switch($node->type) {
@@ -197,57 +279,42 @@ function get_tf_page($module) {
 
 
 /*
- Page Callbacks
+ Render Arrays
 */
-function tf_module($module, $empty_regions, $regions = array()) {
-  // Module container
-
-  global $tf_version;
-  $messages = array('#markup' => theme('status_messages'));
-
-  $main = array(
-    'header' => region_ra('header', header_ra()),
-    'messages' => region_ra('messages', $messages),
-  );
-
-  foreach($empty_regions as $region_name => $empty_ra) {
-    if(empty($regions[$region_name])) {
-      $regions[$region_name] = $empty_ra;
-    }
-
-    if($region_name !== 'left-sidebar') {
-      $main[$region_name] = region_ra($region_name, $regions[$region_name]);
-    }
-  }
-
-  $left_sidebar = array_merge(
-    container_ra(array(
-      'dashboard' => container_ra(array(
-        'link' => array(
-          '#theme' => 'link',
-          '#text' => '<img src="/sites/default/files/logo.png">',
-          '#path' => '',
-          '#options' => array(
-            'attributes' => array(),
-            'html' => TRUE,
-          ),
-        ),
-        'version' => $tf_version,
-      )),
-    )),
-    $regions['left-sidebar']
-  );
 
 
+
+
+function delayed_message_ra($ts, $url, $msg) {
   return array(
-    'page' => array(
-      '#type' => 'container',
-      '#attributes' => array(
-        'class' => array('tf-module', $module),
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array(
+        'messages',
+        'warning',
+        'slide-down',
+        'grace-5',
+        'ts-'.$ts,
       ),
-      'left-sidebar' => region_ra('left-sidebar', $left_sidebar),
-      'main' => region_ra('main', $main),
+      'data-ts' => $ts ,
     ),
+
+    'msg' => array('#markup' => $msg),
+    'time' => array(
+      '#prefix' => '<span class="time">',
+      '#markup' => 'in <span class="secs">5</span> seconds.',
+      '#suffix' => '</span>',
+    ),
+    'start-link' => array(
+      '#theme' => 'link',
+      '#text' => 'now',
+      '#path' => $url,
+      '#options' => array(
+        'attributes' => array('class' => array('use-ajax', 'start')),
+        'html' => TRUE,
+      ),
+    ),
+    'cancel-link' => container_ra(array('cancel btn btn-small' => t('Cancel'))),
   );
 }
 
@@ -542,6 +609,8 @@ function flames_ra($node, $field_name) {
   $field_info = field_info_field($field_name);
   $number_of_flames = count($field_info['settings']['allowed_values']);
 
+//dpm($field_info);
+
   // The 4 flames
   for($i = 1; $i<=$number_of_flames; $i++) {
     $on = '';
@@ -551,7 +620,10 @@ function flames_ra($node, $field_name) {
     }
     $ra['level' . $i] = array(
       '#type' => 'container',
-      '#attributes' => array('class' => array('level' . $i, $on)),
+      '#attributes' => array(
+        'class' => array('level' . $i, $on),
+        'title' => $field_info['settings']['allowed_values'][$i],
+      ),
     );
   }
 
@@ -677,7 +749,7 @@ function make_content_container($node, $display = 'edit') {
       '#attributes' => array('class' => array('delete-link')),
       '#theme' => 'link',
       '#text' => t('delete'),
-      '#path' => "roles/nojs/ipd/" . $node->nid,
+      '#path' => "common/nojs/gp_action/" . $node->nid . '/delete',
       '#options' => array(
         'attributes' => array('class' => array('use-ajax')),
         'html' => FALSE,
@@ -739,11 +811,13 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
           }
         case 'widget_old':
           $path = "manage/person/$parent_nid/assign/". $node_array['node']->nid;
+          $text = $node_array['node']->title
+               .' ('.$node_array['node']->field_category['und'][0]['value'].')';
           $ra['content']['title'] = array(
             '#type' => 'container',
             '#attributes' => array('class' => array('title')),
             '#theme' => 'link',
-            '#text' => $node_array['node']->title,
+            '#text' => $text,
             '#path' => $path,
             '#options' => array(
               'attributes' => array(),
