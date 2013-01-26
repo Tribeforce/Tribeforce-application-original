@@ -509,7 +509,7 @@ function ipd($nid) {
     case 'task':
     case 'skill':
     case 'talent':
-//      tf_em_delete($node);
+      tf_em_delete($node);
       break;
   }
 
