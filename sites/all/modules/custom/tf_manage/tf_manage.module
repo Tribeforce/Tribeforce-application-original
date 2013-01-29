@@ -1,4 +1,7 @@
 <?php
+// Copyright (c) 2013 Femi Veys
+
+
 // Very useful: http://drupal.org/project/1158878
 
 function tf_manage_init() {

@@ -1,4 +1,6 @@
 <?php
+// Copyright (c) 2013 Femi Veys
+
 $GLOBALS['tf_version'] = 'Beta 1.6';
 
 function tf_common_menu() {
@@ -1356,7 +1358,7 @@ function field_view_title($node, $weight = 0) {
   );
 }
 
-function get_items_to_assess($role_nids) {
+function get_items_to_assess($role_nids, $type) {
   $lang = LANGUAGE_NONE; //TODO
   $items = array();
 
@@ -1365,8 +1367,8 @@ function get_items_to_assess($role_nids) {
 
     // Loop over the skills
     foreach($full_role['skills'] as $item) {
-      if(!empty($item['node']->field_assess)) {
-        if($item['node']->field_assess[$lang][0]['value'] == 1) {
+      if($type === 'evaluation' || !empty($item['node']->field_assess)) {
+        if($type === 'evaluation' || $item['node']->field_assess[$lang][0]['value'] == 1) {
           $items['nid-' . $item['node']->nid] = $item['node'];
         }
       }
@@ -1375,19 +1377,19 @@ function get_items_to_assess($role_nids) {
     // Loop over the business talents for talent attributes
     foreach($full_role['talents']['business'] as $talent) {
       foreach($talent['tas'] as $item) {
-        if(!empty($item['node']->field_assess)) {
-          if($item['node']->field_assess[$lang][0]['value'] == 1) {
+        if($type === 'evaluation' || !empty($item['node']->field_assess)) {
+          if($type === 'evaluation' || $item['node']->field_assess[$lang][0]['value'] == 1) {
             $items['nid-' . $item['node']->nid] = $item['node'];
           }
         }
       }
     }
 
-    // Loop over the business talents for talent attributes
+    // Loop over the behavioral talents for talent attributes
     foreach($full_role['talents']['behavioral'] as $talent) {
       foreach($talent['tas'] as $item) {
-        if(!empty($item['node']->field_assess)) {
-          if($item['node']->field_assess[$lang][0]['value'] == 1) {
+        if($type === 'evaluation' || !empty($item['node']->field_assess)) {
+          if($type === 'evaluation' || $item['node']->field_assess[$lang][0]['value'] == 1) {
             $items['nid-' . $item['node']->nid] = $item['node'];
           }
         }
@@ -1422,7 +1424,7 @@ function tf_get_my_roles() {
 //   $role_nids: The array of nids to make Interpretations for
 //   $parent: The the Evaluation or Assessment
 function prepare_interpretations($role_nids, $parent) {
-  $ais = get_items_to_assess($role_nids);
+  $ais = get_items_to_assess($role_nids, $parent->type);
 
   foreach ($ais as $ai) {
     $node = new stdClass();
@@ -1431,9 +1433,6 @@ function prepare_interpretations($role_nids, $parent) {
     $node->field_ass_item_ref['und'][] = array('nid' => $ai->nid);
     $node->field_parent_ref['und'][] = array('nid' => $parent->nid);
     $node->field_score = array(LANGUAGE_NONE => array(array('value' => 0)));
-// We don't want this text to appear all the time, we take No Comment
-//    $node->title = "Interpretation for interview " . $parent->nid
-//                 . ' and ' . $ai->type . ' ' . $ai->nid;
     $node->title = '';
     node_save($node);
   }

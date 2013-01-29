@@ -1,4 +1,7 @@
 <?php
+// Copyright (c) 2013 Femi Veys
+
+
 /**
  * @file
  * tribeforce_application.features.user_permission.inc

@@ -912,10 +912,12 @@ $motivation_position: -1200px -204px;
     background-position: -65px -631px;
     position: absolute;
     top: $gutter-width*1.5;
-    right: 10%;
+    right: 20%;
   }
 
   .body {
+    $more_width: 60px;
+
     position: absolute;
     top: 140px;
     left: 0;
@@ -927,7 +929,7 @@ $motivation_position: -1200px -204px;
 
     .header {
       .field {
-        padding: $gutter-width $gutter-pct;
+        padding: $gutter-width $more_width $gutter-width $gutter-pct;
       }
     }
     .field {
@@ -956,7 +958,7 @@ $motivation_position: -1200px -204px;
         line-height: 16px;
         font-size: 12px;
         color: $grey_light;
-        bottom: 0px;
+        bottom: 5px;
         right: 0px;
         position: absolute;
         &:hover {
@@ -965,14 +967,14 @@ $motivation_position: -1200px -204px;
       }
 
       .less {
-        background-position: -90px -525px;
+        background-position: -90px -522px;
         width: 30px;
         margin-top: -30px;
       }
 
       .more {
-        background-position: -35px -525px;
-        width: 60px;
+        background-position: -35px -522px;
+        width: $more_width;
         display: none;
         text-indent: 0px;
       }
@@ -1025,6 +1027,9 @@ $motivation_position: -1200px -204px;
           @include gradient($orange_light, $orange_dark);
           color: #fff;
         }
+        .more {
+          color: #fff;
+        }
       }
 
     }
@@ -1033,6 +1038,9 @@ $motivation_position: -1200px -204px;
       position: relative;
       display: none;
       overflow: hidden;
+      .col {
+        padding-top: $gutter-width;
+      }
       .col-1,
       .col-3 {
         float: left;

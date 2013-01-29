@@ -1,4 +1,7 @@
 <?php
+// Copyright (c) 2013 Femi Veys
+
+
 /*
  * @file
  * Classes to do the Roles Migration

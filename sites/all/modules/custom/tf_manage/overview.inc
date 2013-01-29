@@ -1,4 +1,6 @@
 <?php
+// Copyright (c) 2013 Femi Veys
+
 
 /******
  Forms
@@ -23,7 +25,7 @@ function tf_manage_remark_form($form, &$form_state, $node, $redirect) {
       '#attributes' => array('class' => array('actions')),
       'submit' => array(
         '#type' => 'submit',
-        '#value' => $is_new ? t('Add') : t('Edit'),
+        '#value' => $is_new ? t('Add') : t('Save'),
         '#attributes' => array('class' => array('btn', 'btn-primary')),
       ),
     ),

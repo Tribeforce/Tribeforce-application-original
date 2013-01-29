@@ -1,4 +1,7 @@
 <?php
+// Copyright (c) 2013 Femi Veys
+
+
 /***************
  Forms
 ***************/
@@ -131,7 +134,7 @@ function person_edit($nid) {
   $node = node_load($nid);
   $enriched_person = get_enriched_person(array('node' => $node));
 
-  tf_help_msg(t('Some help text'));
+  tf_help_msg(t('Change all personal details here'));
   $empty_regions = array(
     'left-sidebar' => array(),
     'content' => tf_manage_person_edit_ra($enriched_person['node'], 'details'),

@@ -1,21 +1,5 @@
 <?php
-/*
- Forms
-*/
-
-
-
-/*
-Form Submits
-*/
-
-
-
-/*
-Page callbacks
-*/
-
-
+// Copyright (c) 2013 Femi Veys
 
 
 /*

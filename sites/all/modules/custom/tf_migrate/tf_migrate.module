@@ -1,4 +1,7 @@
 <?php
+// Copyright (c) 2013 Femi Veys
+
+
 
 /*
  * You must implement hook_migrate_api(), setting the API level to 2, for
@@ -10,4 +13,3 @@ function tf_migrate_migrate_api() {
   );
   return $api;
 }
-
