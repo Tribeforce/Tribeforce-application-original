@@ -492,14 +492,21 @@ h2, h3 {
  * Dashboard
  */
 .page-dashboard {
+  // Hide default messages
+  #content > .messages {
+    display: none;
+  }
+
   .tf-region.header .menu {
     visibility: hidden;
+    height: 49px;
   }
   .tf-region.content > .tabs {
     margin-top: 30px;
     overflow: visible;
     > div {
-      width: (100%/3) - $gutter-pct;;
+      width: (100%/3) - $gutter-pct;
+      min-width: 200px;
       margin: $gutter-width $gutter-pct/2;
       padding: 0;
       background-repeat: no-repeat;
@@ -2584,7 +2591,8 @@ Person Edit
   .motivation {
     position: relative;
     .remove,
-    .add {
+    .add,
+    .edit {
       cursor: pointer;
       position: absolute;
       right: 0;
@@ -2594,6 +2602,7 @@ Person Edit
 
     &:hover {
       &.defined .remove,
+      &.defined .edit,
       &.removed .add {
         display: block
       }
@@ -2626,7 +2635,8 @@ Person Edit
   .avatar {
     padding: $gutter-width/2;
     .remove,
-    .add {
+    .add,
+    .edit {
       background-color: white;
       background-color: rgba(255,255,255,.8);
       color: $black;
@@ -2635,6 +2645,11 @@ Person Edit
       padding: 10% 0;
       text-align: center;
       bottom: 2*$gutter-width;
+    }
+    .remove {
+      top: 0;
+      height: 20px;
+      padding: 0;
     }
   }
 
@@ -2740,6 +2755,53 @@ Person Edit
   }
 }
 
+
+//////// ADMIN ///////
+.tf-module.admin {
+  .tf-region.content > div,
+  .new {
+    clear: both;
+//    overflow: hidden;
+  }
+  .person,
+  .role,
+  .admins .user {
+    width: 50%-(3*$gutter-pct);
+    padding: $gutter-pct;
+    margin-right: $gutter-pct;
+    margin-bottom: $gutter-pct;
+    float: left;
+    @include shadow;
+    @include border-radius;
+  }
+  .person {
+    .field {
+      float: left;
+    }
+    .field-name-field-avatar {
+      width: $icon_width;
+      @include box-shadow(none);
+      @include border-radius(none);
+      margin: 0;
+
+    }
+    .full-name {
+      line-height: $icon_width;
+      margin-left: $gutter-pct;
+    }
+  }
+
+  .companies {
+    .item {
+      &.dnd-active .title {
+        color: $blue;
+      }
+      &.dnd-hover .title {
+        color: $orange_light;
+      }
+    }
+  }
+}
 
 
 

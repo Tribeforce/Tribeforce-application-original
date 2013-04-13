@@ -12,7 +12,7 @@
       // Change select in dropdown
       $('.campaign-details .dropdown .role').click(function(event) {
         event.stopImmediatePropagation();
-        var nid = Drupal.behaviors.tf_common.get_nid_in_classes($(this).attr('class'));
+        var nid = Drupal.behaviors.tf_common.get_id_in_classes($(this).attr('class'));
         $('.campaign-details .field-name-field-role-ref select').val(nid);
         return false;
       });
@@ -199,7 +199,7 @@
 
         $selected.each(function(index) {
           classes = $(this).attr('class');
-          selected_array.push(Drupal.behaviors.tf_common.get_nid_in_classes(classes));
+          selected_array.push(Drupal.behaviors.tf_common.get_id_in_classes(classes));
         });
 
 //        comp_link.attr('href', link_array[0] + '/compare/' + selected_array);

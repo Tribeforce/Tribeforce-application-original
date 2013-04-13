@@ -221,3 +221,25 @@ function unassign_role($person_nid, $role_nid) {
 
   drupal_goto("manage/person/$person_nid/edit");
 }
+
+
+// Fix default image bug
+// See http://drupal.org/node/1438940
+function tf_manage_file_download($uri) {
+  if (strpos($uri, "default_images") > 0) {
+    // Check that the file exists and is an image.
+    if ($info = image_get_info($uri)) {
+      return array(
+        // Send headers describing the image's size, and MIME-type...
+        'Content-Type' => $info['mime_type'],
+        'Content-Length' => $info['file_size'],
+        // By not explicitly setting them here, this uses normal Drupal
+        // Expires, Cache-Control and ETag headers to prevent proxy or
+        // browser caching of private images.
+      );
+    }
+    else {
+      return -1;
+    }
+  }
+}

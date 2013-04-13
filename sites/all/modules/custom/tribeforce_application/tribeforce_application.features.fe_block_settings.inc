@@ -1,7 +1,4 @@
 <?php
-// Copyright (c) 2013 Femi Veys
-
-
 /**
  * @file
  * tribeforce_application.features.fe_block_settings.inc
@@ -13,79 +10,41 @@
 function tribeforce_application_default_fe_block_settings() {
   $export = array();
 
-  $export['version'] = '1.0';
+  $export['version'] = '2.0';
 
-  // Theme independent visibility settings.
-  $export['visibility'] = array(
-    'menu-menu-dashboard' => array(
-      'delta' => 'menu-dashboard',
-      'module' => 'menu',
+  $export['menu-menu-dashboard'] = array(
+    'cache' => -1,
+    'custom' => '0',
+    'delta' => 'menu-dashboard',
+    'module' => 'menu',
+    'node_types' => array(),
+    'pages' => 'dashboard',
+    'roles' => array(
+      'company administrator' => '5',
     ),
-  );
-
-  // Exported block settings for Bartik.
-  $theme = array();
-
-  $theme['menu-menu-dashboard'] = array(
-    'module' => 'menu',
-    'delta' => 'menu-dashboard',
-    'theme' => 'bartik',
-    'status' => 0,
-    'weight' => '0',
-    'region' => '',
-    'custom' => '0',
-    'visibility' => '1',
-    'pages' => 'dashboard',
+    'themes' => array(
+      'bartik' => array(
+        'region' => '',
+        'status' => 0,
+        'theme' => 'bartik',
+        'weight' => '0',
+      ),
+      'tf_app' => array(
+        'region' => '',
+        'status' => 0,
+        'theme' => 'tf_app',
+        'weight' => '-11',
+      ),
+      'zen' => array(
+        'region' => '',
+        'status' => 0,
+        'theme' => 'zen',
+        'weight' => '0',
+      ),
+    ),
     'title' => '<none>',
-    'cache' => -1,
-  );
-
-  $export['theme']['bartik'] = $theme;
-
-  // Exported block settings for Tribeforce application theme.
-  $theme = array();
-
-  $theme['menu-menu-dashboard'] = array(
-    'module' => 'menu',
-    'delta' => 'menu-dashboard',
-    'theme' => 'tf_app',
-    'status' => 0,
-    'weight' => '-11',
-    'region' => '',
-    'custom' => '0',
     'visibility' => '1',
-    'pages' => 'dashboard',
-    'title' => '<none>',
-    'cache' => -1,
   );
 
-  $export['theme']['tf_app'] = $theme;
-
-  // Exported block settings for Zen.
-  $theme = array();
-
-  $theme['menu-menu-dashboard'] = array(
-    'module' => 'menu',
-    'delta' => 'menu-dashboard',
-    'theme' => 'zen',
-    'status' => 0,
-    'weight' => '0',
-    'region' => '',
-    'custom' => '0',
-    'visibility' => '1',
-    'pages' => 'dashboard',
-    'title' => '<none>',
-    'cache' => -1,
-  );
-
-  $export['theme']['zen'] = $theme;
-
-  $theme_default = variable_get('theme_default', 'bartik');
-  $themes = list_themes();
-  foreach ($export['theme'] as $theme_key => $settings) {
-    if ($theme_key != $theme_default && empty($themes[$theme_key]->status)) {
-      unset($export['theme'][$theme_key]);
-    }
-  }
   return $export;
 }

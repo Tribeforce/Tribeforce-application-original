@@ -1,7 +1,4 @@
 <?php
-// Copyright (c) 2013 Femi Veys
-
-
 /**
  * @file
  * tribeforce_application.features.user_permission.inc
@@ -12,6 +9,15 @@
  */
 function tribeforce_application_user_default_permissions() {
   $permissions = array();
+
+  // Exported permission: access tf_admin.
+  $permissions['access tf_admin'] = array(
+    'name' => 'access tf_admin',
+    'roles' => array(
+      0 => 'super user',
+    ),
+    'module' => 'tf_common',
+  );
 
   // Exported permission: access tf_manage.
   $permissions['access tf_manage'] = array(

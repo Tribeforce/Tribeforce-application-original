@@ -148,6 +148,7 @@ features[node][] = skill
 features[node][] = talent
 features[node][] = talent_attribute
 features[node][] = task
+features[user_permission][] = access tf_admin
 features[user_permission][] = access tf_manage
 features[user_permission][] = access tf_recruit
 features[user_permission][] = access tf_roles

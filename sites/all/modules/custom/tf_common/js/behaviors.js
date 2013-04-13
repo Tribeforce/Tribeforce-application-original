@@ -187,13 +187,13 @@
     /*******
     Helpers
     *******/
-    get_nid_in_classes: function(classes) {
+    get_id_in_classes: function(classes) {
       var arr = classes.split(' ');
       var i;
       for(i = 0; i < arr.length; i++) {
-        index = arr[i].indexOf("nid-");
+        index = arr[i].indexOf("id-");
         if(index >= 0) {
-          return arr[i].substring(index + 4, arr[i].length);
+          return arr[i].substring(index + 3, arr[i].length);
         }
       }
       return false;

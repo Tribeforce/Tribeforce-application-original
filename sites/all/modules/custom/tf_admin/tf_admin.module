@@ -1,0 +1,367 @@
+<?php
+// Copyright (c) 2013 Femi Veys
+
+function tf_admin_init() {
+  drupal_add_library('system', 'ui.draggable');
+  drupal_add_library('system', 'ui.droppable');
+}
+
+function tf_admin_menu() {
+  $items['tf_admin'] = array(
+    'title' => 'Tribeforce Administration',
+    'page callback' => 'tf_admin',
+    'access arguments' => array('access tf_admin'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['tf_admin/%'] = array(
+    'title' => 'Edit Company',
+    'page callback' => 'tf_admin_company',
+    'page arguments' => array(1),
+    'access arguments' => array('access tf_admin'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['tf_admin/move/%/%/%'] = array( // move $1 from $2 to $3
+//    'title' => 'Edit Company',
+    'page callback' => 'tf_admin_move',
+    'page arguments' => array(2,3,4),
+    'access arguments' => array('access tf_admin'),
+    'type' => MENU_CALLBACK,
+  );
+
+
+  return $items;
+}
+
+
+
+
+/******************
+ * Page Callbacks *
+ * ****************/
+function tf_admin($regions = array()) {
+  tf_help_msg(t('Administer blabla helptext'));
+
+  $empty_regions = array(
+    'left-sidebar' => companies_ra(),
+    'content' => tf_admin_ra(),
+  );
+
+  return tf_module('admin', $empty_regions, $regions);
+
+}
+
+function tf_admin_company($company_nid) {
+  $full_company = get_full_company($company_nid);
+
+  return tf_admin(array(
+    'content' => tf_admin_company_ra($full_company),
+  ));
+}
+
+function get_full_company($company_nid) {
+  $full_company = array(
+    'node' => array(),
+    'admins' => array(),
+    'persons' => array(),
+    'roles' => array(),
+  );
+
+  if($company_nid == 0) {
+    $node = new stdClass();
+    $node->type = 'company';
+    node_object_prepare($node);
+    $node->title = '';
+  } else {
+    $node = node_load($company_nid);
+  }
+
+  // Node
+  $full_company['node'] = $node;
+
+  // Admins
+  if(isset($node->field_admin_back_ref['und'])) {
+    foreach($node->field_admin_back_ref['und'] as $item) {
+      $full_company['admins']['uid'.$item['uid']]['user'] = user_load($item['uid']);
+    }
+  }
+
+  // Persons
+  if(isset($node->field_persons_back_ref['und'])) {
+    foreach($node->field_persons_back_ref['und'] as $item) {
+      $full_company['persons']['nid'.$item['nid']]['node'] = node_load($item['nid']);
+    }
+  }
+
+  // Roles
+  if(isset($node->field_roles_back_ref['und'])) {
+    foreach($node->field_roles_back_ref['und'] as $item) {
+      $full_company['roles']['nid'.$item['nid']]['node'] = node_load($item['nid']);
+    }
+  }
+
+  return $full_company;
+}
+
+
+/******************
+ * AJAX Callbacks *
+ * ****************/
+function tf_admin_move($item_id, $from_nid, $to_nid) {
+  $item =  node_load($item_id);
+  $from = node_load($from_nid);
+  $to = node_load($to_nid);
+
+  // If the item is a user. the node_load will return false
+  if($item === FALSE) { // USER
+    $item = user_load($item_id);
+    $to_field   = &$to->field_admin_back_ref['und'];
+    $from_field = &$from->field_admin_back_ref['und'];
+
+    // Add the TO
+    $to_field[] = array('uid' => $item_id);
+
+    // Remove the FROM
+    if(isset($from_field)) {
+      foreach($from_field as $key => $object) {
+        if($object['uid'] == $item_id) {
+          unset($from_field[$key]);
+        }
+      }
+    }
+
+    // Change the backlink on the USER
+    $item->field_company_ref = array('und' => array(array('nid' => $to_nid)));
+    user_save($item);
+
+  } else { // NODE
+    switch($item->type) {
+      case 'person':
+        $to_field   = &$to->field_persons_back_ref['und'];
+        $from_field = &$from->field_persons_back_ref['und'];
+        break;
+      case 'role':
+        $to_field   = &$to->field_roles_back_ref['und'];
+        $from_field = &$from->field_roles_back_ref['und'];
+        break;
+    }
+
+    // Add the TO
+    $to_field[] = array('nid' => $item_id);
+
+    // Remove the FROM
+    if(isset($from_field)) {
+      foreach($from_field as $key => $object) {
+        if($object['nid'] == $item_id) {
+          unset($from_field[$key]);
+        }
+      }
+    }
+  }
+
+  node_save($from);
+  node_save($to);
+
+  // TODO: Add some error handling and AJAX feedback
+}
+
+
+/******************
+ * Forms *
+ * ****************/
+function company_form($form, &$form_state, $node) {
+  $is_new = empty($node->nid) ? true : false;
+
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#default_value' => $node->title,
+
+
+    '#attributes' => array('placeholder' => t('Company name')),
+  );
+
+  $form['actions'] = array(
+    // We assume the submit button is always last
+    '#weight' => 99,
+    '#type' => 'container',
+    '#attributes' => array('class' => array('actions')),
+/*
+    'cancel' => array(
+      '#type' => 'submit',
+      '#attributes' => array('class' => array('cancel', 'btn')),
+      '#value' => t('Cancel'),
+      '#ajax' => array(
+        'callback' => 'ipe_cancel_callback',
+        'progress' => array('type' => 'none'),
+      ),
+    ),
+*/
+    'submit' => array(
+      '#type' => 'submit',
+      '#attributes' => array('class' => array('submit', 'btn', 'btn-primary')),
+      '#value' => $is_new ? t('Add') : t('Save'),
+    ),
+  );
+
+  return $form;
+}
+
+
+function company_form_submit($form_id, &$form_state) {
+  $company = $form_state['build_info']['args'][0];
+  $company->title = $form_state['values']['title'];
+  node_save($company);
+  drupal_goto('tf_admin/'.$company->nid);
+}
+
+
+
+function tf_admin_form_alter(&$form, &$form_state, $form_id) {
+  $company_nid = basename($form_state['redirect']);
+  $form['field_company_ref']['und']['#default_value'] = $company_nid;
+}
+
+
+
+/******************
+ * Queries *
+ * ****************/
+function query_companies() {
+  $query = new EntityFieldQuery();
+  $items = array();
+
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'company')
+//    ->propertyCondition('status', 1)
+    ->propertyOrderBy('title');
+
+  $result = $query->execute();
+
+  if (isset($result['node'])) {
+    $item_nids = array_keys($result['node']);
+    $items = entity_load('node', $item_nids);
+  }
+  return $items;
+}
+
+
+function get_companies() {
+  return query_companies();
+}
+
+
+/******************
+ * Render Arrays *
+ * ****************/
+function tf_admin_ra() {
+  return array();
+}
+
+
+function tf_admin_company_ra($full_company) {
+  $is_new = empty($full_company['node']->nid);
+
+  if($is_new) {
+    $ra = container_ra(array(
+      'company' => drupal_get_form('company_form', $full_company['node']),
+    ));
+  } else{
+    $admins = array_merge(
+      items_ra($full_company['admins'], 'admin', 0, 'dnd'),
+      array(
+        'new' => array(
+          '#type' => 'container',
+          '#attributes' => array('class' => array('new')),
+          'data' => array(
+            '#theme' => 'link',
+            '#text' => t('Add new Company Administrator'),
+            '#path' => 'admin/people/create/' . $full_company['node']->nid,
+            '#options' => array(
+              'attributes' => array('class' => array('btn', 'btn-primary')),
+              'html' => FALSE,
+            ),
+          ),
+        ),
+      )
+    );
+
+    $ra = container_ra(array(
+      'company' => drupal_get_form('company_form', $full_company['node']),
+      'admins' => show_hide('Company Administrators', $admins),
+      'persons' => show_hide(
+                     'Persons',
+                     items_ra($full_company['persons'], 'person', 0, 'dnd')
+                   ),
+      'roles' => show_hide(
+                   'Roles',
+                   items_ra($full_company['roles'], 'role', 0, 'dnd')
+                 ),
+    ));
+  }
+
+  return $ra;
+}
+
+function companies_ra() {
+  $companies = get_companies();
+  $items = array();
+
+  foreach($companies as $company) {
+    $items['company-' . $company->nid] =
+                       sidemenu_item_ra('tf_admin', $company);
+  }
+
+  $header = array(
+    '#markup' => t('Companies:'),
+  );
+
+  if(empty($items)) {
+    $body = array(
+    '#markup' => t('There are currently no companies'),
+  );
+  } else {
+    $body = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('companies'),
+      ),
+      'data' => $items,
+    );
+  }
+
+
+  $path = 'tf_admin/0';
+
+  $new = array(
+    '#theme' => 'link',
+    '#text' => t('Add new Company'),
+    '#path' => $path,
+    '#options' => array(
+      'attributes' => array('class' => array('btn', 'btn-primary',
+                                    $path == current_path()  ? 'active' : '' )),
+      'html' => FALSE,
+    ),
+  );
+
+/*
+  $new2 = array(
+    '#theme' => 'link',
+    '#text' => t('Add new Company Administrator'),
+    '#path' => 'admin/people/create',
+    '#options' => array(
+      'attributes' => array('class' => array('btn', 'btn-primary')),
+      'html' => FALSE,
+    ),
+  );
+
+*/
+
+
+  return container_ra(array(
+    'new' => $new,
+//    'new' => $new,
+    'header' => $header,
+    'body' => $body,
+  ));
+}

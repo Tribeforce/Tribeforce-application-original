@@ -14,7 +14,7 @@
       // Click on a skill or a talent_attribute in the widget
       // sets the nid in the hidden field
       $('.dropdown > div.display-widget').once(o).click(function(event) {
-        var nid = Drupal.behaviors.tf_common.get_nid_in_classes($(this).attr('class'));
+        var nid = Drupal.behaviors.tf_common.get_id_in_classes($(this).attr('class'));
         $(this).parents('.edit-remark').find('form input[name=attached_to]')
           .val(nid);
       });
@@ -28,7 +28,7 @@
       /****
       Main
       ****/
-      // Mage remarks in the person details draggable
+      // Make remarks in the person details draggable
 //      $('.page-manage-person .remark').draggable();
 
 
@@ -69,11 +69,9 @@
       $('.person-edit .field-name-field-avatar .image-preview img')
         .load(function(event) {
           event.stopImmediatePropagation();
-          var prev_src = $(this).attr('src');
-          var larger_src = prev_src.replace('/styles/thumbnail/',
-                                                             '/styles/medium/');
-          $(this).parents('.person-edit')
-            .find('.field.field-name-field-avatar img').attr('src', larger_src);
+          var src = $(this).attr('src');
+            $(this).parents('.person-edit')
+            .find('.field.field-name-field-avatar img').attr('src', src);
       });
 
       // If there is no fid for the avatar, show the default image
@@ -81,15 +79,7 @@
       $('.person-edit input[name=field_avatar_und_0_remove_button]')
         .mousedown(function(event){
           event.stopImmediatePropagation(); // Not sure this is needed
-          var current_src = $(this).parents('.person-edit')
-                        .find('.field.field-name-field-avatar img').attr('src');
-          var current_src_arr = current_src.split('/');
-          current_src_arr[current_src_arr.length-1]='default_images/person.jpg';
-          var default_src = current_src_arr.join('/');
-          // If the current image was the default image we get a double
-          // default_images folder. We need to prevent this
-          default_src = default_src.replace('/default_images/default_images/',
-                                                            '/default_images/');
+          var default_src = '/sites/default/files/person.jpg';
           $(this).parents('.person-edit')
             .find('.field.field-name-field-avatar img').attr('src',default_src);
       });
@@ -140,6 +130,53 @@
         };
       }
 
+      // Simulate a click on the image as a remove followed by a add.
+      // TODO: This is code duplication. Reuse simulateRemove and simulateAdd
+      function simulateEdit(i) {
+        return function(event) {
+//          event.stopImmediatePropagation();
+//          event.preventDefault();
+
+          // Remove code
+          $(this).parents('.' + file_fields[i]).removeClass('defined');
+          $(this).parents('.' + file_fields[i]).addClass('removed');
+          $('.person-edit input[name=field_'
+                      + file_fields[i] + '_und_0_remove_button]').mousedown();
+
+          // Add code
+//          setTimeout(function(i) {
+//            console.log($('.person-edit input[name="files[field_'
+//                                      + file_fields[i] + '_und_0]"]').length);
+
+//            $('.person-edit input[name="files[field_'
+//                                      + file_fields[i] + '_und_0]"]').click();
+//          }, 5000);
+
+          clickUpload(i);
+
+        };
+
+      }
+
+      function clickUpload(i) {
+        setTimeout(function() {
+//          var selector = ;
+//          if($(selector).length > 0) {
+//            console.log($selector);
+  console.log('.person-edit input[name="files[field_'
+                              + file_fields[i] + '_und_0]"]');
+  console.log($('.person-edit input[name="files[field_'
+                              + file_fields[i] + '_und_0]"]').length);
+            $('.person-edit input[name="files[field_'
+                              + file_fields[i] + '_und_0]"]').click(); // No idea why this doesn't always work
+//            return true;
+//          }
+//          else {
+//          }
+        }, 900);
+      }
+
+
       // Immediately upload when the user has selected an image
       function immediatelyUpload(i) {
         return function(event){
@@ -172,6 +209,7 @@
         for(i = 0; i < file_fields.length; i++) {
           $('.person-edit .' +file_fields[i]+' .remove').click(simulateRemove(i));
           $('.person-edit .' +file_fields[i]+' .add').click(simulateAdd(i));
+          $('.person-edit .' +file_fields[i]+' .edit').click(simulateEdit(i));
           $('.person-edit .' +file_fields[i]+' .file-defined')
                                                      .click(simulateFileClick(i));
           $('.person-edit #edit-field-'
@@ -188,12 +226,12 @@
         }
 
         // Set the default image if no avatar has been set
-        $('.person-edit #edit-field-avatar-und-0-upload').once(function() {
-          var src = $('.person-edit .avatar .image img').attr('src');
-          src = src.replace('/default_images/person.jpg', '');
-          $('.person-edit .avatar .image img')
-            .attr('src', src + '/default_images/person.jpg');
-        });
+//        $('.person-edit #edit-field-avatar-und-0-upload').once(function() {
+//          var src = $('.person-edit .avatar .image img').attr('src');
+//          src = src.replace('/default_images/person.jpg', '');
+//          $('.person-edit .avatar .image img')
+//            .attr('src', src + '/default_images/person.jpg');
+//        });
       };
 
       $.fn.invoke_init_edit_person();

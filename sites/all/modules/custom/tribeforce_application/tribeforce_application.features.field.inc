@@ -1,7 +1,4 @@
 <?php
-// Copyright (c) 2013 Femi Veys
-
-
 /**
  * @file
  * tribeforce_application.features.field.inc
@@ -1865,8 +1862,8 @@ function tribeforce_application_field_default_fields() {
       'locked' => '0',
       'module' => 'image',
       'settings' => array(
-        'default_image' => 0,
-        'uri_scheme' => 'public',
+        'default_image' => '196',
+        'uri_scheme' => 'private',
       ),
       'translatable' => '0',
       'type' => 'image',
@@ -1899,8 +1896,8 @@ function tribeforce_application_field_default_fields() {
       'required' => 0,
       'settings' => array(
         'alt_field' => 0,
-        'default_image' => '145',
-        'file_directory' => '',
+        'default_image' => 0,
+        'file_directory' => 'avatars',
         'file_extensions' => 'png gif jpg jpeg',
         'max_filesize' => '',
         'max_resolution' => '',
@@ -1912,11 +1909,11 @@ function tribeforce_application_field_default_fields() {
         'active' => 1,
         'module' => 'image',
         'settings' => array(
-          'preview_image_style' => 'thumbnail',
+          'preview_image_style' => 'medium',
           'progress_indicator' => 'throbber',
         ),
         'type' => 'image_image',
-        'weight' => '0',
+        'weight' => 0,
       ),
     ),
   );
@@ -2258,7 +2255,7 @@ function tribeforce_application_field_default_fields() {
       'required' => 0,
       'settings' => array(
         'description_field' => 0,
-        'file_directory' => '',
+        'file_directory' => 'cv',
         'file_extensions' => 'pdf',
         'max_filesize' => '',
         'user_register_form' => FALSE,
@@ -2633,7 +2630,7 @@ function tribeforce_application_field_default_fields() {
       'required' => 0,
       'settings' => array(
         'description_field' => 0,
-        'file_directory' => '',
+        'file_directory' => 'motivation',
         'file_extensions' => 'pdf',
         'max_filesize' => '',
         'user_register_form' => FALSE,
@@ -4505,9 +4502,9 @@ function tribeforce_application_field_default_fields() {
       'settings' => array(
         'allowed_values' => array(
           1 => 'Junior',
-          2 => 'Senior',
-          3 => 'Expert',
-          4 => 'Professional',
+          2 => 'Professional',
+          3 => 'Senior',
+          4 => 'Expert',
         ),
         'allowed_values_function' => '',
       ),

@@ -171,7 +171,8 @@ function tf_manage_person_edit_ra($person, $display = 'details', $extra = array(
         'data' => array(
           '#markup' => theme_image(array(
             // This path should exist, but will be replaced by jQuery
-            'path' => '/sites/all/themes/tf_app/images/person.png',
+            'path' => '/sites/default/files/person.png',
+
             'attributes' => array(),
           )),
         ),
@@ -216,6 +217,7 @@ function tf_manage_person_edit_ra($person, $display = 'details', $extra = array(
           'image' => $image,
           'remove' => t('Remove'),
           'add' => t('Add'),
+          'edit' => t('Change'),
         )),
       )),
       'col-2' => $form,

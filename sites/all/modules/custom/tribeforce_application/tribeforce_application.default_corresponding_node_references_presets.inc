@@ -1,7 +1,4 @@
 <?php
-// Copyright (c) 2013 Femi Veys
-
-
 /**
  * @file
  * tribeforce_application.default_corresponding_node_references_presets.inc
