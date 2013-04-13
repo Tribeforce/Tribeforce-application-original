@@ -1,4 +1,4 @@
-name = Tribeforce Common
+name = Tribeforce Admin
 description = Administration module for Tribeforce
 core = 7.x
 package = Tribeforce

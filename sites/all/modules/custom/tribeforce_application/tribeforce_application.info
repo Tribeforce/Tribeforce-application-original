@@ -22,6 +22,7 @@ dependencies[] = menu
 dependencies[] = node_reference
 dependencies[] = options
 dependencies[] = strongarm
+dependencies[] = tf_admin
 dependencies[] = tf_common
 dependencies[] = tf_manage
 dependencies[] = tf_recruit
