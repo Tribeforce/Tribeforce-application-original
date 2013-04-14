@@ -73,7 +73,6 @@ features[field][] = node-interview-field_interprets_ref
 features[field][] = node-interview-field_person_back_ref
 features[field][] = node-person-field_address
 features[field][] = node-person-field_assessments_ref
-features[field][] = node-person-field_avatar
 features[field][] = node-person-field_birth_date
 features[field][] = node-person-field_campaigns_ref
 features[field][] = node-person-field_company_ref
