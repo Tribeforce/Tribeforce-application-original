@@ -2635,7 +2635,7 @@ Person Edit
     .edit {
       cursor: pointer;
       position: absolute;
-//      left: 2*$gutter-pct;
+      left: 2*$gutter-pct;
       right: 2*$gutter-pct;
       bottom: 0;
       display: none;
@@ -2700,6 +2700,7 @@ Person Edit
     .add,
     .remove {
       width: $icon_width;
+      left: auto;
       height: $icon_width;
       text-indent: -9999px;
       background: $sprites;

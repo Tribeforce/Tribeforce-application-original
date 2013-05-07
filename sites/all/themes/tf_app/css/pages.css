@@ -2919,6 +2919,7 @@ Person Edit
 .person-edit .motivation .edit {
   cursor: pointer;
   position: absolute;
+  left: 4%;
   right: 4%;
   bottom: 0;
   display: none;
@@ -2998,48 +2999,49 @@ Person Edit
 .person-edit .motivation .add,
 .person-edit .motivation .remove {
   width: 32px;
+  left: auto;
   height: 32px;
   text-indent: -9999px;
   background: url(../images/sprites.png) no-repeat;
 }
-/* line 2707, ../sass/pages.scss */
+/* line 2708, ../sass/pages.scss */
 .person-edit .cv .add,
 .person-edit .motivation .add {
   background-position: -1195px -300px;
 }
-/* line 2710, ../sass/pages.scss */
+/* line 2711, ../sass/pages.scss */
 .person-edit .cv .remove,
 .person-edit .motivation .remove {
   background-position: -154px -605px;
 }
-/* line 2715, ../sass/pages.scss */
+/* line 2716, ../sass/pages.scss */
 .person-edit .cv .file-defined {
   background-position: -1190px -224px;
 }
-/* line 2718, ../sass/pages.scss */
+/* line 2719, ../sass/pages.scss */
 .person-edit .cv .file-removed {
   background-position: -1190px -162px;
 }
-/* line 2724, ../sass/pages.scss */
+/* line 2725, ../sass/pages.scss */
 .person-edit .motivation .file-defined {
   background-position: -1190px -249px;
 }
-/* line 2727, ../sass/pages.scss */
+/* line 2728, ../sass/pages.scss */
 .person-edit .motivation .file-removed {
   background-position: -1190px -196px;
 }
-/* line 2734, ../sass/pages.scss */
+/* line 2735, ../sass/pages.scss */
 .person-edit .form-item,
 .person-edit .field-type-datetime {
   clear: both;
   overflow: hidden;
 }
-/* line 2739, ../sass/pages.scss */
+/* line 2740, ../sass/pages.scss */
 .person-edit label {
   width: 40%;
   float: left;
 }
-/* line 2743, ../sass/pages.scss */
+/* line 2744, ../sass/pages.scss */
 .person-edit input.form-text {
   width: 58%;
   border: 0;
@@ -3052,19 +3054,19 @@ Person Edit
   -o-border-radius: 4px;
   border-radius: 4px;
 }
-/* line 2752, ../sass/pages.scss */
+/* line 2753, ../sass/pages.scss */
 .person-edit select {
   width: 59%;
 }
-/* line 2756, ../sass/pages.scss */
+/* line 2757, ../sass/pages.scss */
 .person-edit .field-type-datetime .description {
   display: none;
 }
-/* line 2759, ../sass/pages.scss */
+/* line 2760, ../sass/pages.scss */
 .person-edit .field-type-phone-number .form-type-textfield input {
   margin-left: 40%;
 }
-/* line 2765, ../sass/pages.scss */
+/* line 2766, ../sass/pages.scss */
 .person-edit .field-name-field-cv,
 .person-edit .field-name-field-motivation,
 .person-edit .form-wrapper.field-name-field-avatar {
@@ -3072,18 +3074,18 @@ Person Edit
   display: none;
 }
 
-/* line 2774, ../sass/pages.scss */
+/* line 2775, ../sass/pages.scss */
 .candidates-page .person-edit .col-1,
 .feedback .person-edit .col-1 {
   width: 28%;
 }
-/* line 2777, ../sass/pages.scss */
+/* line 2778, ../sass/pages.scss */
 .candidates-page .person-edit .col-2,
 .feedback .person-edit .col-2 {
   width: 40%;
   float: left;
 }
-/* line 2781, ../sass/pages.scss */
+/* line 2782, ../sass/pages.scss */
 .candidates-page .person-edit .col-3,
 .feedback .person-edit .col-3 {
   width: 30%;
@@ -3091,7 +3093,7 @@ Person Edit
   clear: right;
 }
 
-/* line 2789, ../sass/pages.scss */
+/* line 2790, ../sass/pages.scss */
 .field-name-field-avatar {
   -webkit-box-shadow: 0px 1px 1px 1px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 0px 1px 1px 1px rgba(0, 0, 0, 0.3);
@@ -3105,17 +3107,17 @@ Person Edit
   padding: 2%;
   margin-bottom: 4%;
 }
-/* line 2795, ../sass/pages.scss */
+/* line 2796, ../sass/pages.scss */
 .field-name-field-avatar img {
   width: 100%;
 }
 
-/* line 2804, ../sass/pages.scss */
+/* line 2805, ../sass/pages.scss */
 .tf-module.admin .tf-region.content > div,
 .tf-module.admin .new {
   clear: both;
 }
-/* line 2809, ../sass/pages.scss */
+/* line 2810, ../sass/pages.scss */
 .tf-module.admin .person,
 .tf-module.admin .role,
 .tf-module.admin .admins .user {
@@ -3133,7 +3135,7 @@ Person Edit
   -o-border-radius: 4px;
   border-radius: 4px;
 }
-/* line 2817, ../sass/pages.scss */
+/* line 2818, ../sass/pages.scss */
 .tf-module.admin .person:hover,
 .tf-module.admin .role:hover,
 .tf-module.admin .admins .user:hover {
@@ -3142,11 +3144,11 @@ Person Edit
   box-shadow: 0px 2px 2px 2px rgba(255, 139, 0, 0.5);
   cursor: move;
 }
-/* line 2823, ../sass/pages.scss */
+/* line 2824, ../sass/pages.scss */
 .tf-module.admin .person .field {
   float: left;
 }
-/* line 2826, ../sass/pages.scss */
+/* line 2827, ../sass/pages.scss */
 .tf-module.admin .person .field-name-field-avatar {
   width: 32px;
   -webkit-box-shadow: none;
@@ -3159,53 +3161,53 @@ Person Edit
   border-radius: none;
   margin: 0;
 }
-/* line 2833, ../sass/pages.scss */
+/* line 2834, ../sass/pages.scss */
 .tf-module.admin .person .full-name {
   line-height: 32px;
   margin-left: 2%;
 }
-/* line 2840, ../sass/pages.scss */
+/* line 2841, ../sass/pages.scss */
 .tf-module.admin .admins .user .name {
   float: left;
 }
-/* line 2843, ../sass/pages.scss */
+/* line 2844, ../sass/pages.scss */
 .tf-module.admin .admins .user .edit {
   float: right;
 }
-/* line 2851, ../sass/pages.scss */
+/* line 2852, ../sass/pages.scss */
 .tf-module.admin .companies .item.dnd-active .title {
   color: #43698f;
 }
-/* line 2854, ../sass/pages.scss */
+/* line 2855, ../sass/pages.scss */
 .tf-module.admin .companies .item.dnd-hover .title {
   color: #ff960e;
 }
 
-/* line 2866, ../sass/pages.scss */
+/* line 2867, ../sass/pages.scss */
 tr.odd {
   /* background-color: #eee; */
   /* Drupal core uses a #eee background */
 }
 
-/* line 2870, ../sass/pages.scss */
+/* line 2871, ../sass/pages.scss */
 div.messages {
   /*Important messages (status, warning, and error) for the user.
     See also the declarations in messages.css. */
   margin: 1.5em 0;
   /* Drupal core uses "6px 0" margin */
 }
-/* line 2874, ../sass/pages.scss */
+/* line 2875, ../sass/pages.scss */
 div.messages ul {
   margin-top: 0;
   margin-bottom: 0;
 }
 
-/* line 2880, ../sass/pages.scss */
+/* line 2881, ../sass/pages.scss */
 div.status {
   /* Normal priority messages */
 }
 
-/* line 2884, ../sass/pages.scss */
+/* line 2885, ../sass/pages.scss */
 div.warning,
 tr.warning {
   /* Medium priority messages */
@@ -3213,53 +3215,53 @@ tr.warning {
   /* Drupal core uses: 1px solid #f0c020 */
 }
 
-/* line 2889, ../sass/pages.scss */
+/* line 2890, ../sass/pages.scss */
 div.error,
 tr.error {
   /*High priority messages. See also the .error declaration below. */
 }
 
-/* line 2892, ../sass/pages.scss */
+/* line 2893, ../sass/pages.scss */
 .error {
   /* Errors that are separate from div.messages status messages. */
   /* color: #e55; */
   /* Drupal core uses a #e55 background */
 }
 
-/* line 2896, ../sass/pages.scss */
+/* line 2897, ../sass/pages.scss */
 .warning {
   /* Warnings that are separate from div.messages status messages. */
   /* color: #e09010; */
   /* Drupal core uses a #e09010 background */
 }
 
-/* line 2900, ../sass/pages.scss */
+/* line 2901, ../sass/pages.scss */
 .tabs {
   /* See also the tabs.css file. */
 }
 
-/* line 2903, ../sass/pages.scss */
+/* line 2904, ../sass/pages.scss */
 .region-help {
   /* Help text on a page */
 }
 
-/* line 2906, ../sass/pages.scss */
+/* line 2907, ../sass/pages.scss */
 .more-help-link {
   /* Link to more help */
 }
 
-/* line 2909, ../sass/pages.scss */
+/* line 2910, ../sass/pages.scss */
 .region-content {
   /* Wrapper for the actual page content */
 }
 
-/* line 2912, ../sass/pages.scss */
+/* line 2913, ../sass/pages.scss */
 ul.inline {
   /* List of links generated by theme_links() */
   display: inline;
   padding: 0;
 }
-/* line 2916, ../sass/pages.scss */
+/* line 2917, ../sass/pages.scss */
 ul.inline li {
   display: inline;
   list-style-type: none;
@@ -3267,31 +3269,31 @@ ul.inline li {
   /* LTR */
 }
 
-/* line 2922, ../sass/pages.scss */
+/* line 2923, ../sass/pages.scss */
 span.field-label {
   /* The inline field label used by the Fences module */
   padding: 0 1em 0 0;
   /* LTR */
 }
 
-/* line 2926, ../sass/pages.scss */
+/* line 2927, ../sass/pages.scss */
 .item-list .pager {
   /* A list of page numbers when
                  more than 1 page of content is available */
   padding: 0;
 }
-/* line 2930, ../sass/pages.scss */
+/* line 2931, ../sass/pages.scss */
 .item-list .pager li {
   /* Each page number in the pager list */
   padding: 0 0.5em;
 }
 
-/* line 2935, ../sass/pages.scss */
+/* line 2936, ../sass/pages.scss */
 .feed-icon {
   /*Link to the RSS or Atom feed for the current list of content */
 }
 
-/* line 2938, ../sass/pages.scss */
+/* line 2939, ../sass/pages.scss */
 .more-link {
   /* Aggregator, blog, and forum more link */
 }
@@ -3314,7 +3316,7 @@ span.field-label {
 /*
  * Page bottom
  */
-/* line 2972, ../sass/pages.scss */
+/* line 2973, ../sass/pages.scss */
 .region-bottom {
   /* Wrapper for any blocks placed in the page bottom region */
 }
