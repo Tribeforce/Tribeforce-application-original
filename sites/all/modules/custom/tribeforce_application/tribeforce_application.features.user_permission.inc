@@ -14,16 +14,25 @@ function tribeforce_application_user_default_permissions() {
   $permissions['access tf_admin'] = array(
     'name' => 'access tf_admin',
     'roles' => array(
-      0 => 'super user',
+      0 => 'Tribeforce Administrator',
     ),
     'module' => 'tf_common',
   );
 
-  // Exported permission: access tf_manage.
-  $permissions['access tf_manage'] = array(
-    'name' => 'access tf_manage',
+  // Exported permission: access tf_common.
+  $permissions['access tf_common'] = array(
+    'name' => 'access tf_common',
     'roles' => array(
-      0 => 'company administrator',
+      0 => 'Tribeforce Common',
+    ),
+    'module' => 'tf_common',
+  );
+
+  // Exported permission: access tf_feedback.
+  $permissions['access tf_feedback'] = array(
+    'name' => 'access tf_feedback',
+    'roles' => array(
+      0 => 'Feedback',
     ),
     'module' => 'tf_common',
   );
@@ -32,7 +41,7 @@ function tribeforce_application_user_default_permissions() {
   $permissions['access tf_recruit'] = array(
     'name' => 'access tf_recruit',
     'roles' => array(
-      0 => 'company administrator',
+      0 => 'Recruit',
     ),
     'module' => 'tf_common',
   );
@@ -41,7 +50,7 @@ function tribeforce_application_user_default_permissions() {
   $permissions['access tf_roles'] = array(
     'name' => 'access tf_roles',
     'roles' => array(
-      0 => 'company administrator',
+      0 => 'Roles',
     ),
     'module' => 'tf_common',
   );

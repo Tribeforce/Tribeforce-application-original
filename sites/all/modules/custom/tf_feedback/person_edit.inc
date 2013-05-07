@@ -5,7 +5,7 @@
 /***************
  Forms
 ***************/
-function tf_manage_person_form($form, &$form_state, $node,
+function tf_feedback_person_form($form, &$form_state, $node,
                                $display = 'details', $extra = array()){
   $is_new = empty($node->nid);
 
@@ -30,8 +30,11 @@ function tf_manage_person_form($form, &$form_state, $node,
   if($display === 'details' or $display === 'add' ) {
     $my_form['field_person_type'] = $form['field_person_type'];
     $my_form['field_hire_date'] = $form['field_hire_date'];
-    $my_form['field_birth_date'] = $form['field_birth_date'];
   }
+
+  $my_form['field_birth_date'] = $form['field_birth_date'];
+
+
 
   $my_form['actions'] = array(
     // We assume the submit button is always last
@@ -56,7 +59,7 @@ function tf_manage_person_form($form, &$form_state, $node,
   // Change the actions by display
   switch($display) {
     case 'details':
-      $my_form['actions']['cancel']['#path'] = 'manage/person/' . $node->nid;
+      $my_form['actions']['cancel']['#path'] = 'feedback/person/' . $node->nid;
       break;
     case 'candidate':
       if(empty($node->nid)) { // New person
@@ -67,7 +70,7 @@ function tf_manage_person_form($form, &$form_state, $node,
       }
       break;
     case 'add':
-      $my_form['actions']['cancel']['#path'] = 'manage';
+      $my_form['actions']['cancel']['#path'] = 'feedback';
       break;
   }
 
@@ -78,7 +81,7 @@ function tf_manage_person_form($form, &$form_state, $node,
 /***************
  Form submits
 ***************/
-function tf_manage_person_form_submit($form, &$form_state) {
+function tf_feedback_person_form_submit($form, &$form_state) {
   $person = $form_state['build_info']['args'][0];
   $display = $form_state['build_info']['args'][1];
   $extra = $form_state['build_info']['args'][2];
@@ -86,11 +89,11 @@ function tf_manage_person_form_submit($form, &$form_state) {
   $person->field_first_name = $form_state['values']['field_first_name'];
   $person->field_email = $form_state['values']['field_email'];
   $person->field_phone = $form_state['values']['field_phone'];
+  $person->field_birth_date = $form_state['values']['field_birth_date'];
 
   if($display === 'details' or $display === 'add' ) {
     $person->field_person_type = $form_state['values']['field_person_type'];
     $person->field_hire_date = $form_state['values']['field_hire_date'];
-    $person->field_birth_date = $form_state['values']['field_birth_date'];
   }
 
   // Handle the file uploads
@@ -112,14 +115,14 @@ function tf_manage_person_form_submit($form, &$form_state) {
 
   switch($display) {
     case 'details':
-      $form_state['redirect'] = 'manage/person/' . $person->nid;
+      $form_state['redirect'] = 'feedback/person/' . $person->nid;
       break;
     case 'candidate':
       $campaign_nid = $extra['original_nid'];
       $form_state['redirect'] = "recruit/$campaign_nid/candidates";
       break;
     case 'add':
-      $form_state['redirect'] = 'manage';
+      $form_state['redirect'] = 'feedback';
       break;
   }
 }
@@ -137,10 +140,10 @@ function person_edit($nid) {
   tf_help_msg(t('Change all personal details here'));
   $empty_regions = array(
     'left-sidebar' => array(),
-    'content' => tf_manage_person_edit_ra($enriched_person['node'], 'details'),
+    'content' => tf_feedback_person_edit_ra($enriched_person['node'], 'details'),
   );
 
-  return tf_module('manage', $empty_regions, $regions);
+  return tf_module('feedback', $empty_regions, $regions);
 }
 
 
@@ -148,7 +151,7 @@ function person_edit($nid) {
 /***************
  Render Arrays
 ***************/
-function tf_manage_person_edit_ra($person, $display = 'details', $extra = array()) {
+function tf_feedback_person_edit_ra($person, $display = 'details', $extra = array()) {
   // TODO: This splitup is done to work around http://drupal.org/node/1824820
   // TODO: Probably this splitup is wrong. The existance of a field should be checked
   switch($display) {
@@ -185,8 +188,8 @@ function tf_manage_person_edit_ra($person, $display = 'details', $extra = array(
   $form_state['build_info']['args'][] = $person;
   $form_state['build_info']['args'][] = $display;
   $form_state['build_info']['args'][] = $extra;
-  form_load_include($form_state, 'inc', 'tf_manage', 'person_edit');
-  $form = drupal_build_form('tf_manage_person_form', $form_state);
+  form_load_include($form_state, 'inc', 'tf_feedback', 'person_edit');
+  $form = drupal_build_form('tf_feedback_person_form', $form_state);
 
   // Get the roles data if the person exists
   if(isset($person->nid)) {

@@ -12,7 +12,15 @@
       // TODO: Make selector generic
       $('.show-hide-header').once(o).click(function(event) {
         $(this).parent().toggleClass('collapsed');
+        if($(this).parent().hasClass('collapsed')) {
+          $(this).parent().find('.body').slideUp();
+        } else {
+          $(this).parent().find('.body').slideDown();
+        }
       });
+
+      // Hide collapsed bodies by default
+      $('.collapsed').find('.body').hide();
 
       // Hide the slide pane
       $('.slide-pane .sp-close').once(o).click(function(event){

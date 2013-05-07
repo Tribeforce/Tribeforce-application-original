@@ -198,7 +198,7 @@ function hire($campaign_nid, $person_nid) {
   $person->field_person_type['und'][0]['value'] = 2;
   node_save($person);
 
-  drupal_goto('manage');
+  drupal_goto('feedback');
 }
 
 
@@ -247,7 +247,7 @@ function get_campaigns($company_nid) {
 
 
 // TODO: Make Campaign as parameter instead of role (=add join)
-function query_scores($role, $candidate_nids, $type = 'skill') {
+function query_interview_scores($role, $candidate_nids, $type = 'skill') {
   $candidate_or = db_or();
 
 
@@ -304,7 +304,7 @@ function query_scores($role, $candidate_nids, $type = 'skill') {
 }
 
 
-function get_scores($role, $candidates) {
+function get_interview_scores($role, $candidates) {
   return get_scores_by_nids($role, flatten_objects($candidates, 'nid'));
 }
 
@@ -315,7 +315,7 @@ function get_scores_by_nids($role, $candidate_nids) {
   $scores = array();
   $types = array('skill', 'talent_attribute');
   foreach($types as $type) {
-    $type_scores = query_scores($role, $candidate_nids, $type);
+    $type_scores = query_interview_scores($role, $candidate_nids, $type);
     foreach($type_scores as $row) {
       $scores[$type]["$type-" . $row->ai_nid]
                                       ['candidate-' . $row->cand_nid] = array(

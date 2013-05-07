@@ -41,7 +41,8 @@ function tf_admin_menu() {
  * Page Callbacks *
  * ****************/
 function tf_admin($regions = array()) {
-  tf_help_msg(t('Administer blabla helptext'));
+  tf_help_msg(t('Administer companies. Drag and drop items
+                 between companies.'));
 
   $empty_regions = array(
     'left-sidebar' => companies_ra(),
@@ -83,21 +84,24 @@ function get_full_company($company_nid) {
   // Admins
   if(isset($node->field_admin_back_ref['und'])) {
     foreach($node->field_admin_back_ref['und'] as $item) {
-      $full_company['admins']['uid'.$item['uid']]['user'] = user_load($item['uid']);
+      $full_company['admins']['uid'.$item['uid']]['user']
+        = user_load($item['uid']);
     }
   }
 
   // Persons
   if(isset($node->field_persons_back_ref['und'])) {
     foreach($node->field_persons_back_ref['und'] as $item) {
-      $full_company['persons']['nid'.$item['nid']]['node'] = node_load($item['nid']);
+      $full_company['persons']['nid'.$item['nid']]['node']
+        = node_load($item['nid']);
     }
   }
 
   // Roles
   if(isset($node->field_roles_back_ref['und'])) {
     foreach($node->field_roles_back_ref['und'] as $item) {
-      $full_company['roles']['nid'.$item['nid']]['node'] = node_load($item['nid']);
+      $full_company['roles']['nid'.$item['nid']]['node']
+        = node_load($item['nid']);
     }
   }
 

@@ -165,7 +165,7 @@ function add_condition_autocomplete(&$query, $type, $string) {
 
 // Returns a resultset
 // TODO: Probably we need to add a condition to take only skills of own roles
-function autocomplete_query($type, $string) {
+function autocomplete_query($type, $string = '') {
   $query = db_select('node', 'n');
 
   switch($type) {
@@ -212,7 +212,10 @@ function autocomplete_query($type, $string) {
       break;
   }
 
-  $query->range(0, 5);
+  // If a $string is given, we assume only 5 need to be returned
+  if(!empty($string)) {
+    $query->range(0, 5);
+  }
 
   return $query->execute();
 }
@@ -312,6 +315,17 @@ function get_talent_array($title, $level) {
 
 
 
+function get_all_talents($type) {
+  $rs = autocomplete_query($type);
+
+  foreach($rs as $item) {
+    $node = node_load($item->nid); // TODO: improve performance
+    $items['nid'.$item->nid]['node'] = $node;
+  }
+
+  return $items;
+}
+
 
 
 /*
@@ -386,13 +400,10 @@ function role($role_nid) {
   // it concerns an insert, otherwise it is an edit
   if(empty($full_role['node'])) {
     $content = new_role_ra();
+    $page_actions = array();
   } else {
     $content = role_ra($full_role);
-  }
-
-  return roles(array(
-    'content' => $content,
-    'page-actions' => array(
+    $page_actions = array(
       '#theme' => 'link',
       '#text' => t('Start a campaign from this role'),
       '#path' => "roles/$role_nid/start-campaign",
@@ -404,7 +415,12 @@ function role($role_nid) {
         )),
         'html' => FALSE,
       ),
-    ),
+    );
+  }
+
+  return roles(array(
+    'content' => $content,
+    'page-actions' => $page_actions,
   ));
 }
 
@@ -432,6 +448,7 @@ function ipa($role_nid, $type) {
   }
 
   $node->type = $type;
+  $node->title = '';
   $node->field_role_back_ref['und'][0]['nid'] = $role_nid;
   node_object_prepare($node);
 
@@ -447,7 +464,8 @@ function ipa($role_nid, $type) {
       break;
   }
 
-  $html = drupal_render(drupal_get_form('item_form', $node, $role_nid));
+  $form = drupal_get_form('item_form', $node, $role_nid);
+  $html = drupal_render($form);
   $commands[] = ajax_command_invoke('.' . $sel_prefix . ' .add-link', 'hide');
   $commands[] = ajax_command_append('.' . $sel_prefix . ' .body', $html);
   $commands[] = ajax_command_invoke($focus_selector, 'focus');
@@ -730,7 +748,7 @@ function ipe_cancel_callback($form, $form_state) {
     }
 
     // The add commands
-    $commands[] = ajax_command_invoke('form.new.' . $node->type,'soft_remove');
+    $commands[] = ajax_command_invoke(".$new_type form.new." . $node->type, 'soft_remove');
     $commands[] = ajax_command_invoke(".$new_type .add-link",'slideDown');
 
   } else {
@@ -850,8 +868,12 @@ function role_ra($full_role, $display = 'edit') {
     'skills' => items_ra($full_role['skills'], 'skill', $role_nid, $display),
     'business' => items_ra($full_role['talents']['business'],
                                              'business', $role_nid, $display),
+   'business-help collapsed' => show_hide('All Business talents available',
+                          items_ra(get_all_talents('business'),'', 0, 'help')),
     'behavioral' => items_ra($full_role['talents']['behavioral'],
                                            'behavioral', $role_nid, $display),
+    'behavioral-help collapsed' => show_hide('All Behavioral talents available',
+                         items_ra(get_all_talents('behavioral'),'', 0, 'help')),
   ));
 }
 
@@ -948,7 +970,7 @@ function new_role_ra() {
 */
     'scratch-link' => array(
       '#type' => 'container',
-      '#attributes' => array('class' => array('scratch-link')),
+      '#attributes' => array('class' => array('btn')),
       '#theme' => 'link',
       '#text' => t('Start from scratch'),
       '#path' => "roles/new/nojs/scratch",
@@ -1049,6 +1071,8 @@ function test_callback() {
 
 
 
+
+
 // TODO: Transform to render array
 function autocomplete_items($full_role, $type, $string) {
   $rs = autocomplete_query($type, $string);
@@ -1059,10 +1083,10 @@ function autocomplete_items($full_role, $type, $string) {
 
     $add_item = TRUE;
 
-    // If a talent with the same exists already on the role,
-    // don't suggest it in the autocomplete list
 
     switch($type) {
+      // If a talent with the same exists already on the role,
+      // don't suggest it in the autocomplete list
       case 'business':
       case 'behavioral':
         // TODO: put this in the query
@@ -1073,7 +1097,9 @@ function autocomplete_items($full_role, $type, $string) {
           }
         }
         break;
+
       case 'skill':
+        // Only suggest skills belonging to a role of our own
         if(isset($node->field_role_back_ref['und'])) {
           $own_role_found = FALSE;
           foreach($node->field_role_back_ref['und'] as $role_ref) {
@@ -1103,11 +1129,15 @@ function autocomplete_items($full_role, $type, $string) {
     }
 
     if($add_item) {
-      $items[$item->nid] = drupal_render(autocomplete_item_ra($node,$string));
+      // Key on the uppercase title to avoid apparent duplicates (see #119)
+      // We assume the last we find is the correct one
+//      $items[$item->nid] = drupal_render(autocomplete_item_ra($node,$string));
+      $items[strtoupper($item->title)] = drupal_render(autocomplete_item_ra($node,$string));
     }
   }
 
-  if($type == 'skill' && count($items) == 0) {
+// This is not wished (See #)
+  if($type == 'skill' /*&& count($items) == 0*/) {
     $html = '<div class="new-empty">'
           . '<div class="element-hidden title">' . $string . '</div>'
           . '<span>' . t('Add new: ') . '</span>'
@@ -1117,8 +1147,6 @@ function autocomplete_items($full_role, $type, $string) {
 
   return $items;
 }
-
-
 
 
 

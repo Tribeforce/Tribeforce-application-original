@@ -1,13 +1,13 @@
 <?php
 // Copyright (c) 2013 Femi Veys
 
-$GLOBALS['tf_version'] = 'Beta 1.7';
+$GLOBALS['tf_version'] = 'Beta 1.8';
 
 function tf_common_menu() {
   $items['dashboard'] = array(
     'title' => 'Tribeforce Dashboard',
     'page callback' => 'dashboard',
-    'access arguments' => array('access content'),
+    'access arguments' => array('access tf_common'),
     'type' => MENU_CALLBACK,
   );
 
@@ -25,7 +25,8 @@ function tf_common_menu() {
 /*
 function tf_common_node_insert($node) {
   if($node->type === 'company') {
-    drupal_set_message('A company has just been created. Report EXACTLY what you were doing to Femi!!!', 'warning');
+    drupal_set_message('A company has just been created.
+    Report EXACTLY what you were doing to Femi!!!', 'warning');
     dpm($node);
   }
 }
@@ -50,10 +51,10 @@ function tf_common_permission() {
       'description' => t('Granted to roles that need to be able to access the
                                                      Tribeforce roles module.'),
     ),
-    'access tf_manage' => array(
-      'title' => t('Access Tribeforce Manage module'),
+    'access tf_feedback' => array(
+      'title' => t('Access Tribeforce Feedback module'),
       'description' => t('Granted to roles that need to be able to access the
-                                                    Tribeforce manage module.'),
+                                                    Tribeforce feedback module.'),
     ),
     'access tf_recruit' => array(
       'title' => t('Access Tribeforce Recruit module'),
@@ -64,6 +65,11 @@ function tf_common_permission() {
       'title' => t('Access Tribeforce Administration module'),
       'description' => t('Granted to roles that need to be able to access the
                                                    Tribeforce Admin module.'),
+    ),
+    'access tf_common' => array(
+      'title' => t('Access Tribeforce Dashboard'),
+      'description' => t('Granted to roles that need to be able to access the
+                                                   Tribeforce application.'),
     ),
   );
 }
@@ -305,9 +311,6 @@ function get_tf_page($module) {
  Render Arrays
 */
 
-
-
-
 function delayed_message_ra($ts, $url, $msg) {
   return array(
     '#type' => 'container',
@@ -387,9 +390,9 @@ function header_ra($with_main_menu) {
 
 function main_menu_ra() {
   $items = array(
-    'manage' => array(
-      'path' => 'manage',
-      'title' => t('Manage'),
+    'feedback' => array(
+      'path' => 'feedback',
+      'title' => t('Feedback'),
     ),
     'roles' => array(
       'path' => 'roles',
@@ -425,7 +428,8 @@ function main_menu_item_ra($key, $item) {
   // TODO: Make a generic status object
   if($key === 'recruit') {
     if(count(tf_get_my_roles()) === 0) {
-      drupal_set_message('Make sure you have roles defined to enjoy more functionality', 'warning');
+      drupal_set_message('Make sure you have roles defined to enjoy more
+                                                     functionality', 'warning');
       return array();
 
 /*
@@ -643,8 +647,6 @@ function flames_ra($node, $field_name) {
   $field_info = field_info_field($field_name);
   $number_of_flames = count($field_info['settings']['allowed_values']);
 
-//dpm($field_info);
-
   // The 4 flames
   for($i = 1; $i<=$number_of_flames; $i++) {
     $on = '';
@@ -667,6 +669,7 @@ function flames_ra($node, $field_name) {
 function items_ra($items, $type, $parent_nid = 0, $display = 'edit') {
   $body = array();
   $index = 0;
+
   foreach($items as $key => $item) {
     $position = array(
       'first'    => $index === 0 ? 'first' : '',
@@ -742,7 +745,8 @@ function item_ra($node_array,$display='edit',$position=array(),$parent_nid=0) {
         'class' => array(
           isset($node_array['node']->type) ? $node_array['node']->type : '',
           isset($node_array['node']->nid) ? 'nid-'.$node_array['node']->nid :'',
-          isset($node_array['user']->uid) ? 'user uid-'.$node_array['user']->uid :'',
+          isset($node_array['user']->uid) ? 'user uid-'
+                                                . $node_array['user']->uid : '',
           'index-' . $position['index'],
           $position['even_odd'],
           $position['first'],
@@ -809,6 +813,20 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
       )),
       'data' => array('#markup' => $node_array['user']->name),
     );
+    $ra['content']['edit'] = array(
+      '#theme' => 'link',
+      '#type' => 'container',
+      '#attributes' => array('class' => array('edit')),
+      '#text' => t('edit'),
+      '#path' => 'user/' . $node_array['user']->uid . '/edit',
+//      '#weight' => 20,
+      '#options' => array(
+        'attributes' => array('class' => array(
+          'btn',
+        )),
+        'html' => FALSE,
+      ),
+    );
   }
 
   // For NODES
@@ -827,13 +845,14 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             $ra['content']['edit'] = container_ra(array('edit' => array()));
             $ra['content']['title'] = field_view_title($node_array['node']);
             $ra['content']['categories'] = role_categories_ra(
-                                             $node_array['node']->field_category);
-            $ra['content']['body'] = field_view_field('node', $node_array['node'],
-                              'body', array('label' => 'hidden', 'weight' => 20));
+                                           $node_array['node']->field_category);
+            $ra['content']['body'] =field_view_field('node',$node_array['node'],
+                            'body', array('label' => 'hidden', 'weight' => 20));
             break;
           case 'person-details':
           case 'person-edit':
-            $path="manage/person/$parent_nid/unassign/". $node_array['node']->nid;
+            $path = "feedback/person/$parent_nid/unassign/"
+                  . $node_array['node']->nid;
             $ra['content']['title'] = array(
               '#type' => 'container',
               '#attributes' => array('class' => array('title')),
@@ -861,9 +880,10 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
               break;
             }
           case 'widget_old':
-            $path = "manage/person/$parent_nid/assign/". $node_array['node']->nid;
+            $path = "feedback/person/$parent_nid/assign/"
+                  . $node_array['node']->nid;
             $text = $node_array['node']->title
-                 .' ('.$node_array['node']->field_category['und'][0]['value'].')';
+               .' ('.$node_array['node']->field_category['und'][0]['value'].')';
             $ra['content']['title'] = array(
               '#type' => 'container',
               '#attributes' => array('class' => array('title')),
@@ -934,7 +954,7 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
       case 'skill':
         // Available displays: edit, person-details, widget
           $ra['content']['level'] = flames_ra($node_array['node'],
-                                                            'field_expert_level');
+                                                          'field_expert_level');
         if($display === 'edit') {
           $ra['content']['edit'] = container_ra(array('edit' => array()));
           $ra['content']['delete'] = container_ra(array('delete' => array()));
@@ -951,22 +971,26 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
       TALENTS
       *******/
       case 'talent':
-        if($display !== 'person-details') {
+        if($display !== 'person-details' && $display !== 'help') {
           $ra['content']['tas'] = container_ra(array('tas' => items_ra(
-                 $node_array['tas'], 'talent_attribute', $parent_nid, $display)));
+               $node_array['tas'], 'talent_attribute', $parent_nid, $display)));
         }
-        $ra['content']['body'] = field_view_field('node', $node_array['node'],
+        if($display !== 'help') {
+          $ra['content']['body'] = field_view_field('node', $node_array['node'],
                             'body', array('label' => 'hidden', 'weight' => 0 ));
+        }
         $ra['content']['title'] = field_view_title($node_array['node'], 0);
         if($display === 'edit') {
           $ra['content']['delete'] = container_ra(array('delete' => array()));
         }
-        $ra['content']['level'] = flames_ra($node_array['node'],
+        if($display !== 'help') {
+          $ra['content']['level'] = flames_ra($node_array['node'],
                                                              'field_cap_level');
+        }
         if($display === 'edit') {
           $ra['content']['save'] = container_ra(array('save' => array()));
           $ra['flame-links'] = get_flame_links($node_array['node'],
-                                                  'field_cap_level', $parent_nid);
+                                                'field_cap_level', $parent_nid);
           $ra['save-link'] = array(
             '#type' => 'container',
             '#attributes' => array('class' => array('save-link')),
@@ -1000,7 +1024,7 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
       PERSONS
       *******/
       case 'person':
-        if($display !== 'widget' && $display !== 'dnd') { // For performance reasons
+        if($display !== 'widget' && $display !== 'dnd') { // performance reasons
           $empty_roles = container_ra(array('empty' => array(
             '#markup' => t('No role added yet')
           )));
@@ -1017,18 +1041,23 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
 
         switch($display) {
           case 'widget':
-            $ra['content']['avatar']=field_view_field('node', $node_array['node'],
+            $ra['content']['avatar'] = field_view_field(
+              'node',
+              $node_array['node'],
               'field_avatar', array(
-              'label' => 'hidden',
-              'weight' => 0,
-              'settings' => array('image_style' => 'icon')));
+                'label' => 'hidden',
+                'weight' => 0,
+                'settings' => array('image_style' => 'icon'),
+              )
+            );
+            $path = "roles/$parent_nid/assign_to/" . $node_array['node']->nid;
             $ra['content']['full_name'] = array(
               '#type' => 'container',
               '#attributes' => array('class' => array('assign-to-link')),
               '#weight' => 10,
               '#theme' => 'link',
               '#text' => get_full_name($node_array['node']),
-              '#path' => "roles/$parent_nid/assign_to/" . $node_array['node']->nid,
+              '#path' => $path,
               '#options' => array(
                 'attributes' => array(),
                 'html' => FALSE,
@@ -1036,11 +1065,15 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             );
             break;
           case 'dnd':
-            $ra['content']['avatar']=field_view_field('node', $node_array['node'],
+            $ra['content']['avatar'] = field_view_field(
+              'node',
+              $node_array['node'],
               'field_avatar', array(
-              'label' => 'hidden',
-              'weight' => 0,
-              'settings' => array('image_style' => 'icon')));
+                'label' => 'hidden',
+                'weight' => 0,
+                'settings' => array('image_style' => 'icon'),
+              )
+            );
             $ra['content']['full_name'] = array(
               '#type' => 'container',
               '#attributes' => array('class' => array('field', 'full-name')),
@@ -1048,13 +1081,13 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
               'data' => array('#markup' => get_full_name($node_array['node'])),
             );
             break;
-          case 'manage':
-            $manage_btn = array(
+          case 'feedback':
+            $feedback_btn = array(
               '#theme' => 'link',
               '#type' => 'container',
-              '#attributes' => array('class' => array('manage')),
-              '#text' => t('Manage'),
-              '#path' => 'manage/person/' . $node_array['node']->nid,
+              '#attributes' => array('class' => array('feedback')),
+              '#text' => t('Feedback'),
+              '#path' => 'feedback/person/' . $node_array['node']->nid,
               '#weight' => 20,
               '#options' => array(
                 'attributes' => array('class' => array(
@@ -1067,17 +1100,21 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             $ra['content']['col-1'] = array(
               '#type' => 'container',
               '#attributes' => array('class' => array('col', 'col-1')),
-              'first_name' => field_view_field('node', $node_array['node'],
-                 'field_first_name', array('label' => 'hidden', 'weight' => -30)),
+              'first_name' => field_view_field(
+                'node',
+                $node_array['node'],
+                'field_first_name',
+                array('label' => 'hidden', 'weight' => -30)
+              ),
               'last_name' => field_view_title($node_array['node'], -20),
               'roles' => $roles,
               'email' => field_view_field('node', $node_array['node'],
-                        'field_email', array('label' => 'hidden', 'weight' => 5)),
+                      'field_email', array('label' => 'hidden', 'weight' => 5)),
               'phone' => field_view_field('node', $node_array['node'],
-                       'field_phone', array('label' => 'hidden', 'weight' => 10)),
-              'manage_btn' => $manage_btn,
+                     'field_phone', array('label' => 'hidden', 'weight' => 10)),
+              'feedback_btn' => $feedback_btn,
             );
-            $path = 'manage/person/' . $node_array['node']->nid.'/nojs/remark';
+            $path = 'feedback/person/' . $node_array['node']->nid.'/nojs/remark';
             $ra['content']['col-2'] = array(
               '#type' => 'container',
               '#attributes' => array('class' => array('col', 'col-2')),
@@ -1112,40 +1149,49 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             );
             break;
           case 'person-details':
-            $last_eval = end($node_array['evaluations']);
+//            $last_eval = end($node_array['evaluations']);
 
-            $ra['content']['avatar']=field_view_field('node', $node_array['node'],
-              'field_avatar', array(
+            $ra['content']['avatar'] = field_view_field(
+              'node',
+              $node_array['node'],
+              'field_avatar',
+              array(
                 'label' => 'hidden',
                 'weight' => -40,
-                'settings' => array('image_style' => 'medium'))
+                'settings' => array('image_style' => 'medium')
+              )
             );
             $ra['content']['edit'] = array(
               '#theme' => 'link',
               '#text' => t('Edit details'),
-              '#path' => 'manage/person/' . $node_array['node']->nid . "/edit",
+              '#path' => 'feedback/person/' . $node_array['node']->nid . "/edit",
               '#options' => array(
-                'attributes' => array('class'=>array('btn','edit','btn-primary')),
+                'attributes' => array('class' => array(
+                  'btn',
+                  'edit',
+                  'btn-primary',
+                )),
                 'html' => FALSE,
               ),
               '#weight' => -35,
             );
             $ra['content']['first_name'] = field_view_field('node',
               $node_array['node'], 'field_first_name',
-                                     array('label' => 'hidden', 'weight' => -30));
-            $ra['content']['last_name']=field_view_title($node_array['node'],-20);
+                                   array('label' => 'hidden', 'weight' => -30));
+            $ra['content']['last_name'] = field_view_title
+                                                     ($node_array['node'], -20);
             $ra['content']['roles'] = $roles;
             $ra['content']['birth_date'] = field_view_field('node',
               $node_array['node'], 'field_birth_date', array('weight' => -6));
             $ra['content']['hire_date'] = field_view_field('node',
               $node_array['node'], 'field_hire_date', array('weight' => -3));
             $ra['content']['hire_date']['#formatter'] = 'short_date';
-  //          $ra['content']['evaluations'] = items_ra($node_array['evaluations'],
-  //                                         'evaluation', $parent_nid, $display);
-            if(!empty($last_eval)) {
-              $ra['content']['last_eval'] = item_ra($last_eval, $display, array(),
-                                                        $node_array['node']->nid);
-            }
+            $ra['content']['evaluations'] = items_ra($node_array['evaluations'],
+                                         'evaluation', $parent_nid, $display);
+#            if(!empty($last_eval)) {
+#              $ra['content']['last_eval'] = item_ra($last_eval, $display,
+#                                             array(), $node_array['node']->nid);
+#            }
             $ra['add_evaluation'] = array(
               '#type' => 'container',
               '#attributes' => array(
@@ -1153,7 +1199,7 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
               ),
               '#theme' => 'link',
               '#text' => t('Add a new evaluation'),
-              '#path' => 'manage/evaluate/' . $node_array['node']->nid,
+              '#path' => 'feedback/evaluate/' . $node_array['node']->nid,
               '#options' => array(
                 'attributes' => array('class' => array('btn', 'btn-primary')),
                 'html' => FALSE,
@@ -1164,7 +1210,7 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             if($node_array['ass']->type === 'interview') {
               $title = field_view_title(get_campaign($node_array['ass']), -10);
             } else {
-              $title = container_ra(array('field-name-title' => t('Evaluation')));
+              $title = container_ra(array('field-name-title'=>t('Evaluation')));
             }
             $ra['content']['col-1'] = array(
               '#type' => 'container',
@@ -1174,9 +1220,9 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
                 'full_name' => container_ra(array(
                   'field-name-full-name' => get_full_name($node_array['node']),
                 'email' => field_view_field('node',$node_array['node'],
-                        'field_email', array('label' => 'hidden', 'weight' => 5)),
+                      'field_email', array('label' => 'hidden', 'weight' => 5)),
                 'phone' => field_view_field('node',$node_array['node'],
-                       'field_phone', array('label' => 'hidden', 'weight' => 10)),
+                     'field_phone', array('label' => 'hidden', 'weight' => 10)),
                 )),
               ),
             );
@@ -1184,9 +1230,11 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             // AJAX call to update the screen with the changed data
             // Otherwise, nothing should happen
             if($node_array['ass']->type === 'interview') {
-              $campaign_nid = $node_array['ass']->field_campaign_ref['und'][0]['nid'];
+              $campaign_nid =
+                        $node_array['ass']->field_campaign_ref['und'][0]['nid'];
               $candidate_nid = $node_array['node']->nid;
-              $path = "recruit/$campaign_nid/nojs/candidate/$candidate_nid/update";
+              $path =
+                   "recruit/$campaign_nid/nojs/candidate/$candidate_nid/update";
               $done = array(
                 '#theme' => 'link',
                 '#text' => t('Done'),
@@ -1209,13 +1257,13 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
                   '#attributes' => array('class' => array('date'),),
                   'data' => array(
                     '#markup' => format_date($node_array['ass']->created,
-                                                                    'short_date'),
+                                                                  'short_date'),
                   ),
                 ),
                 'cv fake' => field_view_field('node', $node_array['node'],
-                                                                      'field_cv'),
-                'motivation fake' => field_view_field('node', $node_array['node'],
-                                                              'field_motivation'),
+                                                                    'field_cv'),
+                'motivation fake' => field_view_field('node',
+                                       $node_array['node'], 'field_motivation'),
                 'done'=> $done,
               )),
             );
@@ -1237,7 +1285,7 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
           '#type' => 'container',
           '#attributes' => array('class' => array('date'),),
           'data' => array(
-            '#markup' => format_date($node_array['node']->changed, 'short_date'),
+            '#markup' => format_date($node_array['node']->changed,'short_date'),
           ),
           '#weight' => 10,
         );
@@ -1246,8 +1294,8 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
           '#attributes' => array('class' => array('edit')),
           '#theme' => 'link',
           '#text' => t('edit'),
-          '#path' => "manage/person/$parent_nid/nojs/remark/1/"
-                                                       . $node_array['node']->nid,
+          '#path' => "feedback/person/$parent_nid/nojs/remark/1/"
+                                                     . $node_array['node']->nid,
           '#options' => array(
             'attributes' => array('class' => array(
               'use-ajax',
@@ -1264,6 +1312,12 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
       EVALUATIONS
       ***********/
       case 'evaluation':
+        $eval_scores = get_evaluation_scores($node_array['node']);
+        if(count($eval_scores) === 0) {
+          $avg_score = 0;
+        } else {
+          $avg_score = round(array_sum($eval_scores) / count($eval_scores), 1);
+        }
         $ra['content']['title'] = array(
           '#type' => 'container',
           '#attributes' => array('class' => array('title')),
@@ -1277,12 +1331,19 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
             'html' => FALSE,
           ),
         );
+        $ra['content']['score'] = array(
+          '#type' => 'container',
+          '#attributes' => array('class' => array('score')),
+          'data' => array(
+            '#markup' => $avg_score,
+          ),
+       );
   /*
         $ra['content']['date'] = array(
           '#type' => 'container',
           '#attributes' => array('class' => array('date'),),
           'data' => array(
-            '#markup' => format_date($node_array['node']->changed, 'short_date'),
+           '#markup' => format_date($node_array['node']->changed, 'short_date'),
           ),
           '#weight' => 10,
         );
@@ -1307,7 +1368,7 @@ function persons_ra($person_types, $parent_nid, $display) {
   // Define what types should be shown
   $show_array = array(1, 2, 3, 4);
   switch($display) {
-    case 'manage':
+    case 'feedback':
       $show_array = array(2, 3, 4);
       break;
     case 'widget':
@@ -1436,7 +1497,8 @@ function get_items_to_assess($role_nids, $type) {
     // Loop over the skills
     foreach($full_role['skills'] as $item) {
       if($type === 'evaluation' || !empty($item['node']->field_assess)) {
-        if($type === 'evaluation' || $item['node']->field_assess[$lang][0]['value'] == 1) {
+        if($type === 'evaluation'
+        || $item['node']->field_assess[$lang][0]['value'] == 1) {
           $items['nid-' . $item['node']->nid] = $item['node'];
         }
       }
@@ -1446,7 +1508,8 @@ function get_items_to_assess($role_nids, $type) {
     foreach($full_role['talents']['business'] as $talent) {
       foreach($talent['tas'] as $item) {
         if($type === 'evaluation' || !empty($item['node']->field_assess)) {
-          if($type === 'evaluation' || $item['node']->field_assess[$lang][0]['value'] == 1) {
+          if($type === 'evaluation'
+          || $item['node']->field_assess[$lang][0]['value'] == 1) {
             $items['nid-' . $item['node']->nid] = $item['node'];
           }
         }
@@ -1457,7 +1520,8 @@ function get_items_to_assess($role_nids, $type) {
     foreach($full_role['talents']['behavioral'] as $talent) {
       foreach($talent['tas'] as $item) {
         if($type === 'evaluation' || !empty($item['node']->field_assess)) {
-          if($type === 'evaluation' || $item['node']->field_assess[$lang][0]['value'] == 1) {
+          if($type === 'evaluation'
+          || $item['node']->field_assess[$lang][0]['value'] == 1) {
             $items['nid-' . $item['node']->nid] = $item['node'];
           }
         }

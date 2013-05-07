@@ -4,22 +4,22 @@
 
 // Very useful: http://drupal.org/project/1158878
 
-function tf_manage_init() {
+function tf_feedback_init() {
   drupal_add_library('system', 'ui.draggable');
 }
 
-function tf_manage_menu() {
+function tf_feedback_menu() {
   $items = array();
 
-  $items['manage'] = array(
-    'title' => 'Manage',
+  $items['feedback'] = array(
+    'title' => 'Feedback',
     'type' => MENU_CALLBACK,
-    'page callback' => 'manage',
+    'page callback' => 'feedback',
     'file' => 'overview.inc',
-    'access arguments' => array('access tf_manage'),
+    'access arguments' => array('access tf_feedback'),
   );
 
-  $items['manage/person'] = array(
+  $items['feedback/person'] = array(
     'title' => t('Person Details'),
     'type' => MENU_CALLBACK,
     'page callback' => 'person_details',
@@ -28,7 +28,7 @@ function tf_manage_menu() {
     'access arguments' => array(2),
   );
 
-  $items['manage/evaluate'] = array(
+  $items['feedback/evaluate'] = array(
     'title' => 'Evaluate',
     'type' => MENU_CALLBACK,
     'page callback' => 'add_evaluation',
@@ -38,7 +38,7 @@ function tf_manage_menu() {
     'access arguments' => array(2),
   );
 
-  $items['manage/person/%/edit'] = array(
+  $items['feedback/person/%/edit'] = array(
     'title' => t('Edit Person'),
     'type' => MENU_CALLBACK,
     'page callback' => 'person_edit',
@@ -49,7 +49,7 @@ function tf_manage_menu() {
     'access arguments' => array(2),
   );
 
-  $items['manage/person/%/ajax/remark'] = array( // %5 is redirect type
+  $items['feedback/person/%/ajax/remark'] = array( // %5 is redirect type
     'title' => 'Add remark',
     'type' => MENU_CALLBACK,
     'page callback' => 'edit_remark',
@@ -61,7 +61,7 @@ function tf_manage_menu() {
   );
 
   // Assign role to person link
-  $items['manage/person/%/assign/%'] = array(
+  $items['feedback/person/%/assign/%'] = array(
     'page callback' => 'assign_role_to',
     'page arguments' => array(2, 4),
     'type' => MENU_CALLBACK,
@@ -70,7 +70,7 @@ function tf_manage_menu() {
   );
 
   // Unassign role from person link
-  $items['manage/person/%/unassign/%'] = array(
+  $items['feedback/person/%/unassign/%'] = array(
     'page callback' => 'unassign_role',
     'page arguments' => array(2, 4),
     'type' => MENU_CALLBACK,
@@ -88,6 +88,38 @@ function tf_manage_menu() {
  Queries
 */
 // TODO: Improve performance
+// TODO: Make Campaign as parameter instead of role (=add join)
+function query_evaluation_scores($evaluation) {
+  $query = db_select('node', 'i'); // interpretation
+
+  $query->leftJoin('field_data_field_ass_item_ref', 'ai', // skill or ta (assessment item)
+                         'i.nid = ai.entity_id');
+  $query->leftJoin('field_data_field_parent_ref', 'e', // evaluation
+                     'i.nid = e.entity_id');
+  $query->leftJoin('field_data_field_score', 'sc', // score
+                     'i.nid = sc.entity_id');
+  $query->condition('e.field_parent_ref_nid', $evaluation->nid)
+        ->fields('i', array('title','changed'));
+  $query->addField('e', 'field_parent_ref_nid', 'e_nid');
+  $query->addField('sc', 'field_score_value', 'score');
+  $query->addField('ai', 'field_ass_item_ref_nid', 'ai_nid');
+
+  return $query->execute();
+}
+
+
+function get_evaluation_scores($evaluation) {
+  $scores = array();
+
+  $eval_scores = query_evaluation_scores($evaluation);
+  foreach($eval_scores as $row) {
+    $scores["nid-" . $row->ai_nid] = $row->score;
+  }
+
+  return $scores;
+}
+
+
 function get_enriched_persons() {
   $enriched_persons = array();
   $person_types = tf_get_my_persons();
@@ -202,7 +234,7 @@ function assign_role_to($person_nid, $role_nid) {
 
   node_save($person);
 
-  drupal_goto("manage/person/$person_nid/edit");
+  drupal_goto("feedback/person/$person_nid/edit");
 }
 
 function unassign_role($person_nid, $role_nid) {
@@ -219,13 +251,13 @@ function unassign_role($person_nid, $role_nid) {
 
   node_save($person);
 
-  drupal_goto("manage/person/$person_nid/edit");
+  drupal_goto("feedback/person/$person_nid/edit");
 }
 
 
 // Fix default image bug
 // See http://drupal.org/node/1438940
-function tf_manage_file_download($uri) {
+function tf_feedback_file_download($uri) {
   if (strpos($uri, "default_images") > 0) {
     // Check that the file exists and is an image.
     if ($info = image_get_info($uri)) {

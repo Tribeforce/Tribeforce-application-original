@@ -5,7 +5,7 @@
 /******
  Forms
 ******/
-function tf_manage_remark_form($form, &$form_state, $node, $redirect) {
+function tf_feedback_remark_form($form, &$form_state, $node, $redirect) {
   $is_new = empty($node->nid);
 
   return array(
@@ -40,7 +40,7 @@ function tf_manage_remark_form($form, &$form_state, $node, $redirect) {
 /***************
  Form submits
 ***************/
-function tf_manage_remark_form_submit($form, &$form_state) {
+function tf_feedback_remark_form_submit($form, &$form_state) {
   // Get the node from the build_info variables in the form_state
   $remark = $form_state['build_info']['args'][0];
   $redirect = $form_state['build_info']['args'][1];
@@ -66,16 +66,16 @@ function tf_manage_remark_form_submit($form, &$form_state) {
 /***************
  Page callbacks
 ***************/
-function manage($regions = array()) {
+function feedback($regions = array()) {
   $my_people = get_enriched_persons();
   tf_help_msg(t('Hover over a person to add a remark or change details'));
 
   $empty_regions = array(
     'left-sidebar' => array(),
-    'content' => manage_overview_ra($my_people),
+    'content' => feedback_overview_ra($my_people),
   );
 
-  return tf_module('manage', $empty_regions, $regions);
+  return tf_module('feedback', $empty_regions, $regions);
 }
 
 
@@ -87,14 +87,14 @@ function edit_remark($person_nid, $redirect = 0, $remark_nid = FALSE) {
   $remark = node_load($remark_nid);
   $enriched_person = get_enriched_person(array('node' => $person));
 
-  show_overlay(tf_manage_edit_remark_ra($enriched_person, $redirect, $remark));
+  show_overlay(tf_feedback_edit_remark_ra($enriched_person, $redirect, $remark));
 }
 
 /***************
  Render Arrays
 ***************/
-function manage_overview_ra($people) {
-  $persons_types = persons_ra($people, 0, 'manage');
+function feedback_overview_ra($people) {
+  $persons_types = persons_ra($people, 0, 'feedback');
 
   // Translate the LOV
   $lov = list_allowed_values(field_info_field('field_person_type'));
@@ -109,7 +109,7 @@ function manage_overview_ra($people) {
 
   $tab_pane = tabs_widget_ra($tabs, $panes);
 
-  return container_ra(array('manage-overview' => $tab_pane));
+  return container_ra(array('feedback-overview' => $tab_pane));
 
 }
 
@@ -147,20 +147,20 @@ function edit_remark_ra($enriched_person, $redirect = 0, $remark = FALSE) {
   );
 
   // TODO: Solve this in a proper way
-  $redirect = $redirect == 0 ? 'manage'
-                             : "manage/person/" . $enriched_person['node']->nid;
+  $redirect = $redirect == 0 ? 'feedback'
+                             : "feedback/person/" . $enriched_person['node']->nid;
 
   return array(
     '#type' => 'container',
     '#attributes' => array('class' => array('edit-remark')),
-    'form' => drupal_get_form('tf_manage_remark_form', $remark, $redirect),
+    'form' => drupal_get_form('tf_feedback_remark_form', $remark, $redirect),
     'attached_to' => dropdown_widget_ra('attached-to', $attached_to_title,
                                                                      $dropdown),
   );
 }
 
 
-function tf_manage_edit_remark_ra($enriched_person, $redirect=0, $remark=FALSE){
+function tf_feedback_edit_remark_ra($enriched_person, $redirect=0, $remark=FALSE){
   $ra = array(
     'add_remark' => array(
       '#type' => 'container',
@@ -171,12 +171,12 @@ function tf_manage_edit_remark_ra($enriched_person, $redirect=0, $remark=FALSE){
         'full-name' => container_ra(array(
           'full-name' => get_full_name($enriched_person['node'])
         )),
-        'manage' => array(
+        'feedback' => array(
           '#theme' => 'link',
           '#type' => 'container',
-          '#attributes' => array('class' => array('manage')),
-          '#text' => t('Manage'),
-          '#path' => 'manage/person/' . $enriched_person['node']->nid,
+          '#attributes' => array('class' => array('feedback')),
+          '#text' => t('Feedback'),
+          '#path' => 'feedback/person/' . $enriched_person['node']->nid,
           '#options' => array(
             'attributes' => array('class' => array(
   //            'btn',
@@ -216,6 +216,6 @@ function add_person() {
   // It has something to do with the avatar that doesn't exist for a new person
   $person->field_avatar = get_default_avatar();
 
-  module_load_include('inc', 'tf_manage', 'person_edit');
-  return tf_manage_person_edit_ra($person, 'add');
+  module_load_include('inc', 'tf_feedback', 'person_edit');
+  return tf_feedback_person_edit_ra($person, 'add');
 }

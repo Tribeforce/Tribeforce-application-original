@@ -137,8 +137,8 @@ function add_candidate($campaign_nid, $candidate) {
     'original_nid' => $campaign_nid,
   );
 
-  module_load_include('inc', 'tf_manage', 'person_edit');
-  return tf_manage_person_edit_ra($candidate, 'candidate', $extra);
+  module_load_include('inc', 'tf_feedback', 'person_edit');
+  return tf_feedback_person_edit_ra($candidate, 'candidate', $extra);
 }
 
 
@@ -281,6 +281,8 @@ function candidate_inner_ra($campaign_nid, $person) {
                                   array('label' => 'hidden', 'weight' => 20)),
     'phone' => field_view_field('node', $person, 'field_phone',
                                   array('label' => 'hidden', 'weight' => 30)),
+    'birth_date' => field_view_field('node', $person, 'field_birth_date',
+                                  array('label' => 'hidden', 'weight' => 40)),
     'edit-link' => array(
       '#type' => 'container',
       '#attributes' => array('class' => array('edit-link')),
@@ -671,7 +673,7 @@ function interview_question_ra($interview_item, $interpretation = NULL,
 
     ),
     'callapse-container' => container_ra(array(
-      'more' => array('#markup' => t('more')),
+//      'more' => array('#markup' => t('more')),
       'answer-body' => array(
         'col1' => $col1,
         'col2' => $col2,
@@ -686,14 +688,13 @@ function interview_question_ra($interview_item, $interpretation = NULL,
 /*
 Helpers
 */
-
 // TODO: do real calculation
 function get_categorized_scores($role, $candidates) {
   $categorized_scores = array();
 
   // Fill the array with all values in the right order to be able to take
   // an average
-  foreach(get_scores($role, $candidates) as $type_key => $type) {
+  foreach(get_interview_scores($role, $candidates) as $type_key => $type) {
     foreach($type as $item_key => $item) {
       foreach($item as $can_key => $candidate) {
         switch($type_key) {

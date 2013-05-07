@@ -15,10 +15,10 @@ function person_details($nid) {
 
   $empty_regions = array(
     'left-sidebar' => array(),
-    'content' => tf_manage_person_details_ra($enriched_person),
+    'content' => tf_feedback_person_details_ra($enriched_person),
   );
 
-  return tf_module('manage', $empty_regions, $regions);
+  return tf_module('feedback', $empty_regions, $regions);
 }
 
 
@@ -26,14 +26,14 @@ function person_details($nid) {
 /***************
  Render Arrays
 ***************/
-function tf_manage_person_details_ra($enriched_person) {
+function tf_feedback_person_details_ra($enriched_person) {
   $tabs = array(
     'remarks' => array('#markup' => t('Remarks')),
     'skills' => array('#markup' => t('Skills')),
     'talents' => array('#markup' => t('Talents')),
   );
 
-  module_load_include('inc', 'tf_manage', 'overview');
+  module_load_include('inc', 'tf_feedback', 'overview');
   $remarks_pane = container_ra(array(
     'new' => add_remark_ra($enriched_person),
     'list' => empty($enriched_person['remarks']) ? array() :
@@ -89,6 +89,6 @@ function add_evaluation($person_nid) {
 
   prepare_interpretations($role_nids, $evaluation);
 
-  $next = "manage/person/$person_nid";
+  $next = "feedback/person/$person_nid";
   drupal_goto($next);
 }

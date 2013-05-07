@@ -3,9 +3,9 @@
 
 // Using the closure to map jQuery to $.
 (function ($) {
-  Drupal.behaviors.manage = {
+  Drupal.behaviors.feedback = {
     attach: function (context, settings) {
-      var o = 'once-manage';
+      var o = 'once-feedback';
 
       /*
       Bind Events
@@ -29,7 +29,7 @@
       Main
       ****/
       // Make remarks in the person details draggable
-//      $('.page-manage-person .remark').draggable();
+//      $('.page-feedback-person .remark').draggable();
 
 
       /**********
@@ -91,9 +91,10 @@
       $('.field-type-file .error').each(function() {
         var prefix = 'field-name-field-';
         var type = '';
+        var i;
 
         $origin = $(this).parents('div[class*="' + prefix + '"]');
-        for(var i = 0; i < file_fields.length; i++) {
+        for(i = 0; i < file_fields.length; i++) {
           if($origin.hasClass(prefix+file_fields[i])) {
             type = file_fields[i];
             break;

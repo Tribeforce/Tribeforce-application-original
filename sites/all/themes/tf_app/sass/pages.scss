@@ -525,7 +525,7 @@ h2, h3 {
       padding: 150px 0 0 0;
       height: 30px;
 
-      &.manage {
+      &.feedback {
         background-position: -784px -325px;
         &:hover {
           background-position: -977px -325px;
@@ -541,6 +541,13 @@ h2, h3 {
         background-position: -782px -149px;
         &:hover {
           background-position: -973px -149px;
+        }
+      }
+      &.tf_admin {
+        background: url(../images/admin_grey) no-repeat center 5px;
+        background-size: 140px;
+        &:hover {
+          background-image: url(../images/admin_orange);
         }
       }
     }
@@ -859,7 +866,7 @@ $motivation_position: -1200px -204px;
 
 .tf-module {
   &.recruit,
-  &.manage { // Needed to add for all modules usingthe slide pane
+  &.feedback { // Needed to add for all modules usingthe slide pane
 //    position: relative;
 //    overflow: hidden;
   }
@@ -958,7 +965,11 @@ $motivation_position: -1200px -204px;
       width: auto;
       padding: 0;
 
-      .more,
+      .header {
+        cursor: pointer;
+      }
+
+//      .more,
       .less {
         @include icon;
         height: 16px;
@@ -979,20 +990,20 @@ $motivation_position: -1200px -204px;
         margin-top: -30px;
       }
 
-      .more {
-        background-position: -35px -522px;
-        width: $more_width;
-        display: none;
-        text-indent: 0px;
-      }
+//      .more {
+//        background-position: -35px -522px;
+//        width: $more_width;
+//        display: none;
+//        text-indent: 0px;
+//      }
 
       &.collapsed {
         .less {
           display: none;
         }
-        .more {
-          display: block;
-        }
+//        .more {
+//          display: block;
+//        }
       }
 
       .done {
@@ -1013,7 +1024,6 @@ $motivation_position: -1200px -204px;
       &.done .done {
         display: block;
       }
-70%
 
       .field-name-title {
         cursor: pointer;
@@ -1476,10 +1486,10 @@ $c_margin: 8px;
 
     .selected,
     .not-selected {
-      height: $icon_width;
+      height: 2*$icon_width;
       overflow: hidden;
       font-size: 12px;
-      line-height: 1em;
+      line-height: 2*$icon_width;
     }
 
     .not-selected {
@@ -1487,16 +1497,16 @@ $c_margin: 8px;
     }
 
     .data {
-//      width: 210px;
       position: relative;
       padding: $c_margin;
       margin-left: $left;
       margin-right: $icon_width;
-      height: 3 * $icon_width - 2 * $c_margin;
+      height: 4 * $icon_width - 2 * $c_margin;
     }
 
     .buttons {
       width: $icon_width;
+      height: 4*$icon_width;
       position: absolute;
       top: 0;
       right: 0;
@@ -1525,7 +1535,7 @@ $c_margin: 8px;
     .graph {
       margin-left: $icon_width;
       width: 285px;
-      height: 3 * $icon_width;
+      height: 4 * $icon_width;
       background-color: #fff;
       @include shadow;
       @include border-right-radius;
@@ -1824,9 +1834,9 @@ $c_margin: 8px;
 
 
 /*
- * Manage overview
+ * Feedback overview
  */
-.manage-overview {
+.feedback-overview {
   .person {
     $right_col: 120px;
     $num_col: 3;
@@ -1865,7 +1875,7 @@ $c_margin: 8px;
       }
     }
 
-    .manage,
+    .feedback,
     .remark-btn,
     .num-remarks {
       position: absolute;
@@ -1885,7 +1895,7 @@ $c_margin: 8px;
       background-color: #fff;
     }
 
-    .manage {
+    .feedback {
       left: 0;
       width: 100%;
     }
@@ -1896,7 +1906,7 @@ $c_margin: 8px;
     }
 
     .remark-btn,
-    .manage,
+    .feedback,
     .num-remarks {
       display: none;
     }
@@ -1904,7 +1914,7 @@ $c_margin: 8px;
     &:hover {
       border-color: $orange_dark;
       .remark-btn,
-      .manage,
+      .feedback,
       .num-remarks {
         display: block;
       }
@@ -1936,7 +1946,7 @@ $c_margin: 8px;
 
 
 
-.manage .roles {
+.feedback .roles {
   margin-top: $gutter-width;
 }
 
@@ -1986,7 +1996,7 @@ $c_margin: 8px;
   .full-name {
     text-transform: uppercase;
   }
-  .manage {
+  .feedback {
     position: absolute;
     top: 0;
     right: $icon_width;
@@ -2146,7 +2156,7 @@ form.skill {
 }
 
 .show,
-.collapsed .body,
+.init-collapsed .body,
 .collapsed .hide {
   display: none;
 }
@@ -2370,6 +2380,30 @@ form.skill {
 //      margin-bottom: 1px;
     }
   }
+
+  .business-help,
+  .behavioral-help {
+    font-size: 70%;
+    .show-hide-header {
+      border: 0;
+      .title {
+        font-size: 100%;
+        padding-left: $gutter-pct;
+      }
+      .show,
+      .hide {
+        display: none;
+      }
+    }
+    .talent {
+      float: left;
+      clear: none;
+      background-color: transparent;
+      border: 0;
+      padding-top: 0;
+      padding-right: 0;
+    }
+  }
 }
 
 
@@ -2482,13 +2516,19 @@ Person Details
 
 
 
-  .evaluation.first.last {
-    margin: 4*$gutter-width 0 2*$gutter-width 0;
+  .evaluation {
+//    margin: 4*$gutter-width 0 2*$gutter-width 0;
+    margin-top: $gutter-width;
     position: relative;
+    overflow: hidden;
     .title {
-      text-align: right;
+      float: left;
+    }
+    .score {
+      float: right;
     }
     a {
+      padding-left: $icon_width;
       display: block;
       background: url(../images/calendar.png) no-repeat;
       background-size: auto 100%;
@@ -2595,7 +2635,8 @@ Person Edit
     .edit {
       cursor: pointer;
       position: absolute;
-      right: 0;
+//      left: 2*$gutter-pct;
+      right: 2*$gutter-pct;
       bottom: 0;
       display: none;
     }
@@ -2640,15 +2681,16 @@ Person Edit
       background-color: white;
       background-color: rgba(255,255,255,.8);
       color: $black;
-      height: 10%;
-      width: 100%;
+      height: 20px;
+      line-height: 20px;
       padding: 10% 0;
       text-align: center;
-      bottom: 2*$gutter-width;
+      bottom: 3*$gutter-pct;
     }
     .remove {
-      top: 0;
+      top: 2*$gutter-pct;
       height: 20px;
+      line-height: 20px;
       padding: 0;
     }
   }
@@ -2727,7 +2769,7 @@ Person Edit
 }
 
 .candidates-page,
-.manage {
+.feedback {
   .person-edit {
     .col-1 {
       width: 28%;
@@ -2749,7 +2791,7 @@ Person Edit
   @include border-radius;
   background-color: #fff;
   padding: $gutter-pct;
-  margin-bottom: 2*$gutter-width;
+  margin-bottom: 2*$gutter-pct;
   img {
     width: 100%;
   }
@@ -2761,7 +2803,6 @@ Person Edit
   .tf-region.content > div,
   .new {
     clear: both;
-//    overflow: hidden;
   }
   .person,
   .role,
@@ -2773,6 +2814,10 @@ Person Edit
     float: left;
     @include shadow;
     @include border-radius;
+    &:hover {
+      @include box-shadow(0px 2px 2px 2px $orange_light_t);
+      cursor: move;
+    }
   }
   .person {
     .field {
@@ -2790,6 +2835,16 @@ Person Edit
       margin-left: $gutter-pct;
     }
   }
+
+  .admins .user {
+    .name {
+      float: left;
+    }
+    .edit {
+      float: right;
+    }
+  }
+
 
   .companies {
     .item {
