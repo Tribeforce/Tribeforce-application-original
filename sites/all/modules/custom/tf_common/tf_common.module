@@ -7,7 +7,7 @@ function tf_common_menu() {
   $items['dashboard'] = array(
     'title' => 'Tribeforce Dashboard',
     'page callback' => 'dashboard',
-    'access arguments' => array('access tf_common'),
+    'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
 
