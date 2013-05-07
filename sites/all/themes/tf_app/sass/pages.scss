@@ -544,10 +544,10 @@ h2, h3 {
         }
       }
       &.tf_admin {
-        background: url(../images/admin_grey) no-repeat center 5px;
+        background: url(../images/admin_grey.png) no-repeat center 5px;
         background-size: 140px;
         &:hover {
-          background-image: url(../images/admin_orange);
+          background-image: url(../images/admin_orange.png);
         }
       }
     }

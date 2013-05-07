@@ -644,12 +644,12 @@ h2, h3 {
 }
 /* line 546, ../sass/pages.scss */
 .page-dashboard .tf-region.content > .tabs a.tf_admin {
-  background: url(../images/admin_grey) no-repeat center 5px;
+  background: url(../images/admin_grey.png) no-repeat center 5px;
   background-size: 140px;
 }
 /* line 549, ../sass/pages.scss */
 .page-dashboard .tf-region.content > .tabs a.tf_admin:hover {
-  background-image: url(../images/admin_orange);
+  background-image: url(../images/admin_orange.png);
 }
 
 /*
