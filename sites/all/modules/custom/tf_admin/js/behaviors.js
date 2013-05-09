@@ -12,16 +12,19 @@
 
       $('.tf-module.admin .companies .item').droppable({
         drop: function( event, ui ) {
-          // Get the IDs
+          // Get the IDs and set the default type
           var item_id = Drupal.behaviors.tf_common.get_id_in_classes(ui.draggable.attr('class'));
           var to_company_nid = Drupal.behaviors.tf_common.get_id_in_classes($(this).attr('class'));
           var from_company_nid = Drupal.behaviors.tf_common.get_id_in_classes(
                      $(this).parent().find('a.active').parent().attr('class'));
+          var item_type = 'node';
 
           // Get the title: it is different for all types we support
           var item_title = 'item'; // default title
 
+
           if(ui.draggable.hasClass('user')) {
+            item_type = 'user';
             item_title = ui.draggable.find('.name').html();
           } else if(ui.draggable.hasClass('person')) {
             item_title = ui.draggable.find('.full-name').html();
@@ -37,7 +40,8 @@
                   + from_company + '" to "' + to_company + '"';
 
           $.ajax({
-            url: '/tf_admin/move/' + item_id
+            url: '/tf_admin/move/' + item_type
+                             + '/' + item_id
                              + '/' + from_company_nid
                              + '/' + to_company_nid
           });
