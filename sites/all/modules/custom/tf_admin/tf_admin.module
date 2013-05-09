@@ -61,6 +61,11 @@ function tf_admin_company($company_nid) {
   ));
 }
 
+
+
+/******************
+ * Queries *
+ * ****************/
 function get_full_company($company_nid) {
   $full_company = array(
     'node' => array(),
@@ -138,6 +143,23 @@ function tf_admin_move($item_id, $from_nid, $to_nid) {
     // Change the backlink on the USER
     $item->field_company_ref = array('und' => array(array('nid' => $to_nid)));
     user_save($item);
+
+/*
+    $edit = array(
+      'field_company_ref' => array(
+        'und' => array(
+          0 => array(
+            'nid' => $to_nid,
+          ),
+        ),
+      ),
+    );
+    $fff = user_save($item, $edit);
+*/
+
+//    dpm($item);
+//    $fff = user_save($item);
+
 
   } else { // NODE
     switch($item->type) {
@@ -220,12 +242,12 @@ function company_form_submit($form_id, &$form_state) {
 }
 
 
-
+/*
 function tf_admin_form_alter(&$form, &$form_state, $form_id) {
   $company_nid = basename($form_state['redirect']);
   $form['field_company_ref']['und']['#default_value'] = $company_nid;
 }
-
+*/
 
 
 /******************

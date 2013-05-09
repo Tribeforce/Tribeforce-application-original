@@ -868,11 +868,11 @@ function role_ra($full_role, $display = 'edit') {
     'skills' => items_ra($full_role['skills'], 'skill', $role_nid, $display),
     'business' => items_ra($full_role['talents']['business'],
                                              'business', $role_nid, $display),
-   'business-help collapsed' => show_hide('All Business talents available',
+   'business-help collapsed' => show_hide('Display all available Business talents',
                           items_ra(get_all_talents('business'),'', 0, 'help')),
     'behavioral' => items_ra($full_role['talents']['behavioral'],
                                            'behavioral', $role_nid, $display),
-    'behavioral-help collapsed' => show_hide('All Behavioral talents available',
+    'behavioral-help collapsed' => show_hide('Display all available Behavioral talents',
                          items_ra(get_all_talents('behavioral'),'', 0, 'help')),
   ));
 }
