@@ -487,6 +487,21 @@ h2, h3 {
 
 
 
+.tooltip {
+  position: relative;
+  &:hover:after {
+   content: attr(data-tooltip);
+   position: absolute;
+   right: 0;
+   top: -20px;
+   height: 16px;
+   padding: 2px 5px;
+   background: $grey_dark;
+   color: #fff;
+   line-height: 16px;
+  }
+}
+
 
 /*
  * Dashboard
@@ -587,6 +602,19 @@ $motivation_position: -1200px -204px;
       .logout .icon {
         background-position: -60px -345px;
       }
+      .text {
+        text-indent: -99999px;
+      }
+/*
+      .company {
+        &:before {
+          content: '(';
+        }
+        &:after {
+          content: ')';
+        }
+      }
+*/
       > div {
         height: $icon_width;
         line-height: $icon_width;
@@ -1623,6 +1651,10 @@ $c_margin: 8px;
   position: relative;
   height: 90%;
 
+  .close {
+    top: -1.5*$gutter-pct;
+    right: -$gutter-pct;
+  }
 
   .score-board {
     $border: 1px solid $grey_bg_darker;
@@ -1932,6 +1964,20 @@ $c_margin: 8px;
       overflow: hidden;
     }
 
+    .field-name-field-email {
+      text-indent: -99999px;
+      a {
+        background: $sprites;
+        background-position: -1200px -200px;
+        display: block;
+        width: $icon_width;
+        &:hover {
+          background-position: -1200px -253px;
+        }
+      }
+    }
+
+
     img {
       width: 100%;
     }
@@ -2034,7 +2080,8 @@ $c_margin: 8px;
 $border: 1px solid $grey_light;
 
 .prepare-interview .role,
-.role.display-edit {
+.role.display-edit,
+.role.display-locked {
   background-color: #fff;
   padding: $gutter-width $gutter-pct;
   position: relative;
@@ -2064,6 +2111,17 @@ $border: 1px solid $grey_light;
     clear: both;
   }
 }
+
+.display-locked {
+  &.skill,
+  &.task,
+  &.talent {
+    &.last {
+      border-bottom: $border;
+    }
+  }
+}
+
 
 form.role {
   overflow: hidden;
@@ -2372,12 +2430,12 @@ form.skill {
     .form-type-textfield {
       padding-right: 5*$icon_width;
     }
+    .field-type-list-text {
+      margin-top: $gutter-width;
+    }
+
     .form-item-autocomplete {
       padding-right: 3*$icon_width;
-    }
-    input.form-autocomplete {
-//      width: 100%;
-//      margin-bottom: 1px;
     }
   }
 
@@ -2543,6 +2601,7 @@ Person Details
   }
 
 }
+
 
 .person-details {
   .skills > .skill,

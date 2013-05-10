@@ -862,17 +862,31 @@ function role_actions_ra($role) {
 function role_ra($full_role, $display = 'edit') {
   $role_nid = $full_role['node']->nid;
 
+  if($full_role['settings']['locked']['person']) {
+    drupal_set_message('You can’t edit this role anymore since it has been
+                                              assigned to a person', 'warning');
+    $display = 'locked';
+  }
+
+  if($full_role['settings']['locked']['campaign']) {
+    drupal_set_message('You can’t edit this role anymore since it is used in a
+                                                          campaign', 'warning');
+    $display = 'locked';
+  }
+
   return container_ra(array(
     'role' => item_ra($full_role, $display),
     'tasks' => items_ra($full_role['tasks'], 'task', $role_nid, $display),
     'skills' => items_ra($full_role['skills'], 'skill', $role_nid, $display),
     'business' => items_ra($full_role['talents']['business'],
                                              'business', $role_nid, $display),
-   'business-help collapsed' => show_hide('Display all available Business talents',
+    'business-help collapsed' => $display == 'locked' ? array() :
+                          show_hide('Display all available Business talents',
                           items_ra(get_all_talents('business'),'', 0, 'help')),
     'behavioral' => items_ra($full_role['talents']['behavioral'],
                                            'behavioral', $role_nid, $display),
-    'behavioral-help collapsed' => show_hide('Display all available Behavioral talents',
+    'behavioral-help collapsed' => $display == 'locked' ? array() :
+                           show_hide('Display all available Behavioral talents',
                          items_ra(get_all_talents('behavioral'),'', 0, 'help')),
   ));
 }

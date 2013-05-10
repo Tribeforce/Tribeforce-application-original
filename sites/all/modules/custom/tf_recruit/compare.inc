@@ -40,6 +40,13 @@ function compare_ra($campaign_nid, $role, $candidate_nids_string) {
         ),
       ),
       // TODO: Make generic for other than skills
+      'close' => array(
+        '#type' => 'container',
+        '#attributes' => array('class' => array('close')),
+        'name' => array(
+          '#markup' => '&times',
+        ),
+      ),
       'score_board' => score_board_ra($campaign_nid, $scores, $candidate_nids_string),
       'detail_pane' => compare_detail_pane_ra(),
     ),

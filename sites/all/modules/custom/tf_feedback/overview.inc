@@ -175,7 +175,7 @@ function tf_feedback_edit_remark_ra($enriched_person, $redirect=0, $remark=FALSE
           '#theme' => 'link',
           '#type' => 'container',
           '#attributes' => array('class' => array('feedback')),
-          '#text' => t('Feedback'),
+          '#text' => t('Details'),
           '#path' => 'feedback/person/' . $enriched_person['node']->nid,
           '#options' => array(
             'attributes' => array('class' => array(

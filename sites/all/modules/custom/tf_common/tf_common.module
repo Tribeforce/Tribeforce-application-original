@@ -1,7 +1,7 @@
 <?php
 // Copyright (c) 2013 Femi Veys
 
-$GLOBALS['tf_version'] = 'Beta 1.9';
+$GLOBALS['tf_version'] = 'Beta 2.0';
 
 function tf_common_menu() {
   $items['dashboard'] = array(
@@ -359,17 +359,24 @@ function header_ra($with_main_menu) {
     ));
 
     $menu = $with_main_menu ? main_menu_ra() : array();
+    $company_array = tf_em_get_company();
+    $company = node_load($company_array['und'][0]['nid']);
 
     $ra = container_ra(array(
       'menu' => $menu,
       'admin' => container_ra(array(
         'user' => t('Hello'). " " . strtoupper($user->name),
+        'company' => $company->title,
         'settings' => array(
           '#theme' => 'link',
           '#text' => drupal_render($settings),
           '#path' => "",
           '#options' => array(
-            'attributes' => array(),
+            'attributes' => array(
+              'title' => t('Settings'),
+//              'data-tooltip' => t('Settings'),
+//              'class' => array('tooltip'),
+            ),
             'html' => TRUE,
           )
         ),
@@ -378,7 +385,11 @@ function header_ra($with_main_menu) {
           '#text' => drupal_render($logout),
           '#path' => "user/logout",
           '#options' => array(
-            'attributes' => array(),
+            'attributes' => array(
+              'title' => t('Logout'),
+//              'data-tooltip' => t('Logout'),
+//              'class' => array('tooltip'),
+            ),
             'html' => TRUE,
           )
         ),
@@ -470,10 +481,48 @@ function get_full_role($nid) {
   $role['tasks'] = get_tasks($role['node']);
   $role['skills'] = get_skills($role['node']);
   $role['talents'] = get_talents($role['node']);
+  $role['settings'] = get_role_settings($role['node']);
 
   return $role;
 }
 
+
+function get_role_settings($role) {
+  $settings = array();
+
+  // Check for persons
+  if(isset($role->field_persons_back_ref)) {
+    if(count($role->field_persons_back_ref) > 0) {
+      $settings['locked']['person'] = TRUE;
+    }
+    else {
+      $settings['locked']['person'] = FALSE;
+    }
+  }
+
+  // Check for Campaigns
+  $company = tf_em_get_company();
+  $campaigns = get_campaigns($company['und'][0]['nid']);
+  $settings['locked']['campaign'] = FALSE;
+
+  foreach($campaigns as $campaign) {
+    if(isset($campaign->field_role_ref)) {
+      // Already supports multiple roles per campaign
+      foreach($campaign->field_role_ref['und'] as $role_array) {
+        if($role_array['nid'] === $role->nid) {
+          $settings['locked']['campaign'] = TRUE;
+          break;
+        }
+      }
+    }
+  }
+
+  if($settings['locked']['person'] or $settings['locked']['campaign']) {
+    $settings['locked']['global'] = TRUE;
+  }
+
+  return $settings;
+}
 
 
 // TODO: make generic with tasks and talents
@@ -488,7 +537,13 @@ function get_skills($role) {
   $items = array();
   if(!empty($role->field_skill_ref)) {
     foreach($role->field_skill_ref[$lang] as $item) {
-      $items['nid' . $item['nid']]['node'] = node_load($item['nid']);
+      $node = node_load($item['nid']);
+      if($node === FALSE) {
+        dpm('Reference error: nid: ' . $item['nid'] . '. Role below.');
+        dpm($role);
+      } else {
+        $items['nid' . $item['nid']]['node'] = $node;
+      }
     }
   }
   return $items;
@@ -507,7 +562,13 @@ function get_tasks($role) {
 
   if(!empty($role->field_task_ref)) {
     foreach($role->field_task_ref[$lang] as $item) {
-      $items['nid' . $item['nid']]['node'] = node_load($item['nid']);
+      $node = node_load($item['nid']);
+      if($node === FALSE) {
+        dpm('Reference error: nid: ' . $item['nid'] . '. Role below.');
+        dpm($role);
+      } else {
+        $items['nid' . $item['nid']]['node'] = $node;
+      }
     }
   }
   return $items;
@@ -532,9 +593,15 @@ function get_talents($role, $get_tas = TRUE) {
   if(!empty($role->field_talent_ref)) {
     foreach($role->field_talent_ref[$lang] as $item) {
       $node = node_load($item['nid']);
-      $type = strtolower ($node->field_type['und'][0]['value']);
-      $items[$type]['nid' . $item['nid']]['node'] = $node;
-      if($get_tas) $items[$type]['nid'.$item['nid']]['tas'] = get_tas($node);
+
+      if($node === FALSE) {
+        dpm('Reference error: nid: ' . $item['nid'] . '. Role below.');
+        dpm($role);
+      } else {
+        $type = strtolower ($node->field_type['und'][0]['value']);
+        $items[$type]['nid' . $item['nid']]['node'] = $node;
+        if($get_tas) $items[$type]['nid'.$item['nid']]['tas'] = get_tas($node);
+      }
     }
   }
   return $items;
@@ -551,7 +618,13 @@ function get_tas($talent) {
   $items = array();
   if(!empty($talent->field_talent_attr_ref['und'])) {
     foreach($talent->field_talent_attr_ref['und'] as $item) {
-      $items['nid' . $item['nid']]['node'] = node_load($item['nid']);
+      $node = node_load($item['nid']);
+      if($node === FALSE) {
+        dpm('Reference error: nid: ' . $item['nid'] . '. Role below.');
+        dpm($role);
+      } else {
+        $items['nid' . $item['nid']]['node'] = $node;
+      }
     }
   }
   return $items;
@@ -708,6 +781,8 @@ function items_ra($items, $type, $parent_nid = 0, $display = 'edit') {
       ),
     );
     return show_hide($title, $body);
+  } else if($display === 'locked' && $type !== 'talent_attribute') {
+    return show_hide($title, $body);
   } else {
     return $body;
   }
@@ -843,6 +918,7 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
           case 'edit':
             $ra['content']['delete'] = container_ra(array('delete' => array()));
             $ra['content']['edit'] = container_ra(array('edit' => array()));
+          case 'locked':
             $ra['content']['title'] = field_view_title($node_array['node']);
             $ra['content']['categories'] = role_categories_ra(
                                            $node_array['node']->field_category);
@@ -953,14 +1029,16 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
       *******/
       case 'skill':
         // Available displays: edit, person-details, widget
-          $ra['content']['level'] = flames_ra($node_array['node'],
+        $ra['content']['level'] = flames_ra($node_array['node'],
                                                           'field_expert_level');
         if($display === 'edit') {
           $ra['content']['edit'] = container_ra(array('edit' => array()));
           $ra['content']['delete'] = container_ra(array('delete' => array()));
         }
         $ra['content']['title'] = field_view_title($node_array['node']);
-        if($display === 'edit' || $display === 'person-details') {
+        if($display === 'edit'
+        || $display === 'person-details'
+        || $display === 'locked') {
           $ra['content']['body'] = field_view_field('node', $node_array['node'],
               'body', array('label' => 'hidden', 'weight' => 30));
         }
@@ -1013,7 +1091,9 @@ function item_inner_ra($node_array, $parent_nid = 0, $display = 'edit') {
       case 'talent_attribute':
         // Available displays: edit, person-details, widget
         $ra['content']['title'] = field_view_title($node_array['node']);
-        if($display === 'edit' || $display === 'person-details') {
+        if($display === 'edit'
+        || $display === 'person-details'
+        || $display === 'locked') {
           $ra['content']['body'] = field_view_field('node', $node_array['node'],
                             'body', array('label' => 'hidden', 'weight' => 20));
         }
