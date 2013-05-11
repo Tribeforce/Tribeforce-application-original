@@ -1677,7 +1677,7 @@ function flatten_objects($objects, $member) {
 // Returns and array of nid
 // Can be used to loop over a set of nodes
 function flatten_nids($array) {
-  foreach($acrray as $el) {
+  foreach($array as $el) {
     $nids[] = $el['nid'];
   }
   return $nids;
