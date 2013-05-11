@@ -476,7 +476,6 @@ function main_menu_item_ra($key, $item) {
 */
 // TODO: Put in other file
 function get_full_role($nid) {
-//  $role = array();
   $role['node'] = node_load($nid);
   $role['tasks'] = get_tasks($role['node']);
   $role['skills'] = get_skills($role['node']);
@@ -509,16 +508,22 @@ function get_role_settings($role) {
     if(isset($campaign->field_role_ref)) {
       // Already supports multiple roles per campaign
       foreach($campaign->field_role_ref['und'] as $role_array) {
-        if($role_array['nid'] === $role->nid) {
-          $settings['locked']['campaign'] = TRUE;
-          break;
+        if(isset($role->nid)) { // Why the hell is this needed?
+          if($role_array['nid'] === $role->nid) {
+            $settings['locked']['campaign'] = TRUE;
+            break;
+          }
+
         }
       }
     }
   }
 
-  if($settings['locked']['person'] or $settings['locked']['campaign']) {
-    $settings['locked']['global'] = TRUE;
+  if(isset($settings['locked']['person']) and isset($settings['locked']['campaign'])) { // Why the hell is this needed?
+    if($settings['locked']['person'] or $settings['locked']['campaign']) {
+      $settings['locked']['global'] = TRUE;
+    }
+
   }
 
   return $settings;
@@ -1672,7 +1677,7 @@ function flatten_objects($objects, $member) {
 // Returns and array of nid
 // Can be used to loop over a set of nodes
 function flatten_nids($array) {
-  foreach($array as $el) {
+  foreach($acrray as $el) {
     $nids[] = $el['nid'];
   }
   return $nids;
