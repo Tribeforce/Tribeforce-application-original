@@ -2,11 +2,50 @@
 CONTENTS OF THIS FILE
 ---------------------
 
+ * Software Outline
+ * Use case
+ * Technology
  * About Drupal
  * Configuration and features
  * Installation profiles
  * Appearance
  * Developing for Drupal
+ 
+SOFTWARE OUTLINE:
+----------------------
+Tribeforce Application Original is a web application that allows organisations to recruit, manage and evaluate people.
+
+
+A built-in talent model is used for creating role profiles who serve as the basis for job interviews and performance appraisals. 
+
+Managers can use a guided process of designing and performing a structured recruiting interview, logging and comparing 
+answers and making a well informed decision. 
+
+People already working in the organisation can be visualised in the application and managers can quickly add remarks on their 
+performance. These remarks correspond, if the manager wished to do so, to the employee’s active role profile. 
+This greatly enhances the accurancy and worth of the performance apraisals. 
+
+USE CASE:
+----------------------
+
+TF1 is most suited for formal organisations that use role profiles as the dominant means to define what people have to do in 
+their job. It fosters hiring and evaluation of people based on their skill and talents in a judgemental manner, most classic 
+companies are familiar with. It has to be used with care as its intended use is providing clarity in the the job to be done, 
+the ability to do it and the manner in which it has been done. When it is used in a conscious manner, it will provide clarity 
+and a clear frame of the job and performance. When it is used in what we deem in an inappropriate manner, it will limit 
+creativity and freedom of the individual which is proven to be detrimental on happiness  and productivity.
+
+TECHNOLOGY:
+-----------------------
+
+The current solution is built on Drupal 7 and designed to run on a LAMP stack. A functional version is currently online. 
+Access can be gained by simple request to stijn@tribeforce.com
+
+Current status:
+The software is functional in a single server environment, yet contains bugs. 
+Stijn De Winter  is the contact person, reach out on stijn@tribeforce.com. 
+
+ 
 
 ABOUT DRUPAL
 ------------
