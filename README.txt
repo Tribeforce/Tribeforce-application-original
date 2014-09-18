@@ -1,6 +1,8 @@
 
-CONTENTS OF THIS FILE
----------------------
+## Tribeforce Application Original Version
+
+## CONTENTS OF THIS FILE
+
 
  * Software Outline
  * Use case
@@ -11,8 +13,9 @@ CONTENTS OF THIS FILE
  * Appearance
  * Developing for Drupal
  
-SOFTWARE OUTLINE:
-----------------------
+ 
+## SOFTWARE OUTLINE
+
 Tribeforce Application Original is a web application that allows organisations to recruit, manage and evaluate people.
 
 
@@ -25,8 +28,7 @@ People already working in the organisation can be visualised in the application 
 performance. These remarks correspond, if the manager wished to do so, to the employee’s active role profile. 
 This greatly enhances the accurancy and worth of the performance apraisals. 
 
-USE CASE:
-----------------------
+## USE CASE:
 
 TF1 is most suited for formal organisations that use role profiles as the dominant means to define what people have to do in 
 their job. It fosters hiring and evaluation of people based on their skill and talents in a judgemental manner, most classic 
@@ -35,20 +37,21 @@ the ability to do it and the manner in which it has been done. When it is used i
 and a clear frame of the job and performance. When it is used in what we deem in an inappropriate manner, it will limit 
 creativity and freedom of the individual which is proven to be detrimental on happiness  and productivity.
 
-TECHNOLOGY:
------------------------
+
+## TECHNOLOGY
 
 The current solution is built on Drupal 7 and designed to run on a LAMP stack. A functional version is currently online. 
 Access can be gained by simple request to stijn@tribeforce.com
 
-Current status:
+
+## CURRENT STATUS
+
 The software is functional in a single server environment, yet contains bugs. 
 Stijn De Winter  is the contact person, reach out on stijn@tribeforce.com. 
 
  
 
-ABOUT DRUPAL
-------------
+## ABOUT DRUPAL
 
 Drupal is an open source content management platform supporting a variety of
 websites ranging from personal weblogs to large community-driven websites. For
@@ -61,8 +64,7 @@ Legal information about Drupal:
  * Learn about the Drupal trademark and logo policy:
    http://drupal.com/trademark
 
-CONFIGURATION AND FEATURES
---------------------------
+## CONFIGURATION AND FEATURES
 
 Drupal core (what you get when you download and extract a drupal-x.y.tar.gz or
 drupal-x.y.zip file from http://drupal.org/project/drupal) has what you need to
@@ -83,8 +85,7 @@ More about configuration:
    http://drupal.org/project/modules
  * See also: "Developing for Drupal" for writing your own modules, below.
 
-INSTALLATION PROFILES
----------------------
+## INSTALLATION PROFILES:
 
 Installation profiles define additional steps (such as enabling modules,
 defining content types, etc.) that run after the base installation provided
@@ -117,8 +118,7 @@ More about installation profiles and distributions:
 * Develop your own installation profile or distribution:
   http://drupal.org/developing/distributions
 
-APPEARANCE
-----------
+## APPEARANCE
 
 In Drupal, the appearance of your site is set by the theme (themes are
 extensions that set fonts, colors, and layout). Drupal core comes with several
@@ -132,8 +132,7 @@ More about themes:
  * Develop your own theme:
    http://drupal.org/documentation/theme
 
-DEVELOPING FOR DRUPAL
----------------------
+## DEVELOPING FOR DRUPAL
 
 Drupal contains an extensive API that allows you to add to and modify the
 functionality of your site. The API consists of "hooks", which allow modules to
